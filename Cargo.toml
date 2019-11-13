@@ -1,0 +1,8 @@
+[package]
+name = "trabalho_fcg" 
+version = "0.1.0"   
+authors = ["Matheus <mlcruz@inf.ufrgs.br>"]
+
+[dependencies.glfw]
+git = "https://github.com/bjz/glfw-rs.git"
+default-features = false
