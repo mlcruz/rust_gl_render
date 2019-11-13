@@ -3,6 +3,12 @@ name = "trabalho_fcg"
 version = "0.1.0"   
 authors = ["Matheus <mlcruz@inf.ufrgs.br>"]
 
-[dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs.git"
-default-features = false
+# [dependencies.glfw]
+# git = "https://github.com/bjz/glfw-rs.git"
+# default-features = false
+
+[dependencies]
+gl = "0.6.0"
+glutin = "0.21.0"
+glm = "0.2.3"
+ignore-result = "0.2.0"
