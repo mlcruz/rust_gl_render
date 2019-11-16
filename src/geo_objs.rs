@@ -63,25 +63,30 @@ static CUBE_VERTEX_TOPOLOGY: [GLuint; 66] = [
 ];
 
 #[allow(dead_code)]
-pub struct Cube {
+pub struct Cube<'a> {
     geometry: [GLfloat; 56],
     topology: [GLuint; 66],
-    vao: u32,
-    geometry_vbo: u32,
-    color_vbo: u32,
-    topology_vbo: u32,
+    pub vao: &'a mut u32,
+    geometry_vbo: &'a mut u32,
+    color_vbo: &'a mut u32,
+    topology_vbo: &'a mut u32,
     geometry_size: GLsizeiptr,
     topology_size: GLsizeiptr,
 }
 
 #[allow(dead_code)]
-impl Cube {
-    pub fn new() -> Self {
-        let mut myself = Cube {
-            vao: 0u32,
-            geometry_vbo: 0u32,
-            color_vbo: 0u32,
-            topology_vbo: 0u32,
+impl Cube<'static> {
+    pub fn new(
+        vao: &'static mut u32,
+        geometry_vbo: &'static mut u32,
+        topology_vbo: &'static mut u32,
+        color_vbo: &'static mut u32,
+    ) -> Self {
+        let myself = Cube {
+            vao: vao,
+            geometry_vbo: geometry_vbo,
+            color_vbo: color_vbo,
+            topology_vbo: topology_vbo,
             geometry: CUBE_VERTEX_GEOMETRY,
             topology: CUBE_VERTEX_TOPOLOGY,
             geometry_size: (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
@@ -91,12 +96,12 @@ impl Cube {
         unsafe {
             // Definição dos atributos dos vertices
             // Cria VAO do cubo e "liga" ele
-            gl::GenVertexArrays(1, &mut myself.vao);
-            gl::BindVertexArray(myself.vao);
+            gl::GenVertexArrays(1, myself.vao);
+            gl::BindVertexArray(*myself.vao);
 
             // Cria identificador do VBO a ser utilizado pelos atributos de geometria e "liga" o mesmo
-            gl::GenBuffers(1, &mut myself.geometry_vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, myself.geometry_vbo);
+            gl::GenBuffers(1, myself.geometry_vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, *myself.geometry_vbo);
 
             // Aloca memória para o VBO acima.
             gl::BufferData(
@@ -115,10 +120,10 @@ impl Cube {
 
             // Location no shader para o VBO acima
             let location: GLuint = 0; // location 0 no vertex shader
-            let ptr_offset: *const std::ffi::c_void = 0 as *const std::ffi::c_void;
+                                      //let ptr_offset: *const std::ffi::c_void = 0 as *const std::ffi::c_void;
 
             // "Liga" VAO e VBO
-            gl::VertexAttribPointer(location, 4, gl::FLOAT, gl::FALSE, 0, ptr_offset);
+            gl::VertexAttribPointer(location, 4, gl::FLOAT, gl::FALSE, 0, null());
             // Ativa atributos
             gl::EnableVertexAttribArray(location);
             // Desliga VBO
@@ -126,8 +131,8 @@ impl Cube {
 
             // Topolgia:
             // Cria identificador do VBO a ser utilizado pela topologia e "liga" o mesmo
-            gl::GenBuffers(1, &mut myself.topology_vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, myself.topology_vbo);
+            gl::GenBuffers(1, myself.topology_vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, *myself.topology_vbo);
 
             // Aloca memória para o VBO  acima.
             gl::BufferData(
@@ -141,18 +146,18 @@ impl Cube {
                 gl::ARRAY_BUFFER,
                 0,
                 myself.topology_size,
-                mem::transmute(&myself.geometry[0]),
+                mem::transmute(&myself.topology[0]),
             );
             // Desliga VBO
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+
+            // Desliga VAO
+            //gl::BindVertexArray(0);
         }
         myself
     }
     #[allow(unused_variables)]
-    pub fn draw(&mut self, program: u32) {
-        unsafe {
-            gl::UseProgram(program);
-        }
+    pub fn draw(&self, program: &u32) {
         let cube_face_first_index: *const std::ffi::c_void = 0 as *const std::ffi::c_void;
         let cube_face_length = 36;
 
@@ -163,5 +168,16 @@ impl Cube {
         let cube_axis_first_index: *const std::ffi::c_void =
             (60 * mem::size_of::<GLuint>()) as *const std::ffi::c_void;
         let cube_axis_length = 6;
+
+        unsafe {
+            // Pedimos para a GPU rasterizar os vértices do cubo apontados pelo
+            // VAO como triângulos, formando as faces do cubo. Esta
+            // renderização irá executar o Vertex Shader definido no arquivo
+            // "shader_vertex.glsl", e o mesmo irá utilizar as matrizes
+            // "model", "view" e "projection" definidas acima e já enviadas
+            // para a placa de vídeo (GPU).
+            //
+            gl::BindVertexArray(*self.vao);
+        }
     }
 }
