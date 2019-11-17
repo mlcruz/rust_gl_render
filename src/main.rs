@@ -56,32 +56,34 @@ fn main() {
 
         // Inicializa um cubo
         let cube = Cube::new();
+        let mut should_break = false;
 
-        // Loop de eventos
-        events_loop.run_forever(|event| {
-            use glutin::{ControlFlow, Event, WindowEvent};
-
-            // Limpa tela
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            gl::ClearColor(0.3, 0.3, 0.3, 1.0);
-
-            // Padrão é continuar o loop
-            let mut control_flow_state = ControlFlow::Continue;
-
-            // Handling de eventos
-            match event {
-                Event::WindowEvent { event, .. } => match event {
-                    // Em caso de evento de fechamento de tela, seta controle do loop de eventos para encerrar
-                    WindowEvent::CloseRequested => control_flow_state = ControlFlow::Break,
+        loop {
+            events_loop.poll_events(|event| {
+                use glutin::{Event, WindowEvent};
+                // Limpa tela
+                gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+                gl::ClearColor(0.3, 0.3, 0.3, 1.0);
+                // Padrão é continuar o loop
+                // Handling de eventos
+                match event {
+                    Event::WindowEvent { event, .. } => match event {
+                        // Em caso de evento de fechamento de tela, seta controle do loop de eventos para encerrar
+                        WindowEvent::CloseRequested => should_break = true,
+                        _ => (),
+                    },
                     _ => (),
-                },
-                _ => (),
+                }
+
+                view.update_camera(&camera);
+                view.render(&program);
+                cube.draw(&program);
+                gl_window.swap_buffers().unwrap();
+            });
+
+            if should_break {
+                break;
             }
-            view.update_camera(&camera);
-            view.render(&program);
-            cube.draw(&program);
-            gl_window.swap_buffers().unwrap();
-            control_flow_state
-        });
+        }
     }
 }
