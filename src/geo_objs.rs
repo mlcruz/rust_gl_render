@@ -1,6 +1,9 @@
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
 use gl::types::GLuint;
+use matrix::identity_matrix;
+use matrix::GLMatrix;
+use std::ffi::c_void;
 use std::mem;
 use std::ptr::null;
 
@@ -27,7 +30,7 @@ static CUBE_VERTEX_GEOMETRY: [GLfloat; 56] = [
     0.0, 0.0, 1.0, 1.0, // posição do vértice 13
 ];
 
-static CUBE_VERTEX_TOPOLOGY: [GLuint; 66] = [
+static CUBE_VERTEX_TOPOLOGY: [i32; 66] = [
     0, 1, 2, // triângulo 1
     7, 6, 5, // triângulo 2
     3, 2, 6, // triângulo 3
@@ -63,45 +66,42 @@ static CUBE_VERTEX_TOPOLOGY: [GLuint; 66] = [
 ];
 
 #[allow(dead_code)]
-pub struct Cube<'a> {
+pub struct Cube {
     geometry: [GLfloat; 56],
-    topology: [GLuint; 66],
-    pub vao: &'a mut u32,
-    geometry_vbo: &'a mut u32,
-    color_vbo: &'a mut u32,
-    topology_vbo: &'a mut u32,
+    topology: [i32; 66],
+    pub vao: u32,
+    geometry_vbo: u32,
+    color_vbo: u32,
+    topology_vbo: u32,
     geometry_size: GLsizeiptr,
     topology_size: GLsizeiptr,
+    model: GLMatrix,
 }
 
 #[allow(dead_code)]
-impl Cube<'static> {
-    pub fn new(
-        vao: &'static mut u32,
-        geometry_vbo: &'static mut u32,
-        topology_vbo: &'static mut u32,
-        color_vbo: &'static mut u32,
-    ) -> Self {
-        let myself = Cube {
-            vao: vao,
-            geometry_vbo: geometry_vbo,
-            color_vbo: color_vbo,
-            topology_vbo: topology_vbo,
+impl Cube {
+    pub fn new() -> Self {
+        let mut myself = Cube {
+            vao: 0u32,
+            geometry_vbo: 0u32,
+            color_vbo: 0u32,
+            topology_vbo: 0u32,
             geometry: CUBE_VERTEX_GEOMETRY,
             topology: CUBE_VERTEX_TOPOLOGY,
             geometry_size: (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-            topology_size: (CUBE_VERTEX_TOPOLOGY.len() * mem::size_of::<GLuint>()) as GLsizeiptr,
+            topology_size: (CUBE_VERTEX_TOPOLOGY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            model: identity_matrix(),
         };
 
         unsafe {
             // Definição dos atributos dos vertices
             // Cria VAO do cubo e "liga" ele
-            gl::GenVertexArrays(1, myself.vao);
-            gl::BindVertexArray(*myself.vao);
+            gl::GenVertexArrays(1, &mut myself.vao);
+            gl::BindVertexArray(myself.vao);
 
             // Cria identificador do VBO a ser utilizado pelos atributos de geometria e "liga" o mesmo
-            gl::GenBuffers(1, myself.geometry_vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, *myself.geometry_vbo);
+            gl::GenBuffers(1, &mut myself.geometry_vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, myself.geometry_vbo);
 
             // Aloca memória para o VBO acima.
             gl::BufferData(
@@ -115,15 +115,15 @@ impl Cube<'static> {
                 gl::ARRAY_BUFFER,
                 0,
                 myself.geometry_size,
-                mem::transmute(&myself.geometry[0]),
+                &myself.geometry[0] as *const f32 as *const c_void,
             );
 
             // Location no shader para o VBO acima
             let location: GLuint = 0; // location 0 no vertex shader
-                                      //let ptr_offset: *const std::ffi::c_void = 0 as *const std::ffi::c_void;
 
             // "Liga" VAO e VBO
             gl::VertexAttribPointer(location, 4, gl::FLOAT, gl::FALSE, 0, null());
+
             // Ativa atributos
             gl::EnableVertexAttribArray(location);
             // Desliga VBO
@@ -131,45 +131,48 @@ impl Cube<'static> {
 
             // Topolgia:
             // Cria identificador do VBO a ser utilizado pela topologia e "liga" o mesmo
-            gl::GenBuffers(1, myself.topology_vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, *myself.topology_vbo);
+            gl::GenBuffers(1, &mut myself.topology_vbo);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, myself.topology_vbo);
 
             // Aloca memória para o VBO  acima.
             gl::BufferData(
-                gl::ARRAY_BUFFER,
+                gl::ELEMENT_ARRAY_BUFFER,
                 myself.topology_size, // Tamanho dos vertices
                 null(),
                 gl::STATIC_DRAW,
             );
             // Copia valores dos array de vertices para o VBO
             gl::BufferSubData(
-                gl::ARRAY_BUFFER,
+                gl::ELEMENT_ARRAY_BUFFER,
                 0,
                 myself.topology_size,
-                mem::transmute(&myself.topology[0]),
+                &myself.topology[0] as *const i32 as *const c_void,
             );
-            // Desliga VBO
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 
-            // Desliga VAO
-            //gl::BindVertexArray(0);
+            gl::BindVertexArray(0);
         }
         myself
     }
     #[allow(unused_variables)]
-    pub fn draw(&self, program: &u32) {
-        let cube_face_first_index: *const std::ffi::c_void = 0 as *const std::ffi::c_void;
+    pub fn draw(&self, model_uniform: &i32) {
+        let cube_face_first_index = 0;
         let cube_face_length = 36;
 
-        let cube_edges_first_index: *const std::ffi::c_void =
-            (36 * mem::size_of::<GLuint>()) as *const std::ffi::c_void;
+        let cube_edges_first_index = 36;
         let cube_edges_length = 24;
 
-        let cube_axis_first_index: *const std::ffi::c_void =
-            (60 * mem::size_of::<GLuint>()) as *const std::ffi::c_void;
+        let cube_axis_first_index = 60;
         let cube_axis_length = 6;
 
+        let c_ptr_offset: *const std::ffi::c_void =
+            cube_axis_first_index as *const std::ffi::c_void;
+
         unsafe {
+            // Enviamos a matriz "model" para a placa de vídeo (GPU). Veja o
+            // arquivo "shader_vertex.glsl", onde esta é efetivamente
+            // aplicada em todos os pontos.
+            gl::BindVertexArray(self.vao);
+
             // Pedimos para a GPU rasterizar os vértices do cubo apontados pelo
             // VAO como triângulos, formando as faces do cubo. Esta
             // renderização irá executar o Vertex Shader definido no arquivo
@@ -177,7 +180,46 @@ impl Cube<'static> {
             // "model", "view" e "projection" definidas acima e já enviadas
             // para a placa de vídeo (GPU).
             //
-            gl::BindVertexArray(*self.vao);
+            gl::BindVertexArray(self.vao);
+            gl::DrawElements(
+                gl::TRIANGLES,
+                cube_face_length,
+                gl::UNSIGNED_INT,
+                0 as *const i32 as *const c_void,
+            );
+            // Pedimos para OpenGL desenhar linhas com largura de 4 pixels.
+            gl::LineWidth(4.0);
+
+            // Pedimos para a GPU rasterizar os vértices dos eixos XYZ
+            // apontados pelo VAO como linhas. Veja a definição de
+            // g_VirtualScene["axes"] dentro da função BuildTriangles(), e veja
+            // a documentação da função glDrawElements() em
+            // http://docs.gl/gl3/glDrawElements.
+            //
+            // Importante: estes eixos serão desenhamos com a matriz "model"
+            // definida acima, e portanto sofrerão as mesmas transformações
+            // geométricas que o cubo. Isto é, estes eixos estarão
+            // representando o sistema de coordenadas do modelo (e não o global)!
+            gl::DrawElements(
+                gl::LINES,
+                cube_axis_length,
+                gl::UNSIGNED_INT,
+                cube_axis_first_index as *const i32 as *const c_void,
+            );
+
+            // Pedimos para a GPU rasterizar os vértices do cubo apontados pelo
+            // VAO como linhas, formando as arestas pretas do cubo. Veja a
+            // definição de g_VirtualScene["cube_edges"] dentro da função
+            // BuildTriangles(), e veja a documentação da função
+            // glDrawElements() em http://docs.gl/gl3/glDrawElements.
+            gl::DrawElements(
+                gl::LINES,
+                cube_edges_length,
+                gl::UNSIGNED_INT,
+                cube_edges_first_index as *const i32 as *const c_void,
+            );
+
+            gl::BindVertexArray(0);
         }
     }
 }

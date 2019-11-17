@@ -28,8 +28,8 @@ void main()
     // as coordenadas finais em NDC (vari�vel gl_Position). Ap�s a execu��o
     // deste Vertex Shader, a placa de v�deo (GPU) far� a divis�o por W. Veja
     // slide 189 do documento "Aula_09_Projecoes.pdf".
-    
-    gl_Position=projection*view*model*model_coefficients;
+    //
+    gl_Position=*view*projection*model*model_coefficients;
     
     // Como as vari�veis acima  (tipo vec4) s�o vetores com 4 coeficientes,
     // tamb�m � poss�vel acessar e modificar cada coeficiente de maneira
