@@ -43,7 +43,7 @@ fn main() {
     let program = Shader::new("src/shader/vertex.glsl", "src/shader/fragment.glsl").program;
 
     // Inicializa camera
-    let camera = Camera::new(g_camera_theta, g_camera_phi, g_camera_distance);
+    let mut camera = Camera::new(g_camera_theta, g_camera_phi, g_camera_distance);
 
     // Inicializa matrizes de view e projeção com a camera criada
     let mut view = View::new(-0.1, -10.0, &camera);
@@ -59,27 +59,56 @@ fn main() {
         let mut should_break = false;
 
         loop {
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+            gl::ClearColor(0.3, 0.3, 0.3, 1.0);
+
+            // Trata eventos
             events_loop.poll_events(|event| {
-                use glutin::{Event, WindowEvent};
+                use glutin::{Event, KeyboardInput, WindowEvent};
                 // Limpa tela
-                gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-                gl::ClearColor(0.3, 0.3, 0.3, 1.0);
                 // Padrão é continuar o loop
                 // Handling de eventos
                 match event {
                     Event::WindowEvent { event, .. } => match event {
                         // Em caso de evento de fechamento de tela, seta controle do loop de eventos para encerrar
                         WindowEvent::CloseRequested => should_break = true,
+                        WindowEvent::KeyboardInput {
+                            input:
+                                KeyboardInput {
+                                    virtual_keycode: Some(virtual_code),
+                                    state,
+                                    ..
+                                },
+                            ..
+                        } => match (virtual_code, state) {
+                            (glutin::VirtualKeyCode::Up, _) => {
+                                (camera.update(camera.theta, camera.phi + 0.01, camera.distance));
+                            }
+                            (glutin::VirtualKeyCode::Down, _) => {
+                                (camera.update(camera.theta, camera.phi - 0.01, camera.distance));
+                            }
+                            (glutin::VirtualKeyCode::Left, _) => {
+                                (camera.update(camera.theta + 0.01, camera.phi, camera.distance));
+                            }
+                            (glutin::VirtualKeyCode::Right, _) => {
+                                (camera.update(camera.theta - 0.01, camera.phi, camera.distance));
+                            }
+                            _ => (),
+                        },
                         _ => (),
                     },
                     _ => (),
                 }
-
-                view.update_camera(&camera);
-                view.render(&program);
-                cube.draw(&program);
-                gl_window.swap_buffers().unwrap();
             });
+
+            // Atualiza possiveis modificações de camera;
+            view.update_camera(&camera);
+
+            // Prepara view
+            view.render(&program);
+            // Desenha
+            cube.draw(&program);
+            gl_window.swap_buffers().unwrap();
 
             if should_break {
                 break;

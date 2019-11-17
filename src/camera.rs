@@ -3,9 +3,9 @@ use glm::sin;
 
 #[derive(Debug, Copy)]
 pub struct Camera {
-    theta: f32,    // Ângulo no plano ZX em relação ao eixo Z
-    phi: f32,      // Ângulo em relação ao eixo Y
-    distance: f32, // Distância da câmera para a origem
+    pub theta: f32,    // Ângulo no plano ZX em relação ao eixo Z
+    pub phi: f32,      // Ângulo em relação ao eixo Y
+    pub distance: f32, // Distância da câmera para a origem
 
     // Posição da câmera utilizando coordenadas esféricas.
     y: f32,
@@ -41,7 +41,7 @@ impl Camera {
         }
     }
 
-    pub fn update(&mut self, theta: f32, phi: f32, distance: f32) {
+    pub fn update(&mut self, theta: f32, phi: f32, distance: f32) -> Self {
         let x = distance * cos(phi) * sin(theta);
         let y = distance * sin(phi);
         let z = distance * cos(phi) * cos(theta);
@@ -58,10 +58,14 @@ impl Camera {
         self.lookat = lookat;
         self.up_vector = glm::vec4(0.0, 1.0, 0.0, 0.0);
         self.view_vector = lookat - position;
+        *self
     }
 
-    pub fn offset_distance(&mut self, offset: f32) {
-        self.update(self.theta, self.phi, self.distance + offset);
+    pub fn offset_distance(&self, offset: f32) -> Self {
+        let new = self
+            .clone()
+            .update(self.theta, self.phi, self.distance + offset);
+        new
     }
 }
 

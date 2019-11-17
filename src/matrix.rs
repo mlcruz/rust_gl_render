@@ -307,6 +307,11 @@ impl GLMatrix {
             matrix: scaling_matrix.matrix * self.matrix,
         }
     }
+
+    pub fn update(&mut self, matrix: &GLMatrix) -> Self {
+        self.matrix = matrix.matrix;
+        *self
+    }
 }
 
 impl Clone for GLMatrix {
