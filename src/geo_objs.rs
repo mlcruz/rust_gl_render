@@ -204,8 +204,17 @@ impl Cube {
 
             gl::BindVertexArray(0);
         }
-
         myself
+    }
+
+    pub fn update_matrix(&self, matrix: GLMatrix) -> Self {
+        Cube {
+            color_vbo: self.color_vbo,
+            ebo: self.ebo,
+            geometry_vbo: self.geometry_vbo,
+            vao: self.vao,
+            model: matrix,
+        }
     }
     #[allow(unused_variables)]
     pub fn draw(&self, program: &u32) -> Self {
@@ -260,7 +269,6 @@ impl Cube {
                 cube_edges_first_index as *const i32 as *const c_void,
             );
 
-            gl::BindVertexArray(0);
             *self
         }
     }
