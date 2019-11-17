@@ -184,26 +184,25 @@ pub fn perpective_matrix(field_of_view: f32, aspect: f32, n: f32, f: f32) -> GLM
     let l = -r;
 
     let p = GLMatrix::new([
-        n, // LINHA 1
-        0.0,
-        0.0,
-        0.0,
-        0.0, // LINHA 2
         n,
         0.0,
         0.0,
-        0.0, // LINHA 3
+        0.0, // LINHA 1
+        0.0,
+        n,
+        0.0,
+        0.0, // LINHA 2
+        0.0,
         0.0,
         n + f,
-        -f * n,
-        0.0, // LINHA 4
+        -f * n, // LINHA 3
+        0.0,
         0.0,
         1.0,
-        0.0,
+        0.0, // LINHA 4);
     ]);
-
     let m = ortographic_matrix(l, r, b, t, n, f);
-    let mp = m.matrix * p.matrix;
+    let mp = (-m.matrix) * p.matrix;
     GLMatrix { matrix: mp }
 }
 

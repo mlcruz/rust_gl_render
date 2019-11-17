@@ -65,16 +65,17 @@ static CUBE_VERTEX_TOPOLOGY: [i32; 66] = [
     12, 13, // linha 3,
 ];
 
+static GEOMETRY_SIZE: GLsizeiptr =
+    (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
+static TOPOLOGY_SIZE: GLsizeiptr =
+    (CUBE_VERTEX_TOPOLOGY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
+#[derive(Copy, Debug)]
 #[allow(dead_code)]
 pub struct Cube {
-    geometry: [GLfloat; 56],
-    topology: [i32; 66],
     pub vao: u32,
-    geometry_vbo: u32,
+    ebo: u32,
     color_vbo: u32,
     topology_vbo: u32,
-    geometry_size: GLsizeiptr,
-    topology_size: GLsizeiptr,
     model: GLMatrix,
 }
 
@@ -83,13 +84,9 @@ impl Cube {
     pub fn new() -> Self {
         let mut myself = Cube {
             vao: 0u32,
-            geometry_vbo: 0u32,
+            ebo: 0u32,
             color_vbo: 0u32,
             topology_vbo: 0u32,
-            geometry: CUBE_VERTEX_GEOMETRY,
-            topology: CUBE_VERTEX_TOPOLOGY,
-            geometry_size: (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-            topology_size: (CUBE_VERTEX_TOPOLOGY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
             model: identity_matrix(),
         };
 
@@ -100,13 +97,13 @@ impl Cube {
             gl::BindVertexArray(myself.vao);
 
             // Cria identificador do VBO a ser utilizado pelos atributos de geometria e "liga" o mesmo
-            gl::GenBuffers(1, &mut myself.geometry_vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, myself.geometry_vbo);
+            gl::GenBuffers(1, &mut myself.ebo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, myself.ebo);
 
             // Aloca memória para o VBO acima.
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                myself.geometry_size, // Tamanho dos vertices
+                GEOMETRY_SIZE, // Tamanho dos vertices
                 null(),
                 gl::STATIC_DRAW,
             );
@@ -114,8 +111,8 @@ impl Cube {
             gl::BufferSubData(
                 gl::ARRAY_BUFFER,
                 0,
-                myself.geometry_size,
-                &myself.geometry[0] as *const f32 as *const c_void,
+                GEOMETRY_SIZE,
+                &CUBE_VERTEX_GEOMETRY[0] as *const f32 as *const c_void,
             );
 
             // Location no shader para o VBO acima
@@ -137,7 +134,7 @@ impl Cube {
             // Aloca memória para o VBO  acima.
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
-                myself.topology_size, // Tamanho dos vertices
+                TOPOLOGY_SIZE, // Tamanho dos vertices
                 null(),
                 gl::STATIC_DRAW,
             );
@@ -145,8 +142,8 @@ impl Cube {
             gl::BufferSubData(
                 gl::ELEMENT_ARRAY_BUFFER,
                 0,
-                myself.topology_size,
-                &myself.topology[0] as *const i32 as *const c_void,
+                TOPOLOGY_SIZE,
+                &CUBE_VERTEX_TOPOLOGY[0] as *const i32 as *const c_void,
             );
 
             gl::BindVertexArray(0);
@@ -154,7 +151,7 @@ impl Cube {
         myself
     }
     #[allow(unused_variables)]
-    pub fn draw(&self, model_uniform: &i32) {
+    pub fn draw(&self, model_uniform: &i32) -> Self {
         let cube_face_first_index = 0;
         let cube_face_length = 36;
 
@@ -173,13 +170,13 @@ impl Cube {
             // aplicada em todos os pontos.
             gl::BindVertexArray(self.vao);
 
-            // Pedimos para a GPU rasterizar os vértices do cubo apontados pelo
-            // VAO como triângulos, formando as faces do cubo. Esta
-            // renderização irá executar o Vertex Shader definido no arquivo
-            // "shader_vertex.glsl", e o mesmo irá utilizar as matrizes
-            // "model", "view" e "projection" definidas acima e já enviadas
-            // para a placa de vídeo (GPU).
-            //
+            gl::UniformMatrix4fv(
+                *model_uniform,
+                1,
+                gl::FALSE,
+                mem::transmute(&self.model.matrix[0]),
+            );
+
             gl::BindVertexArray(self.vao);
             gl::DrawElements(
                 gl::TRIANGLES,
@@ -190,16 +187,6 @@ impl Cube {
             // Pedimos para OpenGL desenhar linhas com largura de 4 pixels.
             gl::LineWidth(4.0);
 
-            // Pedimos para a GPU rasterizar os vértices dos eixos XYZ
-            // apontados pelo VAO como linhas. Veja a definição de
-            // g_VirtualScene["axes"] dentro da função BuildTriangles(), e veja
-            // a documentação da função glDrawElements() em
-            // http://docs.gl/gl3/glDrawElements.
-            //
-            // Importante: estes eixos serão desenhamos com a matriz "model"
-            // definida acima, e portanto sofrerão as mesmas transformações
-            // geométricas que o cubo. Isto é, estes eixos estarão
-            // representando o sistema de coordenadas do modelo (e não o global)!
             gl::DrawElements(
                 gl::LINES,
                 cube_axis_length,
@@ -207,11 +194,6 @@ impl Cube {
                 cube_axis_first_index as *const i32 as *const c_void,
             );
 
-            // Pedimos para a GPU rasterizar os vértices do cubo apontados pelo
-            // VAO como linhas, formando as arestas pretas do cubo. Veja a
-            // definição de g_VirtualScene["cube_edges"] dentro da função
-            // BuildTriangles(), e veja a documentação da função
-            // glDrawElements() em http://docs.gl/gl3/glDrawElements.
             gl::DrawElements(
                 gl::LINES,
                 cube_edges_length,
@@ -220,6 +202,19 @@ impl Cube {
             );
 
             gl::BindVertexArray(0);
+            *self
+        }
+    }
+}
+
+impl Clone for Cube {
+    fn clone(&self) -> Self {
+        Cube {
+            vao: self.vao,
+            color_vbo: self.color_vbo,
+            ebo: self.ebo,
+            topology_vbo: self.topology_vbo,
+            model: self.model,
         }
     }
 }
