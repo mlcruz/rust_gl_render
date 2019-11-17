@@ -19,12 +19,10 @@ fn main() {
     let g_camera_phi = 0.0; // Ângulo em relação ao eixo Y
     let g_camera_distance = 2.5; // Distância da câmera para a origem
 
-    let mut camera = Camera::new(g_camera_theta, g_camera_phi, g_camera_distance);
-
     // Inicializa loop de eventos da janela
     let mut events_loop = glutin::EventsLoop::new();
 
-    // Iniciliza janela, com perfil core, versão 3.3, tamanho 800x600
+    // Iniciliza janela e contexto, com perfil core, versão 3.3, tamanho 800x600
     let window = glutin::WindowBuilder::new()
         .with_title("Trabalho final fcg")
         .with_dimensions(<LogicalSize>::new(800.0f64, 600.0f64));
@@ -41,43 +39,49 @@ fn main() {
     // Carrega ponteiros para funções do openGL
     gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
 
+    // Compila e linka shaders
     let program = Shader::new("src/shader/vertex.glsl", "src/shader/fragment.glsl").program;
 
-    let view = View::new(-0.1, -10.0, &camera);
+    // Inicializa camera
+    let camera = Camera::new(g_camera_theta, g_camera_phi, g_camera_distance);
+
+    // Inicializa matrizes de view e projeção com a camera criada
+    let mut view = View::new(-0.1, -10.0, &camera);
+
     unsafe {
         gl::UseProgram(program);
+
         // Habilita Zbuffer
         gl::Enable(gl::DEPTH_TEST);
+
+        // Inicializa um cubo
         let cube = Cube::new();
+
+        // Loop de eventos
         events_loop.run_forever(|event| {
             use glutin::{ControlFlow, Event, WindowEvent};
+
+            // Limpa tela
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.3, 0.3, 0.3, 1.0);
+
+            // Padrão é continuar o loop
             let mut control_flow_state = ControlFlow::Continue;
 
             // Handling de eventos
             match event {
                 Event::WindowEvent { event, .. } => match event {
-                    // Em caso de event de fechamento de tela, seta controle do loop de eventos para encerrar
+                    // Em caso de evento de fechamento de tela, seta controle do loop de eventos para encerrar
                     WindowEvent::CloseRequested => control_flow_state = ControlFlow::Break,
                     _ => (),
                 },
                 _ => (),
             }
-
-            gl::BindVertexArray(cube.vao);
-
-            camera.update(&g_camera_theta, &g_camera_phi, &g_camera_distance);
-
+            view.update_camera(&camera);
             view.render(&program);
             cube.draw(&program);
             gl_window.swap_buffers().unwrap();
             control_flow_state
         });
-    }
-
-    // Cleanup
-    unsafe {
-        gl::DeleteProgram(program);
     }
 }

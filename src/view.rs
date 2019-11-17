@@ -13,12 +13,14 @@ pub struct View {
     farplane: f32,  // Ângulo em relação ao eixo Y
     pub projection_matrix: Matrix4<f32>,
     pub view_matrix: Matrix4<f32>,
+    camera: Camera,
 }
 
 #[allow(dead_code)]
 impl View {
     pub fn new(nearplane: f32, farplane: f32, camera: &Camera) -> Self {
         View {
+            camera: camera.clone(),
             farplane: farplane,
             nearplane: nearplane,
             projection_matrix: perpective_matrix(
@@ -56,6 +58,12 @@ impl View {
                 mem::transmute(&self.projection_matrix[0]),
             );
         }
+    }
+
+    pub fn update_camera(&mut self, camera: &Camera) {
+        self.camera = camera.clone();
+        self.view_matrix =
+            camera_view_matrix(camera.position, camera.view_vector, camera.up_vector).matrix;
     }
 }
 

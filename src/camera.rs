@@ -41,16 +41,16 @@ impl Camera {
         }
     }
 
-    pub fn update(&mut self, theta: &f32, phi: &f32, distance: &f32) {
-        let x = distance * cos(*phi) * sin(*theta);
-        let y = distance * sin(*phi);
-        let z = distance * cos(*phi) * cos(*theta);
+    pub fn update(&mut self, theta: f32, phi: f32, distance: f32) {
+        let x = distance * cos(phi) * sin(theta);
+        let y = distance * sin(phi);
+        let z = distance * cos(phi) * cos(theta);
         let position = glm::vec4(x, y, z, 1.0);
         let lookat = glm::vec4(0.0, 0.0, 0.0, 1.0); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
 
-        self.theta = *theta;
-        self.phi = *phi;
-        self.distance = *distance;
+        self.theta = theta;
+        self.phi = phi;
+        self.distance = distance;
         self.x = x;
         self.y = y;
         self.z = z;
@@ -58,6 +58,10 @@ impl Camera {
         self.lookat = lookat;
         self.up_vector = glm::vec4(0.0, 1.0, 0.0, 0.0);
         self.view_vector = lookat - position;
+    }
+
+    pub fn offset_distance(&mut self, offset: f32) {
+        self.update(self.theta, self.phi, self.distance + offset);
     }
 }
 

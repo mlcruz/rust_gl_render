@@ -70,6 +70,7 @@ static GEOMETRY_SIZE: GLsizeiptr =
     (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
 static TOPOLOGY_SIZE: GLsizeiptr =
     (CUBE_VERTEX_TOPOLOGY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
+
 #[derive(Copy, Debug)]
 #[allow(dead_code)]
 pub struct Cube {
