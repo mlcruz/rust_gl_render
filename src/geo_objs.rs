@@ -4,6 +4,7 @@ use gl::types::GLuint;
 use matrix::identity_matrix;
 use matrix::GLMatrix;
 use std::ffi::c_void;
+use std::ffi::CString;
 use std::mem;
 use std::ptr::null;
 
@@ -76,7 +77,7 @@ pub struct Cube {
     ebo: u32,
     color_vbo: u32,
     topology_vbo: u32,
-    model: GLMatrix,
+    pub model: GLMatrix,
 }
 
 #[allow(dead_code)]
@@ -151,7 +152,7 @@ impl Cube {
         myself
     }
     #[allow(unused_variables)]
-    pub fn draw(&self, model_uniform: &i32) -> Self {
+    pub fn draw(&self, program: &u32) -> Self {
         let cube_face_first_index = 0;
         let cube_face_length = 36;
 
@@ -168,16 +169,18 @@ impl Cube {
             // Enviamos a matriz "model" para a placa de vídeo (GPU). Veja o
             // arquivo "shader_vertex.glsl", onde esta é efetivamente
             // aplicada em todos os pontos.
+
             gl::BindVertexArray(self.vao);
+            let model_uniform =
+                gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
 
             gl::UniformMatrix4fv(
-                *model_uniform,
+                model_uniform,
                 1,
                 gl::FALSE,
                 mem::transmute(&self.model.matrix[0]),
             );
 
-            gl::BindVertexArray(self.vao);
             gl::DrawElements(
                 gl::TRIANGLES,
                 cube_face_length,
