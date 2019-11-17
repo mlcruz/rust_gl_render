@@ -65,19 +65,42 @@ static CUBE_VERTEX_TOPOLOGY: [i32; 66] = [
     10, 11, // linha 2
     12, 13, // linha 3,
 ];
+static COLOR_COEFFICIENTS: [GLfloat; 56] = [
+    // Cores dos vértices do cubo
+    //  R     G     B     A
+    1.0, 0.5, 0.0, 1.0, // cor do vértice 0
+    1.0, 0.5, 0.0, 1.0, // cor do vértice 1
+    0.0, 0.5, 1.0, 1.0, // cor do vértice 2
+    0.0, 0.5, 1.0, 1.0, // cor do vértice 3
+    1.0, 0.5, 0.0, 1.0, // cor do vértice 4
+    1.0, 0.5, 0.0, 1.0, // cor do vértice 5
+    0.0, 0.5, 1.0, 1.0, // cor do vértice 6
+    0.0, 0.5, 1.0, 1.0, // cor do vértice 7
+    // Cores para desenhar o eixo X
+    1.0, 0.0, 0.0, 1.0, // cor do vértice 8
+    1.0, 0.0, 0.0, 1.0, // cor do vértice 9
+    // Cores para desenhar o eixo Y
+    0.0, 1.0, 0.0, 1.0, // cor do vértice 10
+    0.0, 1.0, 0.0, 1.0, // cor do vértice 11
+    // Cores para desenhar o eixo Z
+    0.0, 0.0, 1.0, 1.0, // cor do vértice 12
+    0.0, 0.0, 1.0, 1.0, // cor do vértice 13
+];
 
 static GEOMETRY_SIZE: GLsizeiptr =
     (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
 static TOPOLOGY_SIZE: GLsizeiptr =
     (CUBE_VERTEX_TOPOLOGY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
+static COLOR_SIZE: GLsizeiptr =
+    (COLOR_COEFFICIENTS.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
 
 #[derive(Copy, Debug)]
 #[allow(dead_code)]
 pub struct Cube {
     pub vao: u32,
-    ebo: u32,
+    geometry_vbo: u32,
     color_vbo: u32,
-    topology_vbo: u32,
+    ebo: u32,
     pub model: GLMatrix,
 }
 
@@ -86,9 +109,9 @@ impl Cube {
     pub fn new() -> Self {
         let mut myself = Cube {
             vao: 0u32,
-            ebo: 0u32,
+            geometry_vbo: 0u32,
             color_vbo: 0u32,
-            topology_vbo: 0u32,
+            ebo: 0u32,
             model: identity_matrix(),
         };
 
@@ -99,8 +122,8 @@ impl Cube {
             gl::BindVertexArray(myself.vao);
 
             // Cria identificador do VBO a ser utilizado pelos atributos de geometria e "liga" o mesmo
-            gl::GenBuffers(1, &mut myself.ebo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, myself.ebo);
+            gl::GenBuffers(1, &mut myself.geometry_vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, myself.geometry_vbo);
 
             // Aloca memória para o VBO acima.
             gl::BufferData(
@@ -128,10 +151,41 @@ impl Cube {
             // Desliga VBO
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 
+            // Cor :
+            // Cria identificador do VBO a ser utilizado pelos atributos de cor e "liga" o mesmo
+            gl::GenBuffers(1, &mut myself.color_vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, myself.color_vbo);
+
+            // Aloca memória para o VBO acima.
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                COLOR_SIZE, // Tamanho dos vertices
+                null(),
+                gl::STATIC_DRAW,
+            );
+            // Copia valores dos array de vertices para o VBO
+            gl::BufferSubData(
+                gl::ARRAY_BUFFER,
+                0,
+                COLOR_SIZE,
+                &COLOR_COEFFICIENTS[0] as *const f32 as *const c_void,
+            );
+
+            // Location no shader para o VBO acima
+            let color_location: GLuint = 1; // location 1 no vertex shader
+
+            // "Liga" VAO e VBO
+            gl::VertexAttribPointer(color_location, 4, gl::FLOAT, gl::FALSE, 0, null());
+
+            // Ativa atributos
+            gl::EnableVertexAttribArray(color_location);
+            // Desliga VBO
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+
             // Topolgia:
             // Cria identificador do VBO a ser utilizado pela topologia e "liga" o mesmo
-            gl::GenBuffers(1, &mut myself.topology_vbo);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, myself.topology_vbo);
+            gl::GenBuffers(1, &mut myself.ebo);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, myself.ebo);
 
             // Aloca memória para o VBO  acima.
             gl::BufferData(
@@ -150,6 +204,7 @@ impl Cube {
 
             gl::BindVertexArray(0);
         }
+
         myself
     }
     #[allow(unused_variables)]
@@ -216,8 +271,8 @@ impl Clone for Cube {
         Cube {
             vao: self.vao,
             color_vbo: self.color_vbo,
+            geometry_vbo: self.geometry_vbo,
             ebo: self.ebo,
-            topology_vbo: self.topology_vbo,
             model: self.model,
         }
     }

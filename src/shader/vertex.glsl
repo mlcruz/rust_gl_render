@@ -3,7 +3,7 @@
 // Atributos de v�rtice recebidos como entrada ("in") pelo Vertex Shader.
 // Veja a fun��o BuildTriangle() em "main.cpp".
 layout(location=0)in vec4 model_coefficients;
-//layout(location=1)in vec4 color_coefficients;
+layout(location=1)in vec4 color_coefficients;
 
 // Atributos de v�rtice que ser�o gerados como sa�da ("out") pelo Vertex Shader.
 // ** Estes ser�o interpolados pelo rasterizador! ** gerando, assim, valores
@@ -15,6 +15,9 @@ out vec4 cor_interpolada_pelo_rasterizador;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+
+// Vari�vel booleana no c�digo C++ tamb�m enviada para a GPU
+//uniform bool render_as_black;
 
 void main()
 {
@@ -28,7 +31,7 @@ void main()
     // as coordenadas finais em NDC (vari�vel gl_Position). Ap�s a execu��o
     // deste Vertex Shader, a placa de v�deo (GPU) far� a divis�o por W. Veja
     // slide 189 do documento "Aula_09_Projecoes.pdf".
-    //,//view*projection*
+    
     gl_Position=projection*view*model*model_coefficients;
     
     // Como as vari�veis acima  (tipo vec4) s�o vetores com 4 coeficientes,
@@ -42,9 +45,17 @@ void main()
     //     gl_Position.w = model_coefficients.w;
     //
     
-    // Ignoramos o atributo cor dos v�rtices, colocando a cor final como
-    // preta. Utilizamos isto para renderizar as arestas pretas dos cubos.
-    cor_interpolada_pelo_rasterizador=vec4(0.f,0.f,0.f,1.f);
+    // if ( render_as_black )
+    // {
+        //     // Ignoramos o atributo cor dos v�rtices, colocando a cor final como
+        //     // preta. Utilizamos isto para renderizar as arestas pretas dos cubos.
+        //     cor_interpolada_pelo_rasterizador = vec4(0.0f,0.0f,0.0f,1.0f);
+    // }
     
+    // Copiamos o atributo cor (de entrada) de cada v�rtice para a vari�vel
+    // "cor_interpolada_pelo_rasterizador". Esta vari�vel ser� interpolada pelo
+    // rasterizador, gerando valores interpolados para cada fragmento!  Veja o
+    // arquivo "shader_fragment.glsl".
+    cor_interpolada_pelo_rasterizador=color_coefficients;
 }
 
