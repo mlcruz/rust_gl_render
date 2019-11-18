@@ -46,8 +46,8 @@ fn main() {
     let mut camera = Camera::new(g_camera_theta, g_camera_phi, g_camera_distance);
 
     // Inicializa matrizes de view e projeção com a camera criada
-    let mut view = View::new(-0.1, -10.0, &camera);
-
+    let mut view = View::new(-0.01, -10.0, &camera);
+    let mut is_view_orto = false;
     unsafe {
         gl::UseProgram(program);
 
@@ -82,17 +82,25 @@ fn main() {
                             ..
                         } => match (virtual_code, state) {
                             (glutin::VirtualKeyCode::Up, _) => {
-                                (camera.update(camera.theta, camera.phi + 0.01, camera.distance));
+                                (camera.update(camera.theta, camera.phi + 0.025, camera.distance));
                             }
                             (glutin::VirtualKeyCode::Down, _) => {
-                                (camera.update(camera.theta, camera.phi - 0.01, camera.distance));
+                                (camera.update(camera.theta, camera.phi - 0.025, camera.distance));
                             }
                             (glutin::VirtualKeyCode::Left, _) => {
-                                (camera.update(camera.theta + 0.01, camera.phi, camera.distance));
+                                (camera.update(camera.theta + 0.025, camera.phi, camera.distance));
                             }
                             (glutin::VirtualKeyCode::Right, _) => {
-                                (camera.update(camera.theta - 0.01, camera.phi, camera.distance));
+                                (camera.update(camera.theta - 0.025, camera.phi, camera.distance));
                             }
+                            (glutin::VirtualKeyCode::End, _) => {
+                                (camera.update(camera.theta, camera.phi, camera.distance + 0.025));
+                            }
+                            (glutin::VirtualKeyCode::Home, _) => {
+                                (camera.update(camera.theta, camera.phi, camera.distance - 0.025));
+                            }
+                            (glutin::VirtualKeyCode::O, _) => is_view_orto = true,
+                            (glutin::VirtualKeyCode::P, _) => is_view_orto = false,
                             _ => (),
                         },
                         _ => (),
@@ -105,9 +113,23 @@ fn main() {
             view.update_camera(&camera);
 
             // Prepara view
-            view.render(&program);
+            if is_view_orto {
+                view.ortographic().render(&program);
+            } else {
+                view.render(&program);
+            }
+
             // Desenha
-            cube.draw(&program);
+            for i in 1..50 {
+                cube.scale(1.0, 0.0005, 1.0)
+                    .translate(0.0, 1.0, 0.0)
+                    .scale((5.0 / i as f32).min(3.0), 1.0, 2.0)
+                    .translate(0.0, i as f32 * 0.02 - 1.0, 0.0)
+                    .draw(&program);
+            }
+
+            //cube_big.draw(&program);
+            //cube_small.draw(&program);
             gl_window.swap_buffers().unwrap();
 
             if should_break {

@@ -207,15 +207,54 @@ impl Cube {
         myself
     }
 
-    pub fn update_matrix(&self, matrix: GLMatrix) -> Self {
+    pub fn update_matrix(&mut self, matrix: &GLMatrix) -> Self {
+        self.model.matrix = matrix.matrix;
+        *self
+    }
+
+    pub fn update(&mut self, new: &Cube) -> Self {
+        self.vao = new.vao;
+        self.geometry_vbo = new.geometry_vbo;
+        self.color_vbo = new.color_vbo;
+        self.model = new.model;
+        self.ebo = new.ebo;
+        *self
+    }
+
+    pub fn from_matrix(&self, matrix: &GLMatrix) -> Self {
         Cube {
             color_vbo: self.color_vbo,
             ebo: self.ebo,
             geometry_vbo: self.geometry_vbo,
+            model: matrix.clone(),
             vao: self.vao,
-            model: matrix,
         }
     }
+
+    pub fn translate(&self, x: f32, y: f32, z: f32) -> Self {
+        self.from_matrix(&self.model.translate(x, y, z))
+    }
+
+    pub fn rotate_x(&self, angle: f32) -> Self {
+        self.from_matrix(&self.model.rotate_x(angle))
+    }
+
+    pub fn rotate_y(&self, angle: f32) -> Self {
+        self.from_matrix(&self.model.rotate_y(angle))
+    }
+
+    pub fn rotate_z(&self, angle: f32) -> Self {
+        self.from_matrix(&self.model.rotate_z(angle))
+    }
+
+    pub fn rotate(&self, angle: f32, axis: glm::Vec4) -> Self {
+        self.from_matrix(&self.model.rotate(angle, axis))
+    }
+
+    pub fn scale(&self, x: f32, y: f32, z: f32) -> Self {
+        self.from_matrix(&self.model.scale(x, y, z))
+    }
+
     #[allow(unused_variables)]
     pub fn draw(&self, program: &u32) -> Self {
         let cube_face_first_index = 0;
