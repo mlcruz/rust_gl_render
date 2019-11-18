@@ -132,7 +132,7 @@ pub fn cross_product(u: glm::Vec4, v: glm::Vec4) -> glm::Vec4 {
     glm::Vec4 {
         x: u2 * v3 - u3 * v2, // Primeiro coeficiente
         y: u3 * v1 - u1 * v3, // Segundo coeficiente
-        z: u1 * v2 - u2 * v1, // PREENCHA AQUI o terceiro coeficiente de um produto vetorial
+        z: u1 * v2 - u2 * v1, // terceiro coeficiente
         w: 0.0,               // w = 0 para vetores.
     }
 }

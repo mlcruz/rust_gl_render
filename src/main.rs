@@ -24,7 +24,7 @@ fn main() {
 
     // Iniciliza janela e contexto, com perfil core, versão 3.3, tamanho 800x600
     let window = glutin::WindowBuilder::new()
-        .with_title("Trabalho final fcg")
+        .with_title("Rust Render")
         .with_dimensions(<LogicalSize>::new(800.0f64, 600.0f64));
 
     let gl_window = glutin::ContextBuilder::new()

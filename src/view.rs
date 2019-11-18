@@ -44,8 +44,6 @@ impl View {
                 gl::GetUniformLocation(*program, CString::new("projection").unwrap().as_ptr());
 
             // Enviamos as matrizes "view" e "projection" para a placa de vídeo
-            // (GPU). Veja o arquivo "shader_vertex.glsl", onde estas são
-            // efetivamente aplicadas em todos os pontos.
             gl::UniformMatrix4fv(
                 view_uniform,
                 1,
