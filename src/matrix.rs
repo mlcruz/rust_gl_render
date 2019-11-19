@@ -308,9 +308,8 @@ impl GLMatrix {
         }
     }
 
-    pub fn update(&mut self, matrix: &GLMatrix) -> Self {
+    pub fn update(&mut self, matrix: &GLMatrix) {
         self.matrix = matrix.matrix;
-        *self
     }
 }
 
@@ -327,5 +326,35 @@ impl From<[f32; 16]> for GLMatrix {
         GLMatrix {
             matrix: points_to_mat4(&points),
         }
+    }
+}
+
+pub trait MatrixTransform: Clone {
+    fn get_matrix(&self) -> GLMatrix;
+    fn update_matrix(&mut self, matrix: &GLMatrix);
+    fn from_matrix(&self, matrix: &GLMatrix) -> Self;
+
+    fn translate(&self, x: f32, y: f32, z: f32) -> Self {
+        self.from_matrix(&self.get_matrix().translate(x, y, z))
+    }
+
+    fn rotate_x(&self, angle: f32) -> Self {
+        self.from_matrix(&self.get_matrix().rotate_x(angle))
+    }
+
+    fn rotate_y(&self, angle: f32) -> Self {
+        self.from_matrix(&self.get_matrix().rotate_y(angle))
+    }
+
+    fn rotate_z(&self, angle: f32) -> Self {
+        self.from_matrix(&self.get_matrix().rotate_z(angle))
+    }
+
+    fn rotate(&self, angle: f32, axis: glm::Vec4) -> Self {
+        self.from_matrix(&self.get_matrix().rotate(angle, axis))
+    }
+
+    fn scale(&self, x: f32, y: f32, z: f32) -> Self {
+        self.from_matrix(&self.get_matrix().scale(x, y, z))
     }
 }

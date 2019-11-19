@@ -1,11 +1,16 @@
 use matrix::cross_product;
+use matrix::identity_matrix;
+use matrix::GLMatrix;
+use matrix::MatrixTransform;
 use std::path::Path;
 use tobj;
 use vertex::Vertex;
 
 #[allow(dead_code)]
+#[derive(Debug, Clone)]
 pub struct ObjModel {
     vertex_data: Vec<Vertex>,
+    model: GLMatrix,
 }
 
 #[allow(dead_code)]
@@ -40,6 +45,7 @@ impl ObjModel {
         }
         ObjModel {
             vertex_data: vertex_array,
+            model: identity_matrix(),
         }
     }
 
@@ -47,5 +53,20 @@ impl ObjModel {
         let u = *p3 - *p1;
         let v = *p2 - *p1;
         cross_product(u, v)
+    }
+}
+
+impl MatrixTransform for ObjModel {
+    fn get_matrix(&self) -> GLMatrix {
+        self.model
+    }
+    fn update_matrix(&mut self, matrix: &GLMatrix) {
+        self.model = matrix.clone();
+    }
+    fn from_matrix(&self, matrix: &GLMatrix) -> Self {
+        ObjModel {
+            model: matrix.clone(),
+            vertex_data: self.vertex_data.clone(),
+        }
     }
 }
