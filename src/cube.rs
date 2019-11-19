@@ -224,10 +224,10 @@ impl Cube {
 
     pub fn from_matrix(&self, matrix: &GLMatrix) -> Self {
         Cube {
+            model: matrix.clone(),
             color_vbo: self.color_vbo,
             ebo: self.ebo,
             geometry_vbo: self.geometry_vbo,
-            model: matrix.clone(),
             vao: self.vao,
         }
     }
