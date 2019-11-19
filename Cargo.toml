@@ -1,5 +1,5 @@
 [package]
-name = "trabalho_fcg" 
+name = "rust_gl_render" 
 version = "0.1.0"   
 authors = ["Matheus <mlcruz@inf.ufrgs.br>"]
 
