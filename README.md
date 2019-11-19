@@ -1,8 +1,8 @@
 # rust_gl_render
 
-### rust implementation of a open gl rendering engine. 
 #### OK
 - perspective, orthographic camera
 
-#### WIP
+#### OK
 - Rendering of primitives
+- Obj file loading
