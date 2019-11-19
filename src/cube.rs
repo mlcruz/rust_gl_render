@@ -306,8 +306,9 @@ impl MatrixTransform for Cube {
     fn get_matrix(&self) -> GLMatrix {
         self.model
     }
-    fn update_matrix(&mut self, matrix: &GLMatrix) {
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> Self {
         self.model = matrix.clone();
+        *self
     }
     fn from_matrix(&self, matrix: &GLMatrix) -> Self {
         Cube {

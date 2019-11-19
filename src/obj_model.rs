@@ -13,21 +13,20 @@ use std::ptr::null;
 use tobj;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy)]
 pub struct ObjModel {
-    vertex_data: Vec<GLfloat>,
-    normal_data: Vec<GLfloat>,
-    index_data: Vec<u32>,
     pub model: GLMatrix,
     pub vao: u32,
     geometry_vbo: u32,
     color_vbo: u32,
     ebo: u32,
+    index_len: usize,
 }
 
 #[allow(dead_code)]
 impl ObjModel {
     pub fn new(path: &str) -> Self {
+        // Carrega arquivo obj
         let (models, _materials) = tobj::load_obj(Path::new(path)).unwrap();
 
         let mut myself = ObjModel {
@@ -36,53 +35,59 @@ impl ObjModel {
             color_vbo: 0u32,
             ebo: 0u32,
             model: identity_matrix(),
-            vertex_data: Vec::new(),
-            normal_data: Vec::new(),
-            index_data: Vec::new(),
+            index_len: 0,
         };
 
-        let mut vertex_array = Vec::new();
+        let mut position_array = Vec::new();
         let mut normal_array = Vec::new();
         let mut index_array = Vec::new();
-        // Carrega arquivo obj inicializa dados de vertices
-        for model in &models {
-            for index in &model.mesh.indices {
-                index_array.push(*index);
-                let i = *index as usize;
-                let pos = [
-                    &model.mesh.positions[3 * i],
-                    &model.mesh.positions[3 * i + 1],
-                    &model.mesh.positions[3 * i + 2],
-                ];
-                // let x = *(&model.mesh.positions[2 + *index as usize]);
-                // let y = *(&model.mesh.positions[1 + *index as usize]);
-                // let z = *(&model.mesh.positions[*index as usize]);
-                let w = 1f32;
 
-                // println!("{:?} {:?} {:?} {:?}", index, x, y, z);
-                if !*(&model.mesh.normals.is_empty()) {
-                    normal_array.push(*(&model.mesh.normals[3 * *index as usize]));
-                    normal_array.push(*(&model.mesh.normals[1 + 3 * *index as usize]));
-                    normal_array.push(*(&model.mesh.normals[2 + 3 * *index as usize]));
-                } else {
-                    normal_array.push(0f32);
-                    normal_array.push(0f32);
-                    normal_array.push(0f32);
-                };
+        // Carrega dados de posições e indices para em vetores contínuos
+        // 3 valores no vetor de indices representam os vertices de um indice
+        // 4 valores no vetor de posição representam a posição de um vertice
+        for (_index, model) in models.iter().enumerate() {
+            let mesh = &model.mesh;
 
-                vertex_array.push(*pos[0]);
-                vertex_array.push(*pos[1]);
-                vertex_array.push(*pos[2]);
-                vertex_array.push(w);
+            for f in 0..mesh.indices.len() / 3 {
+                // Vertices X Y Z de um triangulo
+                index_array.push(mesh.indices[3 * f]);
+                index_array.push(mesh.indices[3 * f + 1]);
+                index_array.push(mesh.indices[3 * f + 2]);
+            }
+            for v in 0..mesh.positions.len() / 3 {
+                // Insere uma posição de um vertice
+                // X Y Z W em ordem
+                position_array.push(mesh.positions[3 * v]);
+                position_array.push(mesh.positions[3 * v + 1]);
+                position_array.push(mesh.positions[3 * v + 2]);
+                position_array.push(1f32);
+            }
+
+            // Verifica se existem normais no obj, e insere
+            if mesh.normals.len() > 0 {
+                for v in 0..mesh.normals.len() / 3 {
+                    // Insere um normal de um vertice
+                    // X Y Z W em ordem
+                    normal_array.push(mesh.positions[3 * v]);
+                    normal_array.push(mesh.positions[3 * v + 1]);
+                    normal_array.push(mesh.positions[3 * v + 2]);
+                    normal_array.push(0f32);
+                }
+            } else {
+                for _v in 0..mesh.positions.len() / 3 {
+                    // Se não existem normais, inicializa vetor vazio
+                    normal_array.push(0f32);
+                    normal_array.push(0f32);
+                    normal_array.push(0f32);
+                    normal_array.push(0f32);
+                }
             }
         }
-        myself.vertex_data = vertex_array;
-        myself.normal_data = normal_array;
-        myself.index_data = index_array;
-        // Alocação de buffers e etc
+
+        // Alocação de VAO e VBOS
         unsafe {
             // Definição dos atributos dos vertices
-            // Cria VAO do cubo e "liga" ele
+            // Cria VAO do obj e "liga" ele
             gl::GenVertexArrays(1, &mut myself.vao);
             gl::BindVertexArray(myself.vao);
 
@@ -93,7 +98,7 @@ impl ObjModel {
             // Aloca memória para o VBO acima.
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (myself.vertex_data.len() * mem::size_of::<GLfloat>()) as GLsizeiptr, // Tamanho dos vertices
+                (position_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr, // Tamanho dos vertices
                 null(),
                 gl::STATIC_DRAW,
             );
@@ -102,8 +107,8 @@ impl ObjModel {
             gl::BufferSubData(
                 gl::ARRAY_BUFFER,
                 0,
-                (myself.vertex_data.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                myself.vertex_data.as_ptr() as *const c_void,
+                (position_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                position_array.as_ptr() as *const c_void,
             );
 
             // Location no shader para o VBO acima
@@ -124,7 +129,7 @@ impl ObjModel {
             // Aloca memória para o VBO  acima.
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
-                (myself.index_data.len() * mem::size_of::<GLfloat>()) as GLsizeiptr, // Tamanho dos vertices
+                (index_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr, // Tamanho dos vertices
                 null(),
                 gl::STATIC_DRAW,
             );
@@ -132,10 +137,11 @@ impl ObjModel {
             gl::BufferSubData(
                 gl::ELEMENT_ARRAY_BUFFER,
                 0,
-                (myself.index_data.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                myself.index_data.as_ptr() as *const c_void,
+                (index_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                index_array.as_ptr() as *const c_void,
             );
             gl::BindVertexArray(0);
+            myself.index_len = index_array.len();
         }
         myself
     }
@@ -146,7 +152,7 @@ impl ObjModel {
         cross_product(u, v)
     }
 
-    pub fn draw(&self, program: &u32) {
+    pub fn draw(&self, program: &u32) -> Self {
         unsafe {
             gl::UseProgram(*program);
 
@@ -164,11 +170,12 @@ impl ObjModel {
 
             gl::DrawElements(
                 gl::TRIANGLES,
-                self.index_data.len() as i32,
+                self.index_len as i32,
                 gl::UNSIGNED_INT,
                 0 as *const i32 as *const c_void,
             );
         }
+        *self
     }
 }
 
@@ -176,19 +183,24 @@ impl MatrixTransform for ObjModel {
     fn get_matrix(&self) -> GLMatrix {
         self.model
     }
-    fn update_matrix(&mut self, matrix: &GLMatrix) {
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> Self {
         self.model = matrix.clone();
+        *self
     }
     fn from_matrix(&self, matrix: &GLMatrix) -> Self {
         ObjModel {
             model: matrix.clone(),
-            vertex_data: self.vertex_data.clone(),
             color_vbo: self.color_vbo,
             ebo: self.ebo,
             geometry_vbo: self.geometry_vbo,
             vao: self.vao,
-            normal_data: self.normal_data.clone(),
-            index_data: self.index_data.clone(),
+            index_len: self.index_len,
         }
+    }
+}
+
+impl Clone for ObjModel {
+    fn clone(&self) -> Self {
+        *self
     }
 }
