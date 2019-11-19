@@ -1,11 +1,14 @@
 extern crate gl;
 extern crate glm;
 extern crate glutin;
+extern crate tobj;
 mod camera;
 mod geo_objs;
 mod matrix;
+mod obj_model;
 mod shader_program;
 mod utils;
+mod vertex;
 mod view;
 use camera::Camera;
 use geo_objs::Cube;
