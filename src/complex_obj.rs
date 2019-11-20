@@ -5,16 +5,16 @@ use obj_model::ObjModel;
 
 #[derive(Copy, Clone)]
 #[allow(dead_code)]
-enum SimpleObj {
+pub enum SimpleObj {
     ObjModel(ObjModel),
     Cube(Cube),
 }
 
 #[derive(Clone)]
 #[allow(dead_code)]
-struct ComplexObj {
-    root: SimpleObj,
-    children: Box<Vec<ComplexObj>>,
+pub struct ComplexObj {
+    pub root: SimpleObj,
+    pub children: Box<Vec<SimpleObj>>,
 }
 
 #[allow(dead_code)]
@@ -31,7 +31,14 @@ impl ComplexObj {
 
         match self.children.as_slice() {
             [] => {
-                ((&*self.children).iter().map(|item| item.draw(&program))).collect();
+                ((&*self.children).iter().for_each(|item| match item {
+                    SimpleObj::ObjModel(obj_model) => {
+                        obj_model.draw(program);
+                    }
+                    SimpleObj::Cube(cube) => {
+                        cube.draw(program);
+                    }
+                }));
             }
             _ => (),
         }
