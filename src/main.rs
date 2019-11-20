@@ -3,6 +3,7 @@ extern crate glm;
 extern crate glutin;
 extern crate tobj;
 mod camera;
+mod complex_obj;
 mod cube;
 mod matrix;
 mod obj_model;
@@ -135,6 +136,7 @@ fn main() {
                     .translate(0.0, i as f32 * 0.02 - 1.0, 0.0)
                     .draw(&program);
             }
+
             cow.translate(0f32, 0.7, 0f32)
                 .draw(&program)
                 .scale(0.5, 0.5, 0.5)
