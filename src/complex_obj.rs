@@ -14,7 +14,28 @@ enum SimpleObj {
 #[allow(dead_code)]
 struct ComplexObj {
     root: SimpleObj,
-    children: Box<Vec<SimpleObj>>,
+    children: Box<Vec<ComplexObj>>,
+}
+
+#[allow(dead_code)]
+impl ComplexObj {
+    pub fn draw(&self, program: &u32) {
+        match self.root {
+            SimpleObj::Cube(cube) => {
+                cube.draw(program);
+            }
+            SimpleObj::ObjModel(obj_model) => {
+                obj_model.draw(program);
+            }
+        }
+
+        match self.children.as_slice() {
+            [] => {
+                ((&*self.children).iter().map(|item| item.draw(&program))).collect();
+            }
+            _ => (),
+        }
+    }
 }
 
 impl MatrixTransform for ComplexObj {
