@@ -17,11 +17,9 @@ use camera::Camera;
 use cube::Cube;
 use draw::Attach;
 use draw::Draw;
-use draw::DrawSelf;
 use glutin::dpi::LogicalSize;
 use matrix::MatrixTransform;
 use obj_model::ObjModel;
-use scene_object::SceneObject;
 use shader_program::Shader;
 use view::View;
 
@@ -67,7 +65,7 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = ObjModel::new("src/cow.obj");
+        let cow = ObjModel::new("src/cow.obj").scale(2.0, 2.0, 2.0);
 
         // Inicializa um cubo
         let cube = Cube::new();
@@ -156,7 +154,7 @@ fn main() {
             //         .draw_self(&program);
             // }
 
-            bad_cow.draw(&program);
+            bad_cow.draw_self(&program);
 
             // cow.translate(0f32, 0.7, 0f32)
             //     .draw_self(&program)

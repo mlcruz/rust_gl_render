@@ -376,10 +376,17 @@ impl Draw for Cube {
             );
         }
     }
+
+    fn draw_with_transform(&self, matrix: GLMatrix, program: &u32) {
+        let new_matrix = matrix.matrix * self.model.matrix;
+        let mut new_me = self.clone();
+        new_me.model.matrix = new_matrix;
+        new_me.draw(program);
+    }
 }
 
 impl<'a> Attach<'a> for Cube {
     fn attach(&'a self, child: &'a dyn Draw) -> ComplexObj {
-        ComplexObj::new(self, vec![child.clone()])
+        ComplexObj::new(self, vec![child.clone()], self.model)
     }
 }
