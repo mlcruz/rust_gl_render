@@ -11,6 +11,6 @@ pub trait Draw {
     fn draw(&self, program: &u32);
 }
 
-pub trait Attach {
-    fn attach(&'static self, child: &'static dyn Draw) -> ComplexObj;
+pub trait Attach<'a> {
+    fn attach(&'a self, child: &'a dyn Draw) -> ComplexObj<'a>;
 }

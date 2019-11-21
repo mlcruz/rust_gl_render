@@ -224,11 +224,8 @@ impl Draw for ObjModel {
     }
 }
 
-impl Attach for ObjModel {
-    fn attach(&'static self, child: &'static dyn Draw) -> ComplexObj {
-        ComplexObj {
-            root: self,
-            children: Box::new(vec![child]),
-        }
+impl<'a> Attach<'a> for ObjModel {
+    fn attach(&'a self, child: &'a dyn Draw) -> ComplexObj {
+        ComplexObj::new(self, vec![child.clone()])
     }
 }

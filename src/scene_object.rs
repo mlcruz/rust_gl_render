@@ -17,12 +17,9 @@ pub enum SceneObject {
     ComplexObj(ComplexObj<'static>),
 }
 
-impl Attach for PrimitiveObject {
-    fn attach(&'static self, child: &'static dyn Draw) -> ComplexObj {
-        ComplexObj {
-            root: self,
-            children: Box::new(vec![child]),
-        }
+impl<'a> Attach<'a> for PrimitiveObject {
+    fn attach(&'a self, child: &'a dyn Draw) -> ComplexObj {
+        ComplexObj::new(self, vec![child.clone()])
     }
 }
 

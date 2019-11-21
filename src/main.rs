@@ -16,10 +16,12 @@ mod view;
 use camera::Camera;
 use cube::Cube;
 use draw::Attach;
+use draw::Draw;
 use draw::DrawSelf;
 use glutin::dpi::LogicalSize;
 use matrix::MatrixTransform;
 use obj_model::ObjModel;
+use scene_object::SceneObject;
 use shader_program::Shader;
 use view::View;
 
@@ -69,6 +71,20 @@ fn main() {
 
         // Inicializa um cubo
         let cube = Cube::new();
+        let point = Cube::new().scale(0.0, 0.0, 0.0);
+
+        let cow_props = vec![
+            cube.scale(2.0, 0.05, 0.6).translate(0.0, -0.65, 0.0),
+            cube.scale(0.60, 0.25, 0.2).translate(-0.2, 0.5, 0.35),
+            cube.scale(0.60, 0.3, 0.2).translate(-0.2, 0.5, -0.35),
+        ];
+        let mut complex_cow = cow.attach(&point);
+        let bad_cow =
+            complex_cow.add_children(cow_props.iter().map(|item| item as &dyn Draw).collect());
+
+        //&badder_cow.add_children(&cube);
+
+        // badder_cow.add_children(&cube);
         let mut should_break = false;
         loop {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
@@ -131,22 +147,24 @@ fn main() {
                 view.render(&program);
             }
 
-            // Desenha
-            for i in 1..50 {
-                cube.scale(1.0, 0.0005, 1.0)
-                    .translate(0.0, 1.0, 0.0)
-                    .scale((5.0 / i as f32).min(3.0), 1.0, 2.0)
-                    .translate(0.0, i as f32 * 0.02 - 1.0, 0.0)
-                    .draw_self(&program);
-            }
+            // // Desenha
+            // for i in 1..50 {
+            //     cube.scale(1.0, 0.0005, 1.0)
+            //         .translate(0.0, 1.0, 0.0)
+            //         .scale((5.0 / i as f32).min(3.0), 1.0, 2.0)
+            //         .translate(0.0, i as f32 * 0.02 - 1.0, 0.0)
+            //         .draw_self(&program);
+            // }
 
-            cow.translate(0f32, 0.7, 0f32)
-                .draw_self(&program)
-                .scale(0.5, 0.5, 0.5)
-                .translate(0f32, 0f32, 0.75)
-                .draw_self(&program)
-                .translate(0f32, 0f32, -1.5)
-                .draw_self(&program);
+            bad_cow.draw(&program);
+
+            // cow.translate(0f32, 0.7, 0f32)
+            //     .draw_self(&program)
+            //     .scale(0.5, 0.5, 0.5)
+            //     .translate(0f32, 0f32, 0.75)
+            //     .draw_self(&program)
+            //     .translate(0f32, 0f32, -1.5)
+            //     .draw_self(&program);
 
             //stuff.draw(&program);
 
