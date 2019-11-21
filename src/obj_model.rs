@@ -1,4 +1,6 @@
-use cube::Cube;
+use complex_obj::ComplexObj;
+use draw::Attach;
+use draw::Draw;
 use draw::DrawSelf;
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
@@ -22,12 +24,6 @@ pub struct ObjModel {
     color_vbo: u32,
     ebo: u32,
     index_len: usize,
-}
-
-#[allow(dead_code)]
-pub enum SceneObject {
-    ObjModel(ObjModel),
-    Cube(Cube),
 }
 
 #[allow(dead_code)]
@@ -198,5 +194,41 @@ impl DrawSelf for ObjModel {
             );
         }
         self
+    }
+}
+
+impl Draw for ObjModel {
+    fn draw(&self, program: &u32) {
+        unsafe {
+            gl::UseProgram(*program);
+
+            gl::BindVertexArray(self.vao);
+
+            let model_uniform =
+                gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
+
+            gl::UniformMatrix4fv(
+                model_uniform,
+                1,
+                gl::FALSE,
+                mem::transmute(&self.model.matrix[0]),
+            );
+
+            gl::DrawElements(
+                gl::TRIANGLES,
+                self.index_len as i32,
+                gl::UNSIGNED_INT,
+                0 as *const i32 as *const c_void,
+            );
+        }
+    }
+}
+
+impl Attach for ObjModel {
+    fn attach(&'static self, child: &'static dyn Draw) -> ComplexObj {
+        ComplexObj {
+            root: self,
+            children: Box::new(vec![child]),
+        }
     }
 }

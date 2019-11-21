@@ -8,12 +8,14 @@ mod cube;
 mod draw;
 mod matrix;
 mod obj_model;
+mod scene_object;
 mod shader_program;
 mod utils;
 mod vertex;
 mod view;
 use camera::Camera;
 use cube::Cube;
+use draw::Attach;
 use draw::DrawSelf;
 use glutin::dpi::LogicalSize;
 use matrix::MatrixTransform;
@@ -68,7 +70,6 @@ fn main() {
         // Inicializa um cubo
         let cube = Cube::new();
         let mut should_break = false;
-
         loop {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.3, 0.3, 0.3, 1.0);

@@ -1,7 +1,10 @@
 use complex_obj::ComplexObj;
 
-pub trait DrawSelf {
-    fn draw_self(&self, program: &u32) -> &Self;
+pub trait DrawSelf: Draw {
+    fn draw_self(&self, program: &u32) -> &Self {
+        self.draw(program);
+        self
+    }
 }
 
 pub trait Draw {
@@ -9,5 +12,5 @@ pub trait Draw {
 }
 
 pub trait Attach {
-    fn attach(&self) -> ComplexObj;
+    fn attach(&'static self, child: &'static dyn Draw) -> ComplexObj;
 }

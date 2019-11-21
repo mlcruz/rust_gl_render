@@ -1,3 +1,6 @@
+use complex_obj::ComplexObj;
+use draw::Attach;
+use draw::Draw;
 use draw::DrawSelf;
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
@@ -319,6 +322,67 @@ impl DrawSelf for Cube {
             );
 
             self
+        }
+    }
+}
+
+impl Draw for Cube {
+    fn draw(&self, program: &u32) {
+        let cube_face_length = 36;
+
+        let cube_edges_first_index = 36;
+        let cube_edges_length = 24;
+
+        let cube_axis_first_index = 60;
+        let cube_axis_length = 6;
+
+        unsafe {
+            // Enviamos a matriz "model" para a placa de vídeo (GPU). Veja o
+            // arquivo "shader_vertex.glsl", onde esta é efetivamente
+            // aplicada em todos os pontos.
+
+            gl::BindVertexArray(self.vao);
+            let model_uniform =
+                gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
+
+            gl::UniformMatrix4fv(
+                model_uniform,
+                1,
+                gl::FALSE,
+                mem::transmute(&self.model.matrix[0]),
+            );
+
+            gl::DrawElements(
+                gl::TRIANGLES,
+                cube_face_length,
+                gl::UNSIGNED_INT,
+                0 as *const i32 as *const c_void,
+            );
+            // Pedimos para OpenGL desenhar linhas com largura de 4 pixels.
+            gl::LineWidth(4.0);
+
+            gl::DrawElements(
+                gl::LINES,
+                cube_axis_length,
+                gl::UNSIGNED_INT,
+                cube_axis_first_index as *const i32 as *const c_void,
+            );
+
+            gl::DrawElements(
+                gl::LINES,
+                cube_edges_length,
+                gl::UNSIGNED_INT,
+                cube_edges_first_index as *const i32 as *const c_void,
+            );
+        }
+    }
+}
+
+impl Attach for Cube {
+    fn attach(&'static self, child: &'static dyn Draw) -> ComplexObj {
+        ComplexObj {
+            root: self,
+            children: Box::new(vec![child]),
         }
     }
 }
