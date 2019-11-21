@@ -207,6 +207,13 @@ pub fn perpective_matrix(field_of_view: f32, aspect: f32, n: f32, f: f32) -> GLM
 }
 
 #[allow(dead_code)]
+fn compute_normal(p1: &glm::Vec4, p2: &glm::Vec4, p3: &glm::Vec4) -> glm::Vec4 {
+    let u = *p3 - *p1;
+    let v = *p2 - *p1;
+    cross_product(u, v)
+}
+
+#[allow(dead_code)]
 pub fn camera_view_matrix(
     position_c: glm::Vec4,
     view_vector: glm::Vec4,
@@ -329,9 +336,9 @@ impl From<[f32; 16]> for GLMatrix {
     }
 }
 
-pub trait MatrixTransform: Clone {
-    fn get_matrix(&self) -> GLMatrix;
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> Self;
+pub trait MatrixTransform: Sized {
+    fn get_matrix(&self) -> &GLMatrix;
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self;
     fn from_matrix(&self, matrix: &GLMatrix) -> Self;
 
     fn translate(&self, x: f32, y: f32, z: f32) -> Self {

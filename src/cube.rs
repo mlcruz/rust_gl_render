@@ -1,3 +1,4 @@
+use draw::DrawSelf;
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
 use gl::types::GLuint;
@@ -31,7 +32,6 @@ static CUBE_VERTEX_GEOMETRY: [GLfloat; 56] = [
     0.0, 0.0, 0.0, 1.0, // posição do vértice 12
     0.0, 0.0, 1.0, 1.0, // posição do vértice 13
 ];
-
 static CUBE_VERTEX_TOPOLOGY: [i32; 66] = [
     0, 1, 2, // triângulo 1
     7, 6, 5, // triângulo 2
@@ -231,9 +231,42 @@ impl Cube {
             vao: self.vao,
         }
     }
+}
 
+impl Clone for Cube {
+    fn clone(&self) -> Self {
+        Cube {
+            vao: self.vao,
+            color_vbo: self.color_vbo,
+            geometry_vbo: self.geometry_vbo,
+            ebo: self.ebo,
+            model: self.model,
+        }
+    }
+}
+
+impl MatrixTransform for Cube {
+    fn get_matrix(&self) -> &GLMatrix {
+        &self.model
+    }
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self {
+        self.model = matrix.clone();
+        self
+    }
+    fn from_matrix(&self, matrix: &GLMatrix) -> Self {
+        Cube {
+            color_vbo: self.color_vbo,
+            ebo: self.ebo,
+            geometry_vbo: self.geometry_vbo,
+            model: matrix.clone(),
+            vao: self.vao,
+        }
+    }
+}
+
+impl DrawSelf for Cube {
     #[allow(unused_variables)]
-    pub fn draw(&self, program: &u32) -> Self {
+    fn draw_self(&self, program: &u32) -> &Self {
         let cube_face_first_index = 0;
         let cube_face_length = 36;
 
@@ -285,38 +318,7 @@ impl Cube {
                 cube_edges_first_index as *const i32 as *const c_void,
             );
 
-            *self
-        }
-    }
-}
-
-impl Clone for Cube {
-    fn clone(&self) -> Self {
-        Cube {
-            vao: self.vao,
-            color_vbo: self.color_vbo,
-            geometry_vbo: self.geometry_vbo,
-            ebo: self.ebo,
-            model: self.model,
-        }
-    }
-}
-
-impl MatrixTransform for Cube {
-    fn get_matrix(&self) -> GLMatrix {
-        self.model
-    }
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> Self {
-        self.model = matrix.clone();
-        *self
-    }
-    fn from_matrix(&self, matrix: &GLMatrix) -> Self {
-        Cube {
-            color_vbo: self.color_vbo,
-            ebo: self.ebo,
-            geometry_vbo: self.geometry_vbo,
-            model: matrix.clone(),
-            vao: self.vao,
+            self
         }
     }
 }

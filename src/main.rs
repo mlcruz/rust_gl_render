@@ -5,6 +5,7 @@ extern crate tobj;
 mod camera;
 mod complex_obj;
 mod cube;
+mod draw;
 mod matrix;
 mod obj_model;
 mod shader_program;
@@ -12,8 +13,8 @@ mod utils;
 mod vertex;
 mod view;
 use camera::Camera;
-use complex_obj::ComplexObj;
 use cube::Cube;
+use draw::DrawSelf;
 use glutin::dpi::LogicalSize;
 use matrix::MatrixTransform;
 use obj_model::ObjModel;
@@ -67,14 +68,6 @@ fn main() {
         // Inicializa um cubo
         let cube = Cube::new();
         let mut should_break = false;
-
-        let stuff = ComplexObj {
-            root: complex_obj::SimpleObj::ObjModel(cow),
-            children: Box::new(vec![
-                complex_obj::SimpleObj::Cube(cube.translate(-1.0, -1.0, -1.0)),
-                complex_obj::SimpleObj::Cube(cube.translate(1.0, 1.0, 1.0)),
-            ]),
-        };
 
         loop {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
@@ -143,18 +136,18 @@ fn main() {
                     .translate(0.0, 1.0, 0.0)
                     .scale((5.0 / i as f32).min(3.0), 1.0, 2.0)
                     .translate(0.0, i as f32 * 0.02 - 1.0, 0.0)
-                    .draw(&program);
+                    .draw_self(&program);
             }
 
             cow.translate(0f32, 0.7, 0f32)
-                .draw(&program)
+                .draw_self(&program)
                 .scale(0.5, 0.5, 0.5)
                 .translate(0f32, 0f32, 0.75)
-                .draw(&program)
+                .draw_self(&program)
                 .translate(0f32, 0f32, -1.5)
-                .draw(&program);
+                .draw_self(&program);
 
-            stuff.draw(&program);
+            //stuff.draw(&program);
 
             //cube_big.draw(&program);
             //cube_small.draw(&program);

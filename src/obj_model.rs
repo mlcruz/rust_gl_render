@@ -1,7 +1,8 @@
+use cube::Cube;
+use draw::DrawSelf;
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
 use gl::types::GLuint;
-use matrix::cross_product;
 use matrix::identity_matrix;
 use matrix::GLMatrix;
 use matrix::MatrixTransform;
@@ -21,6 +22,12 @@ pub struct ObjModel {
     color_vbo: u32,
     ebo: u32,
     index_len: usize,
+}
+
+#[allow(dead_code)]
+pub enum SceneObject {
+    ObjModel(ObjModel),
+    Cube(Cube),
 }
 
 #[allow(dead_code)]
@@ -145,14 +152,29 @@ impl ObjModel {
         }
         myself
     }
+}
 
-    fn compute_normal(p1: &glm::Vec4, p2: &glm::Vec4, p3: &glm::Vec4) -> glm::Vec4 {
-        let u = *p3 - *p1;
-        let v = *p2 - *p1;
-        cross_product(u, v)
+impl MatrixTransform for ObjModel {
+    fn get_matrix(&self) -> &GLMatrix {
+        &self.model
     }
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self {
+        self.model = matrix.clone();
+        self
+    }
+    fn from_matrix(&self, matrix: &GLMatrix) -> Self {
+        *self.clone().update_matrix(matrix)
+    }
+}
 
-    pub fn draw(&self, program: &u32) -> Self {
+impl Clone for ObjModel {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl DrawSelf for ObjModel {
+    fn draw_self(&self, program: &u32) -> &Self {
         unsafe {
             gl::UseProgram(*program);
 
@@ -175,32 +197,6 @@ impl ObjModel {
                 0 as *const i32 as *const c_void,
             );
         }
-        *self
-    }
-}
-
-impl MatrixTransform for ObjModel {
-    fn get_matrix(&self) -> GLMatrix {
-        self.model
-    }
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> Self {
-        self.model = matrix.clone();
-        *self
-    }
-    fn from_matrix(&self, matrix: &GLMatrix) -> Self {
-        ObjModel {
-            model: matrix.clone(),
-            color_vbo: self.color_vbo,
-            ebo: self.ebo,
-            geometry_vbo: self.geometry_vbo,
-            vao: self.vao,
-            index_len: self.index_len,
-        }
-    }
-}
-
-impl Clone for ObjModel {
-    fn clone(&self) -> Self {
-        *self
+        self
     }
 }
