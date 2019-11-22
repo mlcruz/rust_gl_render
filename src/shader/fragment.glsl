@@ -54,7 +54,7 @@ void main()
     vec3 I=vec3(1.,1.,1.);// PREENCH AQUI o espectro da fonte de luz
     
     // Espectro da luz ambiente
-    vec3 Ia=vec3(.2,.2,.2);// PREENCHA AQUI o espectro da luz ambiente
+    vec3 Ia=vec3(.9412,.7255,.7255);// PREENCHA AQUI o espectro da luz ambiente
     
     // Termo difuso utilizando a lei dos cossenos de Lambert
     vec3 lambert_diffuse_term=Kd*I*max(0,dot(n,l));// PREENCHA AQUI o termo difuso de Lambert

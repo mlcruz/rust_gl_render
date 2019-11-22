@@ -23,7 +23,7 @@ pub struct ObjModel {
     pub model: GLMatrix,
     pub vao: u32,
     geometry_vbo: u32,
-    color_vbo: u32,
+    texture_vbo: u32,
     ebo: u32,
     index_len: usize,
     normal_vbo: u32,
@@ -40,7 +40,7 @@ impl ObjModel {
         let mut myself = ObjModel {
             vao: 0u32,
             geometry_vbo: 0u32,
-            color_vbo: 0u32,
+            texture_vbo: 0u32,
             ebo: 0u32,
             model: ID_MATRIX,
             index_len: 0,
@@ -67,9 +67,11 @@ impl ObjModel {
             for v in 0..mesh.positions.len() / 3 {
                 // Insere uma posição de um vertice
                 // X Y Z W em ordem
+
                 position_array.push(mesh.positions[3 * v]);
                 position_array.push(mesh.positions[3 * v + 1]);
                 position_array.push(mesh.positions[3 * v + 2]);
+
                 position_array.push(1f32);
             }
 
@@ -84,13 +86,17 @@ impl ObjModel {
                     normal_array.push(0f32);
                 }
             } else {
+                println!("Computing normal");
+
                 // Computa normais dos vertices se não existe no obj
-
                 let num_vertices = mesh.positions.len() / 3;
-                let mut num_triangles_per_vertex: Vec<u32> = vec![0; num_vertices];
-                let mut vertex_normals: Vec<glm::Vec4> =
-                    vec![glm::Vec4::new(0f32, 0f32, 0f32, 0f32); num_vertices];
 
+                let mut num_triangles_per_vertex: Vec<u32> = vec![0; num_vertices];
+
+                let mut vertex_normals: Vec<glm::Vec4> =
+                    vec![glm::Vec4::new(0f32, 0f32, 0f32, 1f32); num_vertices];
+
+                //println!("{:?}", mesh.indices.len() / 3);
                 for t in 0..mesh.indices.len() / 3 {
                     // Calcula a normal de todos os triangulos
 
@@ -100,7 +106,7 @@ impl ObjModel {
                         glm::Vec4::new(0f32, 0f32, 0f32, 1f32),
                     ];
 
-                    for v in 0..2 {
+                    for v in 0..3 {
                         let idx = mesh.indices[3 * t + v] as usize;
                         let vx = mesh.positions[3 * idx + 0];
                         let vy = mesh.positions[3 * idx + 1];
@@ -113,21 +119,27 @@ impl ObjModel {
 
                     let [a, b, c] = triangle_vertex_array;
                     let n = compute_normal(&a, &b, &c);
-
-                    for v in 0..2 {
+                    for v in 0..3 {
                         let idx = mesh.indices[3 * t + v] as usize;
                         num_triangles_per_vertex[idx] = num_triangles_per_vertex[idx] + 1;
                         vertex_normals[idx] = vertex_normals[idx] + n;
+
+                        if t < 10 {
+                            println!(
+                                "{:?} {:?} {:?}",
+                                idx, num_triangles_per_vertex[idx], vertex_normals[idx]
+                            );
+                        }
                     }
                 }
 
-                for i in 0..vertex_normals.len() - 1 {
+                for i in 0..vertex_normals.len() {
                     let mut n = vertex_normals[i] / num_triangles_per_vertex[i] as f32;
                     n = n / norm(n);
 
                     normal_array.push(n.x);
                     normal_array.push(n.y);
-                    normal_array.push(n.y);
+                    normal_array.push(n.z);
                     normal_array.push(1f32);
                 }
             }

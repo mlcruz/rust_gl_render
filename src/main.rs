@@ -66,7 +66,7 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let bunny = ObjModel::new("src/cow.obj").scale(0.5, 0.5, 0.5);
+        let bunny = ObjModel::new("src/bunny.obj").scale(0.5, 0.5, 0.5);
 
         let mut should_break = false;
         loop {

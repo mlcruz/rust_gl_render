@@ -238,7 +238,7 @@ pub fn perpective_matrix(field_of_view: f32, aspect: f32, n: f32, f: f32) -> GLM
 pub fn compute_normal(p1: &glm::Vec4, p2: &glm::Vec4, p3: &glm::Vec4) -> glm::Vec4 {
     let u = *p3 - *p1;
     let v = *p2 - *p1;
-    cross_product(u, v)
+    -cross_product(u, v)
 }
 
 #[allow(dead_code)]
