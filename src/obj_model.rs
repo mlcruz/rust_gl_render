@@ -26,6 +26,8 @@ pub struct ObjModel {
     index_len: usize,
 }
 
+static ID_MATRIX: GLMatrix = identity_matrix();
+
 #[allow(dead_code)]
 impl ObjModel {
     pub fn new(path: &str) -> Self {
@@ -37,7 +39,7 @@ impl ObjModel {
             geometry_vbo: 0u32,
             color_vbo: 0u32,
             ebo: 0u32,
-            model: identity_matrix(),
+            model: ID_MATRIX,
             index_len: 0,
         };
 

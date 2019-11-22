@@ -149,29 +149,8 @@ fn main() {
                 view.render(&program);
             }
 
-            // // Desenha
-            // for i in 1..50 {
-            //     cube.scale(1.0, 0.0005, 1.0)
-            //         .translate(0.0, 1.0, 0.0)
-            //         .scale((5.0 / i as f32).min(3.0), 1.0, 2.0)
-            //         .translate(0.0, i as f32 * 0.02 - 1.0, 0.0)
-            //         .draw_self(&program);
-            // }
-
             bad_cow.draw_self(&program);
 
-            // cow.translate(0f32, 0.7, 0f32)
-            //     .draw_self(&program)
-            //     .scale(0.5, 0.5, 0.5)
-            //     .translate(0f32, 0f32, 0.75)
-            //     .draw_self(&program)
-            //     .translate(0f32, 0f32, -1.5)
-            //     .draw_self(&program);
-
-            //stuff.draw(&program);
-
-            //cube_big.draw(&program);
-            //cube_small.draw(&program);
             gl_window.swap_buffers().unwrap();
 
             if should_break {

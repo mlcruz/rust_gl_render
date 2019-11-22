@@ -1,8 +1,6 @@
 use complex_obj::ComplexObj;
 use cube::Cube;
-use draw::Attach;
-use draw::Draw;
-use draw::DrawSelf;
+
 use obj_model::ObjModel;
 
 #[allow(dead_code)]

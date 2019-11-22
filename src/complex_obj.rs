@@ -1,8 +1,9 @@
 use draw::Attach;
 use draw::Draw;
-use draw::DrawSelf;
 use matrix::identity_matrix;
 use matrix::GLMatrix;
+
+static ID_MATRIX: GLMatrix = identity_matrix();
 
 #[derive(Clone)]
 #[allow(dead_code)]
@@ -27,7 +28,7 @@ impl<'a> ComplexObj<'a> {
             root: Box::new(new_root),
             children: Box::new(new_children),
             matrix: matrix,
-            root_matrix: identity_matrix(),
+            root_matrix: ID_MATRIX,
         }
     }
     pub fn attach_to(&'a self, parent: &'a dyn Draw) -> Self {

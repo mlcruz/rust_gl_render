@@ -90,6 +90,7 @@ static COLOR_COEFFICIENTS: [GLfloat; 56] = [
     0.0, 0.0, 1.0, 1.0, // cor do vértice 12
     0.0, 0.0, 1.0, 1.0, // cor do vértice 13
 ];
+static ID_MATRIX: GLMatrix = identity_matrix();
 
 static GEOMETRY_SIZE: GLsizeiptr =
     (CUBE_VERTEX_GEOMETRY.len() * mem::size_of::<GLfloat>()) as GLsizeiptr;
@@ -116,7 +117,7 @@ impl Cube {
             geometry_vbo: 0u32,
             color_vbo: 0u32,
             ebo: 0u32,
-            model: identity_matrix(),
+            model: ID_MATRIX,
         };
 
         unsafe {

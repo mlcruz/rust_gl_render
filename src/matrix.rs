@@ -3,6 +3,7 @@ use glm::cos;
 use glm::sin;
 use glm::sqrt;
 use glm::tan;
+use glm::Vector4;
 
 #[allow(dead_code)]
 #[derive(Copy, Debug)]
@@ -11,21 +12,48 @@ pub struct GLMatrix {
 }
 
 // glm::mat4 espera a matrix em row major
-pub fn points_to_mat4(points: &[f32; 16]) -> glm::Mat4 {
-    glm::mat4(
-        points[0], points[4], points[8], points[12], points[1], points[5], points[9], points[13],
-        points[2], points[6], points[10], points[14], points[3], points[7], points[11], points[15],
-    )
+pub const fn points_to_mat4(points: &[f32; 16]) -> glm::Mat4 {
+    // glm::mat4(
+    //     points[0], points[4], points[8], points[12], points[1], points[5], points[9], points[13],
+    //     points[2], points[6], points[10], points[14], points[3], points[7], points[11], points[15],
+    // )
+
+    glm::Mat4 {
+        c0: Vector4 {
+            x: points[0],
+            y: points[4],
+            z: points[8],
+            w: points[12],
+        },
+        c1: Vector4 {
+            x: points[1],
+            y: points[5],
+            z: points[9],
+            w: points[13],
+        },
+        c2: Vector4 {
+            x: points[2],
+            y: points[6],
+            z: points[10],
+            w: points[14],
+        },
+        c3: Vector4 {
+            x: points[3],
+            y: points[7],
+            z: points[11],
+            w: points[15],
+        },
+    }
 }
 
 #[allow(dead_code)]
-pub fn identity_matrix() -> GLMatrix {
+pub const fn identity_matrix() -> GLMatrix {
     GLMatrix::new([
         1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
     ])
 }
 
-pub fn translating_matrix(x: f32, y: f32, z: f32) -> GLMatrix {
+pub const fn translating_matrix(x: f32, y: f32, z: f32) -> GLMatrix {
     GLMatrix::new([
         1.0, 0.0, 0.0, x, // LINHA 1
         0.0, 1.0, 0.0, y, // LINHA 2
@@ -35,7 +63,7 @@ pub fn translating_matrix(x: f32, y: f32, z: f32) -> GLMatrix {
 }
 
 #[allow(dead_code)]
-pub fn scaling_matrix(x: f32, y: f32, z: f32) -> GLMatrix {
+pub const fn scaling_matrix(x: f32, y: f32, z: f32) -> GLMatrix {
     GLMatrix::new([
         x, 0.0, 0.0, 0.0, // LINHA 1
         0.0, y, 0.0, 0.0, // LINHA 2
@@ -267,7 +295,7 @@ pub fn camera_view_matrix(
 
 #[allow(dead_code)]
 impl GLMatrix {
-    pub fn new(points: [f32; 16]) -> Self {
+    pub const fn new(points: [f32; 16]) -> Self {
         GLMatrix {
             matrix: points_to_mat4(&points),
         }
