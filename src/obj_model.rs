@@ -5,7 +5,9 @@ use draw::DrawSelf;
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
 use gl::types::GLuint;
+use matrix::compute_normal;
 use matrix::identity_matrix;
+use matrix::norm;
 use matrix::GLMatrix;
 use matrix::MatrixTransform;
 use std::ffi::c_void;
@@ -59,6 +61,7 @@ impl ObjModel {
                 index_array.push(mesh.indices[3 * f + 1]);
                 index_array.push(mesh.indices[3 * f + 2]);
             }
+
             for v in 0..mesh.positions.len() / 3 {
                 // Insere uma posição de um vertice
                 // X Y Z W em ordem
@@ -79,12 +82,51 @@ impl ObjModel {
                     normal_array.push(0f32);
                 }
             } else {
-                for _v in 0..mesh.positions.len() / 3 {
-                    // Se não existem normais, inicializa vetor vazio
-                    normal_array.push(0f32);
-                    normal_array.push(0f32);
-                    normal_array.push(0f32);
-                    normal_array.push(0f32);
+                // Computa normais dos vertices se não existe no obj
+
+                let num_vertices = mesh.positions.len() / 3;
+                let mut num_triangles_per_vertex: Vec<u32> = vec![0; num_vertices];
+                let mut vertex_normals: Vec<glm::Vec4> =
+                    vec![glm::Vec4::new(0f32, 0f32, 0f32, 0f32); num_vertices];
+
+                for t in 0..mesh.indices.len() / 3 {
+                    // Calcula a normal de todos os triangulos
+
+                    let mut triangle_vertex_array = [
+                        glm::Vec4::new(0f32, 0f32, 0f32, 1f32),
+                        glm::Vec4::new(0f32, 0f32, 0f32, 1f32),
+                        glm::Vec4::new(0f32, 0f32, 0f32, 1f32),
+                    ];
+
+                    for v in 0..2 {
+                        let idx = mesh.indices[3 * t + v] as usize;
+                        let vx = mesh.positions[3 * idx + 0];
+                        let vy = mesh.positions[3 * idx + 1];
+                        let vz = mesh.positions[3 * idx + 2];
+
+                        triangle_vertex_array[v].x = vx;
+                        triangle_vertex_array[v].y = vy;
+                        triangle_vertex_array[v].z = vz;
+                    }
+
+                    let [a, b, c] = triangle_vertex_array;
+                    let n = compute_normal(&a, &b, &c);
+
+                    for v in 0..2 {
+                        let idx = mesh.indices[3 * t + v] as usize;
+                        num_triangles_per_vertex[idx] = num_triangles_per_vertex[idx] + 1;
+                        vertex_normals[idx] = vertex_normals[idx] + n;
+                    }
+                }
+
+                for i in 0..vertex_normals.len() - 1 {
+                    let mut n = vertex_normals[i] / num_triangles_per_vertex[i] as f32;
+                    n = n / norm(n);
+
+                    normal_array.push(n.x);
+                    normal_array.push(n.y);
+                    normal_array.push(n.y);
+                    normal_array.push(1f32);
                 }
             }
         }
