@@ -123,13 +123,6 @@ impl ObjModel {
                         let idx = mesh.indices[3 * t + v] as usize;
                         num_triangles_per_vertex[idx] = num_triangles_per_vertex[idx] + 1;
                         vertex_normals[idx] = vertex_normals[idx] + n;
-
-                        if t < 10 {
-                            println!(
-                                "{:?} {:?} {:?}",
-                                idx, num_triangles_per_vertex[idx], vertex_normals[idx]
-                            );
-                        }
                     }
                 }
 
@@ -137,10 +130,14 @@ impl ObjModel {
                     let mut n = vertex_normals[i] / num_triangles_per_vertex[i] as f32;
                     n = n / norm(n);
 
+                    if i < 9 {
+                        println!("{:?} {:?} {:?} ", n.x, n.y, n.z)
+                    }
+
                     normal_array.push(n.x);
                     normal_array.push(n.y);
                     normal_array.push(n.z);
-                    normal_array.push(1f32);
+                    normal_array.push(0f32);
                 }
             }
         }

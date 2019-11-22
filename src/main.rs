@@ -66,6 +66,11 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
+        let cow = ObjModel::new("src/cow.obj")
+            .scale(0.5, 0.5, 0.5)
+            .translate(0.5, 0.5, 0.5);
+
+        // Inicializa um coelho
         let bunny = ObjModel::new("src/bunny.obj").scale(0.5, 0.5, 0.5);
 
         let mut should_break = false;
@@ -130,10 +135,9 @@ fn main() {
                 view.render(&program);
             }
 
-            bunny
-                .draw_self(&program)
-                .translate(0.6, 0.6, 0.6)
-                .draw(&program);
+            bunny.draw(&program);
+
+            cow.draw(&program);
 
             gl_window.swap_buffers().unwrap();
 
