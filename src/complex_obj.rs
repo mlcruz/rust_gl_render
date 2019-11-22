@@ -1,6 +1,7 @@
 use draw::Attach;
 use draw::Draw;
 use draw::DrawSelf;
+use matrix::identity_matrix;
 use matrix::GLMatrix;
 
 #[derive(Clone)]
@@ -9,6 +10,7 @@ pub struct ComplexObj<'a> {
     pub root: Box<&'a dyn Draw>,
     pub children: Box<Vec<&'a dyn Draw>>,
     pub matrix: GLMatrix,
+    pub root_matrix: GLMatrix,
 }
 
 #[allow(dead_code)]
@@ -25,6 +27,7 @@ impl<'a> ComplexObj<'a> {
             root: Box::new(new_root),
             children: Box::new(new_children),
             matrix: matrix,
+            root_matrix: identity_matrix(),
         }
     }
     pub fn attach_to(&'a self, parent: &'a dyn Draw) -> Self {
@@ -36,6 +39,7 @@ impl<'a> ComplexObj<'a> {
             root: Box::new(parent.clone()),
             children: Box::new(*new_children),
             matrix: new_self.matrix,
+            root_matrix: new_self.root_matrix,
         }
     }
 
@@ -65,22 +69,21 @@ impl Draw for ComplexObj<'_> {
     }
 
     fn draw_with_transform(&self, matrix: GLMatrix, program: &u32) {
-        self.root.draw_with_transform(self.matrix, program);
-        let new_matrix = matrix.matrix * self.matrix.matrix;
-        ((&*self.children)
-            .iter()
-            .for_each(|item| item.draw_with_transform(GLMatrix { matrix: new_matrix }, &program)));
-    }
-}
+        self.root.draw_with_transform(
+            GLMatrix {
+                matrix: matrix.matrix * self.root_matrix.matrix,
+            },
+            program,
+        );
 
-impl DrawSelf for ComplexObj<'_> {
-    fn draw_self(&self, program: &u32) -> &Self {
-        self.root.draw(program);
-        ((&*self.children)
-            .iter()
-            .for_each(|item| item.draw(&program)));
-
-        self
+        ((&*self.children).iter().for_each(|item| {
+            item.draw_with_transform(
+                GLMatrix {
+                    matrix: matrix.matrix * self.root_matrix.matrix * self.matrix.matrix,
+                },
+                &program,
+            )
+        }));
     }
 }
 
@@ -88,6 +91,8 @@ impl<'a> Attach<'a> for ComplexObj<'a> {
     fn attach(&'a self, child: &'a dyn Draw) -> Self {
         let mut new_children = self.children.clone();
         new_children.append(&mut vec![child]);
-        ComplexObj::new(*self.root.clone(), *new_children, self.matrix)
+        let mut new_obj = ComplexObj::new(*self.root.clone(), *new_children, self.matrix);
+        new_obj.root_matrix = self.matrix;
+        new_obj
     }
 }

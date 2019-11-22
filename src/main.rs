@@ -65,21 +65,25 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = ObjModel::new("src/cow.obj").scale(2.0, 2.0, 2.0);
+        let cow = ObjModel::new("src/cow.obj").scale(0.6, 1.2, 1.2);
 
         // Inicializa um cubo
         let cube = Cube::new();
         let point = Cube::new().scale(0.0, 0.0, 0.0);
-
+        let mini_cube = cube.scale(0.5, 0.5, 0.5).translate(0.0, 1.0, 0.0);
         let cow_props = vec![
             cube.scale(2.0, 0.05, 0.6).translate(0.0, -0.65, 0.0),
             cube.scale(0.60, 0.25, 0.2).translate(-0.2, 0.5, 0.35),
             cube.scale(0.60, 0.3, 0.2).translate(-0.2, 0.5, -0.35),
         ];
-        let mut complex_cow = cow.attach(&point);
-        let bad_cow =
-            complex_cow.add_children(cow_props.iter().map(|item| item as &dyn Draw).collect());
+        let mut complex_props = mini_cube.attach(&point);
+        let props =
+            complex_props.add_children(cow_props.iter().map(|item| item as &dyn Draw).collect());
 
+        let mut complex_cow = cow.attach(&point);
+        let bad_cow = complex_cow
+            .add_children(cow_props.iter().map(|item| item as &dyn Draw).collect())
+            .add_child(props);
         //&badder_cow.add_children(&cube);
 
         // badder_cow.add_children(&cube);
