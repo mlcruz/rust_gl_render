@@ -26,6 +26,7 @@ pub struct ObjModel {
     color_vbo: u32,
     ebo: u32,
     index_len: usize,
+    normal_vbo: u32,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -43,6 +44,7 @@ impl ObjModel {
             ebo: 0u32,
             model: ID_MATRIX,
             index_len: 0,
+            normal_vbo: 0u32,
         };
 
         let mut position_array = Vec::new();
@@ -168,19 +170,42 @@ impl ObjModel {
             // Desliga VBO
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 
+            //Normais:
+            if normal_array.len() > 0 {
+                gl::GenBuffers(1, &mut myself.normal_vbo);
+                gl::BindBuffer(gl::ARRAY_BUFFER, myself.normal_vbo);
+
+                gl::BufferData(
+                    gl::ARRAY_BUFFER,
+                    (normal_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                    null(),
+                    gl::STATIC_DRAW,
+                );
+                gl::BufferSubData(
+                    gl::ARRAY_BUFFER,
+                    0,
+                    (normal_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                    normal_array.as_ptr() as *const c_void,
+                );
+
+                // Location das normais no shader
+                let location: GLuint = 1;
+
+                gl::VertexAttribPointer(location, 4, gl::FLOAT, gl::FALSE, 0, null());
+                gl::EnableVertexAttribArray(location);
+                gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            }
+
             // Topolgia:
-            // Cria identificador do VBO a ser utilizado pela topologia e "liga" o mesmo
             gl::GenBuffers(1, &mut myself.ebo);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, myself.ebo);
 
-            // Aloca memória para o VBO  acima.
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
-                (index_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr, // Tamanho dos vertices
+                (index_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
                 null(),
                 gl::STATIC_DRAW,
             );
-            // Copia valores dos array de vertices para o VBO
             gl::BufferSubData(
                 gl::ELEMENT_ARRAY_BUFFER,
                 0,

@@ -156,36 +156,36 @@ impl Cube {
             // Desliga VBO
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 
-            // Cor :
-            // Cria identificador do VBO a ser utilizado pelos atributos de cor e "liga" o mesmo
-            gl::GenBuffers(1, &mut myself.color_vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, myself.color_vbo);
+            // // Cor :
+            // // Cria identificador do VBO a ser utilizado pelos atributos de cor e "liga" o mesmo
+            // gl::GenBuffers(1, &mut myself.color_vbo);
+            // gl::BindBuffer(gl::ARRAY_BUFFER, myself.color_vbo);
 
-            // Aloca memória para o VBO acima.
-            gl::BufferData(
-                gl::ARRAY_BUFFER,
-                COLOR_SIZE, // Tamanho dos vertices
-                null(),
-                gl::STATIC_DRAW,
-            );
-            // Copia valores dos array de vertices para o VBO
-            gl::BufferSubData(
-                gl::ARRAY_BUFFER,
-                0,
-                COLOR_SIZE,
-                &COLOR_COEFFICIENTS[0] as *const f32 as *const c_void,
-            );
+            // // Aloca memória para o VBO acima.
+            // gl::BufferData(
+            //     gl::ARRAY_BUFFER,
+            //     COLOR_SIZE, // Tamanho dos vertices
+            //     null(),
+            //     gl::STATIC_DRAW,
+            // );
+            // // Copia valores dos array de vertices para o VBO
+            // gl::BufferSubData(
+            //     gl::ARRAY_BUFFER,
+            //     0,
+            //     COLOR_SIZE,
+            //     &COLOR_COEFFICIENTS[0] as *const f32 as *const c_void,
+            // );
 
-            // Location no shader para o VBO acima
-            let color_location: GLuint = 1; // location 1 no vertex shader
+            // // Location no shader para o VBO acima
+            // let color_location: GLuint = 1; // location 1 no vertex shader
 
-            // "Liga" VAO e VBO
-            gl::VertexAttribPointer(color_location, 4, gl::FLOAT, gl::FALSE, 0, null());
+            // // "Liga" VAO e VBO
+            // gl::VertexAttribPointer(color_location, 4, gl::FLOAT, gl::FALSE, 0, null());
 
-            // Ativa atributos
-            gl::EnableVertexAttribArray(color_location);
-            // Desliga VBO
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            // // Ativa atributos
+            // gl::EnableVertexAttribArray(color_location);
+            // // Desliga VBO
+            // gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 
             // Topolgia:
             // Cria identificador do VBO a ser utilizado pela topologia e "liga" o mesmo
