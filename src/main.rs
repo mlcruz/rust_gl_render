@@ -5,6 +5,7 @@ extern crate tobj;
 mod camera;
 //mod complex_obj;
 mod complex_obj;
+mod composite_obj;
 mod draw;
 mod matrix;
 mod obj_model;
@@ -14,12 +15,9 @@ mod utils;
 mod vertex;
 mod view;
 use camera::Camera;
-use complex_obj::ComplexObj;
 use draw::Draw;
 use glutin::dpi::LogicalSize;
 use matrix::MatrixTransform;
-use obj_model::ObjModel;
-use scene_object::CompositeObj;
 use scene_object::SceneObject;
 use shader_program::Shader;
 use view::View;
@@ -66,10 +64,9 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = ObjModel::new("src/cow.obj").scale(1.5, 1.5, 1.5);
+        let cow = SceneObject::new("src/cow.obj").scale(0.8, 0.8, 0.8);
 
         // Inicializa um coelho
-        let bunny = ObjModel::new("src/bunny.obj").scale(0.5, 0.5, 0.5);
 
         let mut should_break = false;
         loop {
@@ -132,8 +129,8 @@ fn main() {
             } else {
                 view.render(&program);
             }
-            cow.draw(&program);
 
+            cow.draw(&program);
             gl_window.swap_buffers().unwrap();
 
             if should_break {
