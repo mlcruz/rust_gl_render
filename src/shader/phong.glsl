@@ -3,12 +3,6 @@
 in vec4 position_world;
 in vec4 normal;
 
-// Posição do vértice atual no sistema de coordenadas local do modelo.
-in vec4 position_model;
-
-// Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
-in vec2 texcoords;
-
 // Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
@@ -51,23 +45,41 @@ void main()
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v=normalize(camera_position-p);
     
-    float minx=bbox_min.x;
-    float maxx=bbox_max.x;
+    // Vetor que define o sentido da reflexão especular ideal.
+    vec4 r=-l+2*n*(dot(n,l));
     
-    float miny=bbox_min.y;
-    float maxy=bbox_max.y;
+    // Parâmetros que definem as propriedades espectrais da superfície
+    // Refletância difusa
+    vec3 Kd;
+    // Refletância especular
+    vec3 Ks;
+    // Refletância ambiente
+    vec3 Ka;
+    // Expoente especular para o modelo de iluminação de Phong
+    float q;
     
-    float minz=bbox_min.z;
-    float maxz=bbox_max.z;
+    // Propriedades espectrais do coelho
+    Kd=vec3(.08,.4,.8);
+    Ks=vec3(.8,.8,.8);
+    Ka=vec3(.04,.2,.4);
+    q=32.;
     
-    U=(position_model.x-minx)/(maxx-minx);
-    V=(position_model.y-miny)/(maxy-miny);
+    // Espectro da fonte de iluminação
+    vec3 I=vec3(1.,1.,1.);
     
-    vec3 Kd0=texture(TextureImage0,vec2(U,V)).rgb;
+    // Espectro da luz ambiente
+    vec3 Ia=vec3(.9412,.7255,.7255);
     
-    float lambert=max(0,dot(n,l));
+    // Termo difuso utilizando a lei dos cossenos de Lambert
+    vec3 lambert_diffuse_term=Kd*I*max(0,dot(n,l));
     
-    color=Kd0*(lambert+.01);
+    // Termo ambiente
+    vec3 ambient_term=Ka*Ia;
+    
+    // Termo especular utilizando o modelo de iluminação de Phong
+    vec3 phong_specular_term=Ks*I*pow(max(0,dot(r,v)),q);
+    
+    color=lambert_diffuse_term+ambient_term+phong_specular_term;
     
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas

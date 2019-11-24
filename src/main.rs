@@ -71,10 +71,11 @@ fn main() {
         let cow = SceneObject::new("src/cow.obj").scale(0.8, 0.8, 0.8);
 
         let (tex, samp) = load_texture("src/shader/data/tc-earth_daymap_surface.jpg");
+        println!("{:?} {:?}", tex, samp);
 
         gl::Uniform1i(
             gl::GetUniformLocation(program, CString::new("TextureImage0").unwrap().as_ptr()),
-            0,
+            tex as i32,
         );
 
         let mut should_break = false;

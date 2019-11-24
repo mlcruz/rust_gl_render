@@ -25,6 +25,8 @@ pub struct ObjModel {
     texture_vbo: u32,
     normal_vbo: u32,
     index_len: usize,
+    bbox_min: glm::Vec3,
+    bbox_max: glm::Vec3,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -43,6 +45,8 @@ impl ObjModel {
             model: ID_MATRIX,
             index_len: 0,
             normal_vbo: 0u32,
+            bbox_min: glm::vec3(0.0, 0.0, 0.0),
+            bbox_max: glm::vec3(0.0, 0.0, 0.0),
         };
 
         let mut position_array = Vec::new();
@@ -64,11 +68,21 @@ impl ObjModel {
             for v in 0..mesh.positions.len() / 3 {
                 // Insere uma posição de um vertice
                 // X Y Z W em ordem
+                let x = mesh.positions[3 * v];
+                let y = mesh.positions[3 * v + 1];
+                let z = mesh.positions[3 * v + 2];
 
-                position_array.push(mesh.positions[3 * v]);
-                position_array.push(mesh.positions[3 * v + 1]);
-                position_array.push(mesh.positions[3 * v + 2]);
+                position_array.push(x);
+                position_array.push(y);
+                position_array.push(z);
                 position_array.push(1f32);
+
+                myself.bbox_min.x = glm::min(myself.bbox_min.x, x);
+                myself.bbox_min.y = glm::min(myself.bbox_min.y, y);
+                myself.bbox_min.z = glm::min(myself.bbox_min.z, z);
+                myself.bbox_max.x = glm::max(myself.bbox_max.x, x);
+                myself.bbox_max.y = glm::max(myself.bbox_max.y, y);
+                myself.bbox_max.z = glm::max(myself.bbox_max.z, z);
             }
 
             // Insere texturas
@@ -89,8 +103,6 @@ impl ObjModel {
                     normal_array.push(0f32);
                 }
             } else {
-                println!("Computing normal");
-
                 // Computa normais dos vertices se não existe no obj
                 let num_vertices = mesh.positions.len() / 3;
 
@@ -132,10 +144,6 @@ impl ObjModel {
                 for i in 0..vertex_normals.len() {
                     let mut n = vertex_normals[i] / num_triangles_per_vertex[i] as f32;
                     n = n / norm(n);
-
-                    if i < 9 {
-                        println!("{:?} {:?} {:?} ", n.x, n.y, n.z)
-                    }
 
                     normal_array.push(n.x);
                     normal_array.push(n.y);
@@ -313,6 +321,29 @@ impl Draw for ObjModel {
 
             let model_uniform =
                 gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
+
+            let bbox_min_uniform =
+                gl::GetUniformLocation(*program, CString::new("bbox_min").unwrap().as_ptr());
+            let bbox_max_uniform =
+                gl::GetUniformLocation(*program, CString::new("bbox_max").unwrap().as_ptr());
+
+            // Setamos as variáveis "bbox_min" e "bbox_max" do fragment shader
+            // com os parâmetros da axis-aligned bounding box (AABB) do modelo.
+            gl::Uniform4f(
+                bbox_min_uniform,
+                self.bbox_min.x,
+                self.bbox_min.y,
+                self.bbox_min.z,
+                1.0,
+            );
+
+            gl::Uniform4f(
+                bbox_max_uniform,
+                self.bbox_max.x,
+                self.bbox_max.y,
+                self.bbox_max.z,
+                1.0,
+            );
 
             gl::UniformMatrix4fv(
                 model_uniform,
