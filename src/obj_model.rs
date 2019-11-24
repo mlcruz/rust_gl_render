@@ -1,5 +1,3 @@
-use complex_obj::ComplexObj;
-use draw::Attach;
 use draw::Draw;
 use draw::DrawSelf;
 use gl::types::GLfloat;
@@ -22,11 +20,11 @@ use tobj;
 pub struct ObjModel {
     pub model: GLMatrix,
     pub vao: u32,
+    ebo: u32,
     geometry_vbo: u32,
     texture_vbo: u32,
-    ebo: u32,
-    index_len: usize,
     normal_vbo: u32,
+    index_len: usize,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -276,7 +274,7 @@ impl DrawSelf for ObjModel {
 }
 
 impl Draw for ObjModel {
-    fn draw(&self, program: &u32) {
+    fn draw(&self, program: &u32) -> &Self {
         unsafe {
             gl::UseProgram(*program);
 
@@ -299,18 +297,6 @@ impl Draw for ObjModel {
                 0 as *const i32 as *const c_void,
             );
         }
-    }
-
-    fn draw_with_transform(&self, matrix: GLMatrix, program: &u32) {
-        let new_matrix = matrix.matrix * self.model.matrix;
-        let mut new_me = self.clone();
-        new_me.model.matrix = new_matrix;
-        new_me.draw(program);
-    }
-}
-
-impl<'a> Attach<'a> for ObjModel {
-    fn attach(&'a self, child: &'a dyn Draw) -> ComplexObj {
-        ComplexObj::new(self, vec![child.clone()], self.model)
+        self
     }
 }

@@ -3,8 +3,8 @@ extern crate glm;
 extern crate glutin;
 extern crate tobj;
 mod camera;
+//mod complex_obj;
 mod complex_obj;
-mod cube;
 mod draw;
 mod matrix;
 mod obj_model;
@@ -14,13 +14,13 @@ mod utils;
 mod vertex;
 mod view;
 use camera::Camera;
-use cube::Cube;
-use draw::Attach;
+use complex_obj::ComplexObj;
 use draw::Draw;
-use draw::DrawSelf;
 use glutin::dpi::LogicalSize;
 use matrix::MatrixTransform;
 use obj_model::ObjModel;
+use scene_object::CompositeObj;
+use scene_object::SceneObject;
 use shader_program::Shader;
 use view::View;
 
@@ -66,9 +66,7 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = ObjModel::new("src/cow.obj")
-            .scale(0.5, 0.5, 0.5)
-            .translate(0.5, 0.5, 0.5);
+        let cow = ObjModel::new("src/cow.obj").scale(1.5, 1.5, 1.5);
 
         // Inicializa um coelho
         let bunny = ObjModel::new("src/bunny.obj").scale(0.5, 0.5, 0.5);
@@ -134,9 +132,6 @@ fn main() {
             } else {
                 view.render(&program);
             }
-
-            bunny.draw(&program);
-
             cow.draw(&program);
 
             gl_window.swap_buffers().unwrap();
@@ -147,22 +142,3 @@ fn main() {
         }
     }
 }
-
-// // Inicializa um cubo
-// let cube = Cube::new();
-// let point = Cube::new().scale(0.0, 0.0, 0.0);
-// let mini_cube = cube.scale(0.5, 0.5, 0.5).translate(0.0, 1.0, 0.0);
-// let cow_props = vec![
-//     cube.scale(2.0, 0.05, 0.6).translate(0.0, -0.65, 0.0),
-//     cube.scale(0.60, 0.25, 0.2).translate(-0.2, 0.5, 0.35),
-//     cube.scale(0.60, 0.3, 0.2).translate(-0.2, 0.5, -0.35),
-// ];
-// let mut complex_props = mini_cube.attach(&point);
-// let props =
-//     complex_props.add_children(cow_props.iter().map(|item| item as &dyn Draw).collect());
-
-// let mut complex_cow = cow.attach(&point);
-// let bad_cow = complex_cow
-//     .add_children(cow_props.iter().map(|item| item as &dyn Draw).collect())
-//     .add_child(props);
-//&badder_cow.add_children(&cube);
