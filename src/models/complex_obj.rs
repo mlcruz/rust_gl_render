@@ -1,14 +1,8 @@
-// use draw::Attach;
-// use draw::Draw;
-// use matrix::identity_matrix;
-// use matrix::GLMatrix;
 use super::draw::Draw;
 use super::matrix::GLMatrix;
 use super::matrix::MatrixTransform;
 use super::obj_model::ObjModel;
 use super::scene_object::SceneObject;
-
-// static ID_MATRIX: GLMatrix = identity_matrix();
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]

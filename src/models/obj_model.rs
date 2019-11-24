@@ -1,5 +1,4 @@
 use super::draw::Draw;
-use super::draw::DrawSelf;
 use super::matrix::compute_normal;
 use super::matrix::identity_matrix;
 use super::matrix::norm;
@@ -8,6 +7,7 @@ use super::matrix::MatrixTransform;
 use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
 use gl::types::GLuint;
+use models::load_texture::load_texture;
 use std::ffi::c_void;
 use std::ffi::CString;
 use std::mem;
@@ -27,6 +27,7 @@ pub struct ObjModel {
     index_len: usize,
     bbox_min: glm::Vec3,
     bbox_max: glm::Vec3,
+    texture_override: u32,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -39,14 +40,15 @@ impl ObjModel {
 
         let mut myself = ObjModel {
             vao: 0u32,
+            ebo: 0u32,
             geometry_vbo: 0u32,
             texture_vbo: 0u32,
-            ebo: 0u32,
+            normal_vbo: 0u32,
             model: ID_MATRIX,
             index_len: 0,
-            normal_vbo: 0u32,
             bbox_min: glm::vec3(0.0, 0.0, 0.0),
             bbox_max: glm::vec3(0.0, 0.0, 0.0),
+            texture_override: 0,
         };
 
         let mut position_array = Vec::new();
@@ -263,6 +265,21 @@ impl ObjModel {
         }
         myself
     }
+
+    pub fn override_texture(&self, texture: &u32) -> Self {
+        Self {
+            texture_override: *texture,
+            ..*self
+        }
+    }
+
+    pub unsafe fn load_texture(&self, path: &str) -> Self {
+        let (tex, _) = load_texture(path);
+        Self {
+            texture_override: tex,
+            ..*self
+        }
+    }
 }
 
 impl MatrixTransform for ObjModel {
@@ -284,34 +301,6 @@ impl Clone for ObjModel {
     }
 }
 
-impl DrawSelf for ObjModel {
-    fn draw_self(&self, program: &u32) -> &Self {
-        unsafe {
-            gl::UseProgram(*program);
-
-            gl::BindVertexArray(self.vao);
-
-            let model_uniform =
-                gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
-
-            gl::UniformMatrix4fv(
-                model_uniform,
-                1,
-                gl::FALSE,
-                mem::transmute(&self.model.matrix[0]),
-            );
-
-            gl::DrawElements(
-                gl::TRIANGLES,
-                self.index_len as i32,
-                gl::UNSIGNED_INT,
-                0 as *const i32 as *const c_void,
-            );
-        }
-        self
-    }
-}
-
 impl Draw for ObjModel {
     fn draw(&self, program: &u32) -> &Self {
         unsafe {
@@ -319,11 +308,18 @@ impl Draw for ObjModel {
 
             gl::BindVertexArray(self.vao);
 
+            // Sobreescreve texture carregada pelo objeto por alguma outra
+            gl::Uniform1i(
+                gl::GetUniformLocation(*program, CString::new("texture_overide").unwrap().as_ptr()),
+                self.texture_override as i32,
+            );
+
             let model_uniform =
                 gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
 
             let bbox_min_uniform =
                 gl::GetUniformLocation(*program, CString::new("bbox_min").unwrap().as_ptr());
+
             let bbox_max_uniform =
                 gl::GetUniformLocation(*program, CString::new("bbox_max").unwrap().as_ptr());
 

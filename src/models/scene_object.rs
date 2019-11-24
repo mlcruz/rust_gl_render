@@ -4,6 +4,7 @@ use super::draw::Draw;
 use super::matrix::GLMatrix;
 use super::matrix::MatrixTransform;
 use super::obj_model::ObjModel;
+use models::load_texture::load_texture;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
@@ -74,6 +75,25 @@ impl SceneObject {
                 SceneObject::ComplexObj(cplx_model.add_children(child))
             }
         }
+    }
+    #[allow(dead_code)]
+    pub fn override_texture(&self, texture: &u32) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.override_texture(texture)),
+            SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
+                root: obj.root.override_texture(texture),
+                children: obj.children.clone(),
+            }),
+            SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
+                root: obj.root.override_texture(texture),
+                children: obj.children.clone(),
+            }),
+        }
+    }
+
+    pub unsafe fn load_texture(&self, path: &str) -> Self {
+        let (tex, _) = load_texture(path);
+        self.override_texture(&tex)
     }
 }
 

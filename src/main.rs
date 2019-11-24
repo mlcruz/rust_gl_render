@@ -9,11 +9,9 @@ mod shader;
 mod view;
 use glutin::dpi::LogicalSize;
 use models::draw::Draw;
-use models::load_texture::load_texture;
 use models::matrix::MatrixTransform;
 use models::scene_object::SceneObject;
 use shader::shader_program::Shader;
-use std::ffi::CString;
 use view::camera::Camera;
 use view::View;
 
@@ -63,15 +61,15 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = SceneObject::new("src/data/objs/cow.obj").scale(0.8, 0.8, 0.8);
+        let cow = SceneObject::new("src/data/objs/cow.obj").scale(0.5, 0.5, 0.5);
 
-        let (tex, samp) = load_texture("src/data/textures/tc-earth_daymap_surface.jpg");
-        println!("{:?} {:?}", tex, samp);
+        let planet_cow = cow
+            .load_texture("src/data/textures/tc-earth_nightmap_citylights.gif")
+            .translate(0.5, 0.5, 0.5);
 
-        gl::Uniform1i(
-            gl::GetUniformLocation(program, CString::new("TextureImage0").unwrap().as_ptr()),
-            tex as i32,
-        );
+        let night_cow = cow
+            .load_texture("src/data/textures/tc-earth_daymap_surface.jpg")
+            .translate(-0.5, -0.5, -0.5);
 
         let mut should_break = false;
         loop {
@@ -136,6 +134,9 @@ fn main() {
             }
 
             cow.draw(&program);
+            planet_cow.draw(&program);
+            night_cow.draw(&program);
+
             gl_window.swap_buffers().unwrap();
 
             if should_break {

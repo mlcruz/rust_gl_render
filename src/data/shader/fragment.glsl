@@ -15,7 +15,7 @@ uniform mat4 view;
 uniform mat4 projection;
 
 // Variáveis para acesso das imagens de textura
-uniform sampler2D TextureImage0;
+uniform sampler2D texture_overide;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
 uniform vec4 bbox_min;
@@ -68,7 +68,7 @@ void main()
     U=(position_model.x-minx)/(maxx-minx);
     V=(position_model.y-miny)/(maxy-miny);
     
-    vec3 Kd0=texture(TextureImage0,vec2(U,V)).rgb;
+    vec3 Kd0=texture(texture_overide,vec2(U,V)).rgb;
     
     // Vetor especular
     vec3 Ks=vec3(.8,.8,.8);
