@@ -69,6 +69,59 @@ impl Camera {
             .update(self.theta, self.phi, self.distance + offset);
         new
     }
+
+    pub fn with_origin(&self, origin: &glm::Vec4) -> Self {
+        Self {
+            camera_origin: *origin,
+            ..*self
+        }
+    }
+
+    pub fn with_theta(&self, theta: &f32) -> Self {
+        Self {
+            theta: *theta,
+            ..*self
+        }
+    }
+
+    pub fn with_phi(&self, phi: &f32) -> Self {
+        Self { phi: *phi, ..*self }
+    }
+
+    pub fn with_distance(&self, distance: &f32) -> Self {
+        Self {
+            distance: *distance,
+            ..*self
+        }
+    }
+
+    pub fn with_position(&self, position: &glm::Vec4) -> Self {
+        Self {
+            position: *position,
+            ..*self
+        }
+    }
+
+    pub fn with_lookat(&self, lookat: &glm::Vec4) -> Self {
+        Self {
+            lookat: *lookat,
+            ..*self
+        }
+    }
+
+    pub fn with_view_vector(&self, view_vector: &glm::Vec4) -> Self {
+        Self {
+            view_vector: *view_vector,
+            ..*self
+        }
+    }
+
+    pub fn with_up_vector(&self, up_vector: &glm::Vec4) -> Self {
+        Self {
+            up_vector: *up_vector,
+            ..*self
+        }
+    }
 }
 
 impl Clone for Camera {

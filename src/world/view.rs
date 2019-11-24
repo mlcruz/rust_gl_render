@@ -117,12 +117,14 @@ impl View {
         camera: &Camera,
         projection_matrix: &Matrix4<f32>,
         view_matrix: &Matrix4<f32>,
+        lighting: &Lighting,
     ) -> Self {
         self.nearplane = nearplane;
         self.farplane = farplane;
         self.camera = camera.clone();
         self.projection_matrix = projection_matrix.clone();
         self.view_matrix = view_matrix.clone();
+        self.lighting = lighting.clone();
         *self
     }
 
@@ -138,6 +140,7 @@ impl View {
             &self.camera,
             &ortographic_matrix(l, r, b, t, self.nearplane, self.farplane).matrix,
             &self.view_matrix,
+            &self.lighting,
         )
     }
 
@@ -148,7 +151,74 @@ impl View {
             &self.camera,
             &perpective_matrix(FIELD_OF_VIEW, G_SCREEN_RATIO, self.nearplane, self.farplane).matrix,
             &self.view_matrix,
+            &self.lighting,
         )
+    }
+
+    pub fn with_ambient_lighting(&self, ambient: &glm::Vec3) -> Self {
+        let new_lighting = Lighting {
+            global: self.lighting.global,
+            ambient: *ambient,
+        };
+        Self {
+            lighting: new_lighting,
+            ..*self
+        }
+    }
+
+    pub fn with_global_lighting(&self, global: &glm::Vec3) -> Self {
+        let new_lighting = Lighting {
+            global: *global,
+            ambient: self.lighting.ambient,
+        };
+        Self {
+            lighting: new_lighting,
+            ..*self
+        }
+    }
+
+    pub fn with_camera(&self, camera: &Camera) -> Self {
+        Self {
+            camera: *camera,
+            view_matrix: camera_view_matrix(camera.position, camera.view_vector, camera.up_vector)
+                .matrix,
+            ..*self
+        }
+    }
+
+    pub fn with_lighting(&self, lighting: &Lighting) -> Self {
+        Self {
+            lighting: *lighting,
+            ..*self
+        }
+    }
+
+    pub fn with_near_plane(&self, nearplane: &f32) -> Self {
+        Self {
+            nearplane: *nearplane,
+            projection_matrix: perpective_matrix(
+                FIELD_OF_VIEW,
+                G_SCREEN_RATIO,
+                *nearplane,
+                self.farplane,
+            )
+            .matrix,
+            ..*self
+        }
+    }
+
+    pub fn with_far_plane(&self, farplane: &f32) -> Self {
+        Self {
+            farplane: *farplane,
+            projection_matrix: perpective_matrix(
+                FIELD_OF_VIEW,
+                G_SCREEN_RATIO,
+                self.nearplane,
+                *farplane,
+            )
+            .matrix,
+            ..*self
+        }
     }
 }
 
