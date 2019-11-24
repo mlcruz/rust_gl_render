@@ -51,6 +51,11 @@ void main()
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v=normalize(camera_position-p);
     
+    // Vetor que define o sentido da reflexão especular ideal.
+    vec4 r=-l+2*n*(dot(n,l));
+    
+    float q=32.;
+    
     float minx=bbox_min.x;
     float maxx=bbox_max.x;
     
@@ -65,9 +70,25 @@ void main()
     
     vec3 Kd0=texture(TextureImage0,vec2(U,V)).rgb;
     
-    float lambert=max(0,dot(n,l));
+    // Vetor especular
+    vec3 Ks=vec3(.8,.8,.8);
     
-    color=Kd0*(lambert+.01);
+    // Espectro da fonte de iluminação
+    vec3 I=vec3(1.,1.,1.);
+    
+    // Espectro da luz ambiente
+    vec3 Ia=vec3(.9412,.7255,.7255);
+    
+    // Termo difuso utilizando a lei dos cossenos de Lambert
+    vec3 lambert_diffuse_term=Kd0*I*max(0,dot(n,l));
+    
+    // Termo ambiente
+    vec3 ambient_term=Kd0*Ia;
+    
+    // Termo especular utilizando o modelo de iluminação de Phong
+    vec3 phong_specular_term=Ks*I*pow(max(0,dot(r,v)),q);
+    
+    color=lambert_diffuse_term+ambient_term+phong_specular_term;
     
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
