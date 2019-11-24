@@ -68,9 +68,9 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = SceneObject::new("src/cow.obj").scale(0.8, 0.8, 0.8);
+        let cow = SceneObject::new("src/data/cow.obj").scale(0.8, 0.8, 0.8);
 
-        let (tex, samp) = load_texture("src/shader/data/tc-earth_daymap_surface.jpg");
+        let (tex, samp) = load_texture("src/data/tc-earth_daymap_surface.jpg");
         println!("{:?} {:?}", tex, samp);
 
         gl::Uniform1i(
