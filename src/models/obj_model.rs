@@ -29,6 +29,7 @@ pub struct ObjModel {
     bbox_max: glm::Vec3,
     texture_override: u32,
     specular_reflectance_overide: glm::Vec3,
+    phong_q_overide: f32,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -51,6 +52,7 @@ impl ObjModel {
             bbox_max: glm::vec3(0.0, 0.0, 0.0),
             texture_override: 0,
             specular_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
+            phong_q_overide: 1.0,
         };
 
         let mut position_array = Vec::new();
@@ -290,12 +292,12 @@ impl ObjModel {
         }
     }
 
-    // pub fn with_ambient_lighting(&self, ambient_lighting: &glm::Vec3) -> Self {
-    //     Self {
-    //         ambient_lighting_overide: *ambient_lighting,
-    //         ..*self
-    //     }
-    // }
+    pub fn with_specular_phong_q(&self, phong_q: &f32) -> Self {
+        Self {
+            phong_q_overide: *phong_q,
+            ..*self
+        }
+    }
 }
 
 impl MatrixTransform for ObjModel {
@@ -344,6 +346,9 @@ impl Draw for ObjModel {
                 CString::new("specular_reflectance").unwrap().as_ptr(),
             );
 
+            let phong_q_uniform =
+                gl::GetUniformLocation(*program, CString::new("phong_q").unwrap().as_ptr());
+
             // Setamos as variáveis "bbox_min" e "bbox_max" do fragment shader
             // com os parâmetros da axis-aligned bounding box (AABB) do modelo.
             gl::Uniform4f(
@@ -375,6 +380,7 @@ impl Draw for ObjModel {
                 gl::FALSE,
                 mem::transmute(&self.model.matrix[0]),
             );
+            gl::Uniform1f(phong_q_uniform, self.phong_q_overide);
 
             gl::DrawElements(
                 gl::TRIANGLES,

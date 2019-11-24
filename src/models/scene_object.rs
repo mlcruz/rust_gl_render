@@ -107,6 +107,19 @@ impl SceneObject {
         }
     }
 
+    pub fn with_specular_phong_q(&self, phong_q: &f32) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.with_specular_phong_q(phong_q)),
+            SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
+                root: obj.root.with_specular_phong_q(phong_q),
+                children: obj.children.clone(),
+            }),
+            SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
+                root: obj.root.with_specular_phong_q(phong_q),
+                children: obj.children.clone(),
+            }),
+        }
+    }
     pub unsafe fn load_texture(&self, path: &str) -> Self {
         let (tex, _) = load_texture(path);
         self.with_texture(&tex)

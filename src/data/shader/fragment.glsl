@@ -31,6 +31,7 @@ uniform vec3 specular_reflectance;
 
 uniform vec3 ambient_lighting;
 
+uniform float phong_q;
 out vec3 color;
 
 // Constantes
@@ -63,8 +64,6 @@ void main()
     // Vetor que define o sentido da reflexão especular ideal.
     vec4 r=-l+2*n*(dot(n,l));
     
-    float q=32.;
-    
     float minx=bbox_min.x;
     float maxx=bbox_max.x;
     
@@ -79,9 +78,6 @@ void main()
     
     vec3 Kd0=texture(texture_overide,vec2(U,V)).rgb;
     
-    // Espectro da luz ambiente
-    //vec3 Ia=vec3(.9412,.7255,.7255);
-    
     // Termo difuso utilizando a lei dos cossenos de Lambert
     vec3 lambert_diffuse_term=Kd0*global_lighting*max(0,dot(n,l));
     
@@ -89,7 +85,7 @@ void main()
     vec3 ambient_term=Kd0*ambient_lighting;
     
     // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=specular_reflectance*global_lighting*pow(max(0,dot(r,v)),q);
+    vec3 phong_specular_term=specular_reflectance*global_lighting*pow(max(0,dot(r,v)),phong_q);
     
     color=lambert_diffuse_term+ambient_term+phong_specular_term;
     
