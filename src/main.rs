@@ -3,27 +3,18 @@ extern crate glm;
 extern crate glutin;
 extern crate image;
 extern crate tobj;
-mod camera;
-//mod complex_obj;
-mod complex_obj;
-mod composite_obj;
-mod draw;
-mod load_texture;
-mod matrix;
-mod obj_model;
-mod scene_object;
-mod shader_program;
-mod utils;
-mod vertex;
+
+mod models;
+mod shader;
 mod view;
-use camera::Camera;
-use draw::Draw;
 use glutin::dpi::LogicalSize;
-use load_texture::load_texture;
-use matrix::MatrixTransform;
-use scene_object::SceneObject;
-use shader_program::Shader;
+use models::draw::Draw;
+use models::load_texture::load_texture;
+use models::matrix::MatrixTransform;
+use models::scene_object::SceneObject;
+use shader::shader_program::Shader;
 use std::ffi::CString;
+use view::camera::Camera;
 use view::View;
 
 fn main() {
@@ -53,7 +44,11 @@ fn main() {
     gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
 
     // Compila e linka shaders
-    let program = Shader::new("src/shader/vertex.glsl", "src/shader/fragment.glsl").program;
+    let program = Shader::new(
+        "src/data/shader/vertex.glsl",
+        "src/data/shader/fragment.glsl",
+    )
+    .program;
 
     // Inicializa camera
     let mut camera = Camera::new(g_camera_theta, g_camera_phi, g_camera_distance);
@@ -68,9 +63,9 @@ fn main() {
         gl::Enable(gl::DEPTH_TEST);
 
         // Inicializa uma vaca
-        let cow = SceneObject::new("src/data/cow.obj").scale(0.8, 0.8, 0.8);
+        let cow = SceneObject::new("src/data/objs/cow.obj").scale(0.8, 0.8, 0.8);
 
-        let (tex, samp) = load_texture("src/data/tc-earth_daymap_surface.jpg");
+        let (tex, samp) = load_texture("src/data/textures/tc-earth_daymap_surface.jpg");
         println!("{:?} {:?}", tex, samp);
 
         gl::Uniform1i(

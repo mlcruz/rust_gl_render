@@ -1,8 +1,8 @@
+use shader::compile_shader::compile_shader;
+use shader::link_program::link_program;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use utils::compile_shader;
-use utils::link_program;
 
 #[derive(Debug)]
 pub struct Shader {

@@ -1,9 +1,9 @@
-use complex_obj::ComplexObj;
-use composite_obj::CompositeObj;
-use draw::Draw;
-use matrix::GLMatrix;
-use matrix::MatrixTransform;
-use obj_model::ObjModel;
+use super::complex_obj::ComplexObj;
+use super::composite_obj::CompositeObj;
+use super::draw::Draw;
+use super::matrix::GLMatrix;
+use super::matrix::MatrixTransform;
+use super::obj_model::ObjModel;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
