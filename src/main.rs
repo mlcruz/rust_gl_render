@@ -65,7 +65,7 @@ fn main() {
 
         let blinking_cow = cow
             .load_texture("src/data/textures/tc-earth_nightmap_citylights.gif")
-            .with_specular_reflection(&glm::vec3(1.0, 1.0, 1.0))
+            .with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0))
             .translate(0.5, 0.5, 0.5);
 
         let night_cow = cow

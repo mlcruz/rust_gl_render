@@ -91,17 +91,17 @@ impl SceneObject {
         }
     }
 
-    pub fn with_specular_reflection(&self, specular_reflection: &glm::Vec3) -> Self {
+    pub fn with_specular_reflectance(&self, specular_reflectance: &glm::Vec3) -> Self {
         match self {
             SceneObject::ObjModel(obj) => {
-                SceneObject::ObjModel(obj.with_specular_reflection(specular_reflection))
+                SceneObject::ObjModel(obj.with_specular_reflectance(specular_reflectance))
             }
             SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
-                root: obj.root.with_specular_reflection(specular_reflection),
+                root: obj.root.with_specular_reflectance(specular_reflectance),
                 children: obj.children.clone(),
             }),
             SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
-                root: obj.root.with_specular_reflection(specular_reflection),
+                root: obj.root.with_specular_reflectance(specular_reflectance),
                 children: obj.children.clone(),
             }),
         }

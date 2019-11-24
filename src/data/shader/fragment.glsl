@@ -27,7 +27,9 @@ uniform vec3 global_lighting;
 // Parametros de origem da camera
 uniform vec4 camera_origin;
 
-uniform vec3 specular_reflection;
+uniform vec3 specular_reflectance;
+
+uniform vec3 ambient_lighting;
 
 out vec3 color;
 
@@ -78,16 +80,16 @@ void main()
     vec3 Kd0=texture(texture_overide,vec2(U,V)).rgb;
     
     // Espectro da luz ambiente
-    vec3 Ia=vec3(.9412,.7255,.7255);
+    //vec3 Ia=vec3(.9412,.7255,.7255);
     
     // Termo difuso utilizando a lei dos cossenos de Lambert
     vec3 lambert_diffuse_term=Kd0*global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
-    vec3 ambient_term=Kd0*Ia;
+    vec3 ambient_term=Kd0*ambient_lighting;
     
     // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=specular_reflection*global_lighting*pow(max(0,dot(r,v)),q);
+    vec3 phong_specular_term=specular_reflectance*global_lighting*pow(max(0,dot(r,v)),q);
     
     color=lambert_diffuse_term+ambient_term+phong_specular_term;
     

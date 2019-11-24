@@ -35,7 +35,10 @@ impl View {
             .matrix,
             view_matrix: camera_view_matrix(camera.position, camera.view_vector, camera.up_vector)
                 .matrix,
-            lighting: Lighting::new(&glm::vec3(1.0, 1.0, 1.0)),
+            lighting: Lighting::new(
+                &glm::vec3(1.0, 1.0, 1.0),
+                &glm::vec3(0.9412, 0.7255, 0.7255),
+            ),
         }
     }
 
@@ -51,6 +54,18 @@ impl View {
 
             let camera_origin_uniform =
                 gl::GetUniformLocation(*program, CString::new("camera_origin").unwrap().as_ptr());
+
+            let ambient_lighting_uniform = gl::GetUniformLocation(
+                *program,
+                CString::new("ambient_lighting").unwrap().as_ptr(),
+            );
+
+            gl::Uniform3f(
+                ambient_lighting_uniform,
+                self.lighting.ambient.x,
+                self.lighting.ambient.y,
+                self.lighting.ambient.z,
+            );
 
             // Enviamos as matrizes "view" e "projection" para a placa de vídeo
             gl::UniformMatrix4fv(
