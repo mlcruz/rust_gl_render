@@ -48,6 +48,7 @@ impl ObjModel {
         let mut position_array = Vec::new();
         let mut normal_array = Vec::new();
         let mut index_array = Vec::new();
+        let mut texture_array = Vec::new();
 
         // Carrega dados de posições e indices para em vetores contínuos
         // 3 valores no vetor de indices representam os vertices de um indice
@@ -55,11 +56,9 @@ impl ObjModel {
         for (_index, model) in models.iter().enumerate() {
             let mesh = &model.mesh;
 
-            for f in 0..mesh.indices.len() / 3 {
+            for f in 0..mesh.indices.len() {
                 // Vertices X Y Z de um triangulo
-                index_array.push(mesh.indices[3 * f]);
-                index_array.push(mesh.indices[3 * f + 1]);
-                index_array.push(mesh.indices[3 * f + 2]);
+                index_array.push(mesh.indices[f]);
             }
 
             for v in 0..mesh.positions.len() / 3 {
@@ -69,8 +68,14 @@ impl ObjModel {
                 position_array.push(mesh.positions[3 * v]);
                 position_array.push(mesh.positions[3 * v + 1]);
                 position_array.push(mesh.positions[3 * v + 2]);
-
                 position_array.push(1f32);
+            }
+
+            // Insere texturas
+            if mesh.texcoords.len() > 0 {
+                for v in 0..mesh.texcoords.len() {
+                    texture_array.push(mesh.texcoords[v]);
+                }
             }
 
             // Verifica se existem normais no obj, e insere
@@ -197,6 +202,32 @@ impl ObjModel {
 
                 // Location das normais no shader
                 let location: GLuint = 1;
+
+                gl::VertexAttribPointer(location, 4, gl::FLOAT, gl::FALSE, 0, null());
+                gl::EnableVertexAttribArray(location);
+                gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            }
+
+            // Aloca texturas
+            if texture_array.len() > 0 {
+                gl::GenBuffers(1, &mut myself.texture_vbo);
+                gl::BindBuffer(gl::ARRAY_BUFFER, myself.texture_vbo);
+
+                gl::BufferData(
+                    gl::ARRAY_BUFFER,
+                    (texture_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                    null(),
+                    gl::STATIC_DRAW,
+                );
+                gl::BufferSubData(
+                    gl::ARRAY_BUFFER,
+                    0,
+                    (texture_array.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                    texture_array.as_ptr() as *const c_void,
+                );
+
+                // Location das texturas no shader
+                let location: GLuint = 2;
 
                 gl::VertexAttribPointer(location, 4, gl::FLOAT, gl::FALSE, 0, null());
                 gl::EnableVertexAttribArray(location);

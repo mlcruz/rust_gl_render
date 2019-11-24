@@ -1,12 +1,14 @@
 extern crate gl;
 extern crate glm;
 extern crate glutin;
+extern crate image;
 extern crate tobj;
 mod camera;
 //mod complex_obj;
 mod complex_obj;
 mod composite_obj;
 mod draw;
+mod load_texture;
 mod matrix;
 mod obj_model;
 mod scene_object;
@@ -17,9 +19,11 @@ mod view;
 use camera::Camera;
 use draw::Draw;
 use glutin::dpi::LogicalSize;
+use load_texture::load_texture;
 use matrix::MatrixTransform;
 use scene_object::SceneObject;
 use shader_program::Shader;
+use std::ffi::CString;
 use view::View;
 
 fn main() {
@@ -66,7 +70,12 @@ fn main() {
         // Inicializa uma vaca
         let cow = SceneObject::new("src/cow.obj").scale(0.8, 0.8, 0.8);
 
-        // Inicializa um coelho
+        let (tex, samp) = load_texture("src/shader/data/tc-earth_daymap_surface.jpg");
+
+        gl::Uniform1i(
+            gl::GetUniformLocation(program, CString::new("TextureImage0").unwrap().as_ptr()),
+            0,
+        );
 
         let mut should_break = false;
         loop {

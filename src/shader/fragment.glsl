@@ -8,7 +8,14 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+// Variáveis para acesso das imagens de textura
+uniform sampler2D TextureImage0;
+
 out vec3 color;
+
+// Coordenadas de textura U e V
+float U=0.;
+float V=0.;
 
 void main()
 {
@@ -64,6 +71,8 @@ void main()
     
     // Termo especular utilizando o modelo de iluminação de Phong
     vec3 phong_specular_term=Ks*I*pow(max(0,dot(r,v)),q);// PREENCH AQUI o termo especular de Phong
+    
+    vec3 Kd0=texture(TextureImage0,vec2(U,V)).rgb;
     
     color=lambert_diffuse_term+ambient_term+phong_specular_term;
     

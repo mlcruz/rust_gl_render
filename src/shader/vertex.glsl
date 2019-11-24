@@ -9,7 +9,10 @@ uniform mat4 view;
 uniform mat4 projection;
 
 out vec4 position_world;
+out vec4 position_model;
+
 out vec4 normal;
+out vec2 texcoords;
 
 void main()
 {
@@ -18,8 +21,12 @@ void main()
     
     position_world=model*model_coefficients;
     
+    position_model=model_coefficients;
+    
     normal=inverse(transpose(model))*normal_coefficients;
     normal.w=0.;
+    
+    texcoords=texture_coefficients;
     
 }
 
