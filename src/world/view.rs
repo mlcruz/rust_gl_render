@@ -4,6 +4,7 @@ use models::matrix::ortographic_matrix;
 use models::matrix::perpective_matrix;
 use std::mem;
 use world::camera::Camera;
+use world::lighting::Lighting;
 static FIELD_OF_VIEW: f32 = 3.141592 / 3.0;
 static G_SCREEN_RATIO: f32 = 1.0;
 use std::ffi::CString;
@@ -15,6 +16,7 @@ pub struct View {
     pub projection_matrix: Matrix4<f32>,
     pub view_matrix: Matrix4<f32>,
     camera: Camera,
+    pub lighting: Lighting,
 }
 
 #[allow(dead_code)]
@@ -33,6 +35,7 @@ impl View {
             .matrix,
             view_matrix: camera_view_matrix(camera.position, camera.view_vector, camera.up_vector)
                 .matrix,
+            lighting: Lighting::new(&glm::vec3(1.0, 1.0, 1.0)),
         }
     }
 
@@ -42,6 +45,12 @@ impl View {
                 gl::GetUniformLocation(*program, CString::new("view").unwrap().as_ptr());
             let projection_uniform =
                 gl::GetUniformLocation(*program, CString::new("projection").unwrap().as_ptr());
+
+            let global_lighting_uniform =
+                gl::GetUniformLocation(*program, CString::new("global_lighting").unwrap().as_ptr());
+
+            let camera_origin_uniform =
+                gl::GetUniformLocation(*program, CString::new("camera_origin").unwrap().as_ptr());
 
             // Enviamos as matrizes "view" e "projection" para a placa de vídeo
             gl::UniformMatrix4fv(
@@ -56,6 +65,21 @@ impl View {
                 gl::FALSE,
                 mem::transmute(&self.projection_matrix[0]),
             );
+
+            gl::Uniform3f(
+                global_lighting_uniform,
+                self.lighting.global.x,
+                self.lighting.global.y,
+                self.lighting.global.z,
+            );
+
+            gl::Uniform4f(
+                camera_origin_uniform,
+                self.camera.camera_origin.x,
+                self.camera.camera_origin.y,
+                self.camera.camera_origin.z,
+                self.camera.camera_origin.w,
+            );
         }
         *self
     }
@@ -67,6 +91,10 @@ impl View {
         *self
     }
 
+    pub fn update_lighting(&mut self, lighting: &Lighting) -> Self {
+        self.lighting = *lighting;
+        *self
+    }
     pub fn update(
         &mut self,
         nearplane: f32,

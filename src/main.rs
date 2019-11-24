@@ -63,8 +63,9 @@ fn main() {
         // Inicializa uma vaca
         let cow = SceneObject::new("src/data/objs/cow.obj").scale(0.5, 0.5, 0.5);
 
-        let planet_cow = cow
+        let blinking_cow = cow
             .load_texture("src/data/textures/tc-earth_nightmap_citylights.gif")
+            .with_specular_reflection(&glm::vec3(1.0, 1.0, 1.0))
             .translate(0.5, 0.5, 0.5);
 
         let night_cow = cow
@@ -134,7 +135,7 @@ fn main() {
             }
 
             cow.draw(&program);
-            planet_cow.draw(&program);
+            blinking_cow.draw(&program);
             night_cow.draw(&program);
 
             gl_window.swap_buffers().unwrap();

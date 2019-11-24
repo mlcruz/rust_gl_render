@@ -28,6 +28,7 @@ pub struct ObjModel {
     bbox_min: glm::Vec3,
     bbox_max: glm::Vec3,
     texture_override: u32,
+    specular_reflection_overide: glm::Vec3,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -49,6 +50,7 @@ impl ObjModel {
             bbox_min: glm::vec3(0.0, 0.0, 0.0),
             bbox_max: glm::vec3(0.0, 0.0, 0.0),
             texture_override: 0,
+            specular_reflection_overide: glm::vec3(0.0, 0.0, 0.0),
         };
 
         let mut position_array = Vec::new();
@@ -266,7 +268,7 @@ impl ObjModel {
         myself
     }
 
-    pub fn override_texture(&self, texture: &u32) -> Self {
+    pub fn with_texture(&self, texture: &u32) -> Self {
         Self {
             texture_override: *texture,
             ..*self
@@ -277,6 +279,13 @@ impl ObjModel {
         let (tex, _) = load_texture(path);
         Self {
             texture_override: tex,
+            ..*self
+        }
+    }
+
+    pub fn with_specular_reflection(&self, specular_reflection: &glm::Vec3) -> Self {
+        Self {
+            specular_reflection_overide: *specular_reflection,
             ..*self
         }
     }
@@ -323,6 +332,11 @@ impl Draw for ObjModel {
             let bbox_max_uniform =
                 gl::GetUniformLocation(*program, CString::new("bbox_max").unwrap().as_ptr());
 
+            let specular_reflection_uniform = gl::GetUniformLocation(
+                *program,
+                CString::new("specular_reflection").unwrap().as_ptr(),
+            );
+
             // Setamos as variáveis "bbox_min" e "bbox_max" do fragment shader
             // com os parâmetros da axis-aligned bounding box (AABB) do modelo.
             gl::Uniform4f(
@@ -339,6 +353,13 @@ impl Draw for ObjModel {
                 self.bbox_max.y,
                 self.bbox_max.z,
                 1.0,
+            );
+
+            gl::Uniform3f(
+                specular_reflection_uniform,
+                self.specular_reflection_overide.x,
+                self.specular_reflection_overide.y,
+                self.specular_reflection_overide.z,
             );
 
             gl::UniformMatrix4fv(

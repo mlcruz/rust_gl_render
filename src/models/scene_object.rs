@@ -77,15 +77,31 @@ impl SceneObject {
         }
     }
     #[allow(dead_code)]
-    pub fn override_texture(&self, texture: &u32) -> Self {
+    pub fn with_texture(&self, texture: &u32) -> Self {
         match self {
-            SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.override_texture(texture)),
+            SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.with_texture(texture)),
             SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
-                root: obj.root.override_texture(texture),
+                root: obj.root.with_texture(texture),
                 children: obj.children.clone(),
             }),
             SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
-                root: obj.root.override_texture(texture),
+                root: obj.root.with_texture(texture),
+                children: obj.children.clone(),
+            }),
+        }
+    }
+
+    pub fn with_specular_reflection(&self, specular_reflection: &glm::Vec3) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => {
+                SceneObject::ObjModel(obj.with_specular_reflection(specular_reflection))
+            }
+            SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
+                root: obj.root.with_specular_reflection(specular_reflection),
+                children: obj.children.clone(),
+            }),
+            SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
+                root: obj.root.with_specular_reflection(specular_reflection),
                 children: obj.children.clone(),
             }),
         }
@@ -93,7 +109,7 @@ impl SceneObject {
 
     pub unsafe fn load_texture(&self, path: &str) -> Self {
         let (tex, _) = load_texture(path);
-        self.override_texture(&tex)
+        self.with_texture(&tex)
     }
 }
 

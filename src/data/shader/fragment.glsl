@@ -21,6 +21,14 @@ uniform sampler2D texture_overide;
 uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
+// Parametros de iluminação global
+uniform vec3 global_lighting;
+
+// Parametros de origem da camera
+uniform vec4 camera_origin;
+
+uniform vec3 specular_reflection;
+
 out vec3 color;
 
 // Constantes
@@ -36,8 +44,7 @@ void main()
     
     // Obtemos a posição da câmera utilizando a inversa da matriz que define o
     // sistema de coordenadas da câmera.
-    vec4 origin=vec4(0.,0.,0.,1.);
-    vec4 camera_position=inverse(view)*origin;
+    vec4 camera_position=inverse(view)*camera_origin;
     
     vec4 p=position_world;
     
@@ -70,23 +77,17 @@ void main()
     
     vec3 Kd0=texture(texture_overide,vec2(U,V)).rgb;
     
-    // Vetor especular
-    vec3 Ks=vec3(.8,.8,.8);
-    
-    // Espectro da fonte de iluminação
-    vec3 I=vec3(1.,1.,1.);
-    
     // Espectro da luz ambiente
     vec3 Ia=vec3(.9412,.7255,.7255);
     
     // Termo difuso utilizando a lei dos cossenos de Lambert
-    vec3 lambert_diffuse_term=Kd0*I*max(0,dot(n,l));
+    vec3 lambert_diffuse_term=Kd0*global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
     vec3 ambient_term=Kd0*Ia;
     
     // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=Ks*I*pow(max(0,dot(r,v)),q);
+    vec3 phong_specular_term=specular_reflection*global_lighting*pow(max(0,dot(r,v)),q);
     
     color=lambert_diffuse_term+ambient_term+phong_specular_term;
     

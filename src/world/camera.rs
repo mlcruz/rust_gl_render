@@ -16,6 +16,7 @@ pub struct Camera {
     pub lookat: glm::Vector4<f32>, // Ponto "l", para onde a câmera (look-at) estará sempre olhando
     pub view_vector: glm::Vector4<f32>, // Vetor "view", sentido para onde a câmera está virada
     pub up_vector: glm::Vector4<f32>, // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+    pub camera_origin: glm::Vec4,
 }
 
 #[allow(dead_code)]
@@ -37,7 +38,8 @@ impl Camera {
             position,
             lookat,
             view_vector: lookat - position, // Vetor "view", sentido para onde a câmera está virada
-            up_vector: glm::vec4(0.0, 1.0, 0.0, 0.0), // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+            up_vector: glm::vec4(0.0, 1.0, 0.0, 0.0), // Vetor "up" fixado para apontar para o "céu" (eito Y global),
+            camera_origin: glm::vec4(0.0, 0.0, 0.0, 1.0),
         }
     }
 
