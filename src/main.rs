@@ -6,14 +6,14 @@ extern crate tobj;
 
 mod models;
 mod shader;
-mod view;
+mod world;
 use glutin::dpi::LogicalSize;
 use models::draw::Draw;
 use models::matrix::MatrixTransform;
 use models::scene_object::SceneObject;
 use shader::shader_program::Shader;
-use view::camera::Camera;
-use view::View;
+use world::camera::Camera;
+use world::view::View;
 
 fn main() {
     // Variáveis que definem a câmera em coordenadas esféricas

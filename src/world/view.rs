@@ -1,10 +1,9 @@
-pub mod camera;
-use self::camera::Camera;
 use glm::Matrix4;
 use models::matrix::camera_view_matrix;
 use models::matrix::ortographic_matrix;
 use models::matrix::perpective_matrix;
 use std::mem;
+use world::camera::Camera;
 static FIELD_OF_VIEW: f32 = 3.141592 / 3.0;
 static G_SCREEN_RATIO: f32 = 1.0;
 use std::ffi::CString;
