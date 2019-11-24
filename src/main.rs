@@ -62,6 +62,12 @@ fn main() {
 
         // Inicializa uma vaca
         let cow = SceneObject::new("src/data/objs/cow.obj").scale(0.5, 0.5, 0.5);
+        let bunny = SceneObject::new("src/data/objs/bunny.obj")
+            .translate(1.0, 1.0, 1.0)
+            .scale(0.5, 0.5, 0.5)
+            .load_texture("src/data/textures/tc-earth_daymap_surface.jpg")
+            .with_specular_phong_q(&16.0)
+            .with_specular_reflectance(&glm::vec3(0.65, 0.5, 0.5));
 
         let blinking_cow = cow
             .load_texture("src/data/textures/tc-earth_nightmap_citylights.gif")
@@ -70,7 +76,11 @@ fn main() {
 
         let night_cow = cow
             .load_texture("src/data/textures/tc-earth_daymap_surface.jpg")
+            .with_specular_reflectance(&glm::vec3(0.8, 0.8, 0.8))
+            .with_specular_phong_q(&12.0)
             .translate(-0.5, -0.5, -0.5);
+
+        let the_horror = bunny.add_children(&blinking_cow);
 
         let mut should_break = false;
         loop {
@@ -137,6 +147,7 @@ fn main() {
             cow.draw(&program);
             blinking_cow.draw(&program);
             night_cow.draw(&program);
+            the_horror.draw(&program);
 
             gl_window.swap_buffers().unwrap();
 
