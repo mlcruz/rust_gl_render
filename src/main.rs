@@ -58,7 +58,7 @@ fn main() {
     // Inicializa matrizes de view e projeção com a camera criada
     let mut view = View::new(-0.01, -10.0, &camera);
     let mut is_view_orto = false;
-    let mut framerate = 120.0;
+    let framerate = 120.0;
     unsafe {
         gl::UseProgram(program);
 
