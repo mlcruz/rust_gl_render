@@ -12,6 +12,9 @@ use models::draw::Draw;
 use models::matrix::MatrixTransform;
 use models::scene_object::SceneObject;
 use shader::shader_program::Shader;
+use std::thread::sleep;
+use std::time::Duration;
+use std::time::Instant;
 use world::camera::Camera;
 use world::view::View;
 
@@ -27,7 +30,7 @@ fn main() {
     // Iniciliza janela e contexto, com perfil core, versão 3.3, tamanho 800x600
     let window = glutin::WindowBuilder::new()
         .with_title("Rust Render")
-        .with_dimensions(<LogicalSize>::new(800.0f64, 600.0f64));
+        .with_dimensions(<LogicalSize>::new(1360f64, 768.0f64));
 
     let gl_window = glutin::ContextBuilder::new()
         .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 3)))
@@ -37,6 +40,7 @@ fn main() {
 
     // Coloca janela no contexto atual
     let gl_window = unsafe { gl_window.make_current() }.unwrap();
+    gl_window.window().hide_cursor(true);
 
     // Carrega ponteiros para funções do openGL
     gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
@@ -54,6 +58,7 @@ fn main() {
     // Inicializa matrizes de view e projeção com a camera criada
     let mut view = View::new(-0.01, -10.0, &camera);
     let mut is_view_orto = false;
+    let mut framerate = 120.0;
     unsafe {
         gl::UseProgram(program);
 
@@ -83,13 +88,25 @@ fn main() {
         let the_horror = bunny.add_children(&blinking_cow);
 
         let mut should_break = false;
+
+        // timing
+        let mut delta_time: f32 = 0.001;
+
         loop {
+            let timer = Instant::now();
+            let relative_frametime = delta_time * framerate;
+
+            // Mov dos objetos por segundo ()
+            // let speed = delta_time * 0.8;
+
+            // Mov dos objs por frame
+            let speed = relative_frametime * 0.01;
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.3, 0.3, 0.3, 1.0);
 
             // Trata eventos
             events_loop.poll_events(|event| {
-                use glutin::{Event, KeyboardInput, WindowEvent};
+                use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
                 // Limpa tela
                 // Padrão é continuar o loop
                 // Handling de eventos
@@ -107,27 +124,70 @@ fn main() {
                             ..
                         } => match (virtual_code, state) {
                             (glutin::VirtualKeyCode::Up, _) => {
-                                (camera.update(camera.theta, camera.phi + 0.025, camera.distance));
+                                camera.update_angle(camera.theta, camera.phi + 0.025);
                             }
                             (glutin::VirtualKeyCode::Down, _) => {
-                                (camera.update(camera.theta, camera.phi - 0.025, camera.distance));
+                                //(camera.update(camera.theta, camera.phi - 0.025, camera.distance));
+                                camera.update_angle(camera.theta, camera.phi - 0.025);
                             }
                             (glutin::VirtualKeyCode::Left, _) => {
-                                (camera.update(camera.theta + 0.025, camera.phi, camera.distance));
+                                //(camera.update(camera.theta + 0.025, camera.phi, camera.distance));
+                                camera.update_angle(camera.theta + 0.025, camera.phi);
                             }
                             (glutin::VirtualKeyCode::Right, _) => {
-                                (camera.update(camera.theta - 0.025, camera.phi, camera.distance));
+                                //(camera.update(camera.theta - 0.025, camera.phi, camera.distance));
+                                camera.update_angle(camera.theta - 0.025, camera.phi);
                             }
                             (glutin::VirtualKeyCode::End, _) => {
-                                (camera.update(camera.theta, camera.phi, camera.distance + 0.025));
+                                //(camera.update(camera.theta, camera.phi, camera.distance + 0.025));
+                                // camera.distance = camera.distance + 0.025;
                             }
                             (glutin::VirtualKeyCode::Home, _) => {
-                                (camera.update(camera.theta, camera.phi, camera.distance - 0.025));
+                                //(camera.update(camera.theta, camera.phi, camera.distance - 0.025));
                             }
                             (glutin::VirtualKeyCode::O, _) => is_view_orto = true,
                             (glutin::VirtualKeyCode::P, _) => is_view_orto = false,
+                            (glutin::VirtualKeyCode::W, _) => {
+                                //view.translate_position(0.05, 0.0, 0.0);
+                                camera.translate_position(&glm::vec4(0.00, 0.0, -0.01, 0.0));
+                            }
+                            (glutin::VirtualKeyCode::A, _) => {
+                                //view.translate_position(0.05, 0.0, 0.0);
+                                camera.translate_position(&glm::vec4(-0.01, 0.0, 0.0, 0.0));
+                            }
+                            (glutin::VirtualKeyCode::S, _) => {
+                                //view.translate_position(0.05, 0.0, 0.0);
+                                camera.translate_position(&glm::vec4(0.00, 0.0, 0.01, 0.0));
+                            }
+                            (glutin::VirtualKeyCode::D, _) => {
+                                //view.translate_position(0.05, 0.0, 0.0);
+                                camera.translate_position(&glm::vec4(0.01, 0.0, 0.00, 0.0));
+                            }
                             _ => (),
                         },
+                        _ => (),
+                    },
+                    Event::DeviceEvent { event, .. } => match event {
+                        DeviceEvent::MouseMotion { delta } => {
+                            let (xoffset, yoffset) = delta;
+
+                            let theta = camera.theta + (xoffset as f32) * speed;
+                            let mut phi = camera.phi + (yoffset as f32) * speed;
+
+                            // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
+                            let phimax = 3.141592 / 2.0;
+                            let phimin = -phimax;
+
+                            if phi > phimax {
+                                phi = phimax;
+                            }
+
+                            if phi < phimin {
+                                phi = phimin;
+                            }
+
+                            camera.update_angle(theta, phi);
+                        }
                         _ => (),
                     },
                     _ => (),
@@ -149,6 +209,13 @@ fn main() {
             night_cow.draw(&program);
             the_horror.draw(&program);
 
+            delta_time = timer.elapsed().as_secs_f32();
+
+            sleep(Duration::from_secs_f32(glm::max(
+                (1.0 / framerate) - delta_time,
+                0.0,
+            )));
+            delta_time = timer.elapsed().as_secs_f32();
             gl_window.swap_buffers().unwrap();
 
             if should_break {

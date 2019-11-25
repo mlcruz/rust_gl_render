@@ -8,12 +8,12 @@ pub struct Camera {
     pub distance: f32, // Distância da câmera para a origem
 
     // Posição da câmera utilizando coordenadas esféricas.
-    y: f32,
-    z: f32,
-    x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub x: f32,
 
     pub position: glm::Vector4<f32>,    // Ponto "c", centro da câmera
-    pub lookat: glm::Vector4<f32>, // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+    pub target: glm::Vector4<f32>, // Ponto "l", para onde a câmera (look-at) estará sempre olhando
     pub view_vector: glm::Vector4<f32>, // Vetor "view", sentido para onde a câmera está virada
     pub up_vector: glm::Vector4<f32>, // Vetor "up" fixado para apontar para o "céu" (eito Y global)
     pub camera_origin: glm::Vec4,
@@ -25,8 +25,9 @@ impl Camera {
         let x = distance * cos(phi) * sin(theta);
         let y = distance * sin(phi);
         let z = distance * cos(phi) * cos(theta);
+
         let position = glm::vec4(x, y, z, 1.0);
-        let lookat = glm::vec4(0.0, 0.0, 0.0, 1.0); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+        let target = glm::vec4(0.0, 0.0, 0.0, 1.0); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
 
         Camera {
             theta,
@@ -36,40 +37,36 @@ impl Camera {
             y,
             z,
             position,
-            lookat,
-            view_vector: lookat - position, // Vetor "view", sentido para onde a câmera está virada
+            target,
+            view_vector: target - position, // Vetor "view", sentido para onde a câmera está virada
             up_vector: glm::vec4(0.0, 1.0, 0.0, 0.0), // Vetor "up" fixado para apontar para o "céu" (eito Y global),
             camera_origin: glm::vec4(0.0, 0.0, 0.0, 1.0),
         }
     }
 
-    pub fn update(&mut self, theta: f32, phi: f32, distance: f32) -> Self {
-        let x = distance * cos(phi) * sin(theta);
-        let y = distance * sin(phi);
-        let z = distance * cos(phi) * cos(theta);
-        let position = glm::vec4(x, y, z, 1.0);
-        let lookat = glm::vec4(0.0, 0.0, 0.0, 1.0); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-
-        self.theta = theta;
+    pub fn update_angle(&mut self, theta: f32, phi: f32) -> &Self {
         self.phi = phi;
-        self.distance = distance;
-        self.x = x;
-        self.y = y;
-        self.z = z;
-        self.position = position;
-        self.lookat = lookat;
-        self.up_vector = glm::vec4(0.0, 1.0, 0.0, 0.0);
-        self.view_vector = lookat - position;
-        *self
+        self.theta = theta;
+
+        self.x = self.distance * cos(phi) * sin(theta);
+        self.y = self.distance * sin(phi);
+        self.z = self.distance * cos(phi) * cos(theta);
+
+        self.target = glm::vec4(-self.x, -self.y, self.z, 1.0);
+        self.view_vector = self.target - self.position;
+
+        self
     }
 
-    pub fn offset_distance(&self, offset: f32) -> Self {
-        let new = self
-            .clone()
-            .update(self.theta, self.phi, self.distance + offset);
-        new
+    pub fn update_position(&mut self, position: &glm::Vec4) -> &Self {
+        self.position = *position;
+        self
     }
 
+    pub fn translate_position(&mut self, position: &glm::Vec4) -> &Self {
+        self.position = self.position + *position;
+        self
+    }
     pub fn with_origin(&self, origin: &glm::Vec4) -> Self {
         Self {
             camera_origin: *origin,
@@ -102,9 +99,9 @@ impl Camera {
         }
     }
 
-    pub fn with_lookat(&self, lookat: &glm::Vec4) -> Self {
+    pub fn with_target(&self, target: &glm::Vec4) -> Self {
         Self {
-            lookat: *lookat,
+            target: *target,
             ..*self
         }
     }

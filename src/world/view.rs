@@ -106,9 +106,9 @@ impl View {
         *self
     }
 
-    pub fn update_lighting(&mut self, lighting: &Lighting) -> Self {
+    pub fn update_lighting(&mut self, lighting: &Lighting) -> &Self {
         self.lighting = *lighting;
-        *self
+        self
     }
     pub fn update(
         &mut self,
