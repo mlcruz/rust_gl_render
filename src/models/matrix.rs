@@ -117,14 +117,6 @@ pub fn norm(v: glm::Vec4) -> f32 {
 }
 
 #[allow(dead_code)]
-pub fn norm_vec3(v: glm::Vec3) -> f32 {
-    let vx = v.x;
-    let vy = v.y;
-    let vz = v.z;
-    sqrt(vx * vx + vy * vy + vz * vz)
-}
-
-#[allow(dead_code)]
 pub fn rotation_matrix(angle: f32, axis: glm::Vec4) -> GLMatrix {
     let c = cos(angle);
     let s = sin(angle);
@@ -249,23 +241,9 @@ pub fn compute_normal(p1: &glm::Vec4, p2: &glm::Vec4, p3: &glm::Vec4) -> glm::Ve
     -cross_product(u, v)
 }
 #[allow(dead_code)]
-pub fn normalize_vector(v: glm::Vec4) -> glm::Vec4 {
-    if v.x != 0.0 || v.y != 0.0 || v.z != 0.0 {
-        v / norm(v)
-    } else {
-        v
-    }
-}
-
-#[allow(dead_code)]
-pub fn normalize_vector3(v: glm::Vec3) -> glm::Vec3 {
-    if v.x != 0.0 || v.y != 0.0 || v.z != 0.0 {
-        v / norm_vec3(v)
-    } else {
-        v
-    }
-}
-
+// pub fn normalize_vector(v: glm::Vec4) -> glm::Vec4 {
+//     v / norm(v)
+// }
 #[allow(dead_code)]
 pub fn camera_view_matrix(
     position_c: glm::Vec4,
@@ -274,8 +252,6 @@ pub fn camera_view_matrix(
 ) -> GLMatrix {
     let mut w = -view_vector;
     let mut u = cross_product(up_vector, w);
-
-    // Normaliza u e v
     w = w / norm(w);
     u = u / norm(u);
 
@@ -290,12 +266,15 @@ pub fn camera_view_matrix(
     let ux = u.x;
     let uy = u.y;
     let uz = u.z;
+
     let vx = v.x;
     let vy = v.y;
     let vz = v.z;
+
     let wx = w.x;
     let wy = w.y;
     let wz = w.z;
+
     let c = position_c - origin_o;
 
     GLMatrix::new([

@@ -1,6 +1,3 @@
-                (glutin::VirtualKeyCode::W, _) => {
-                    camera.translate_position(&glm::vec4(0.00, 0.0, 0.01, 0.0));
-                }
-                (glutin::VirtualKeyCode::S, _) => {
-                    camera.translate_position(&glm::vec4(0.00, 0.0, -0.01, 0.0));
-                }
+      // Prepara objetos para serem desenhados
+        draw_queue.push(Drawable::new(&cow, &program));
+        draw_frame(&draw_queue);
