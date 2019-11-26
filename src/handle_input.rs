@@ -1,5 +1,5 @@
 use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
-use models::matrix::cross_product;
+
 use world::free_camera::FreeCamera;
 use world::view::View;
 
@@ -9,7 +9,7 @@ pub fn handle_input(
     should_break: &mut bool,
     is_view_orto: &mut bool,
     camera: &mut FreeCamera,
-    view: &mut View,
+    _view: &mut View,
     speed: &mut f64,
 ) {
     match event {
@@ -71,20 +71,22 @@ pub fn handle_input(
         },
         Event::DeviceEvent { event, .. } => match event {
             DeviceEvent::MouseMotion { delta } => {
-                // let (xoffset, yoffset) = delta;
-                // let theta = camera.theta + (((xoffset as f64) * *speed) as f32);
-                // let mut phi = camera.phi + (((yoffset as f64) * *speed) as f32);
+                let (xoffset, yoffset) = delta;
+                let yaw = camera.yaw + (((xoffset as f64) * *speed) as f32);
+                let mut pitch = camera.pitch - (((yoffset as f64) * *speed) as f32);
 
-                // let phimax = 3.141592 / 2.0;
-                // let phimin = -phimax;
+                let phimax = 3.141592 / 2.0;
+                let phimin = -phimax;
 
-                // if phi > phimax {
-                //     phi = phimax;
-                // }
+                if pitch > phimax {
+                    pitch = phimax;
+                }
 
-                // if phi < phimin {
-                //     phi = phimin;
-                // }
+                if pitch < phimin {
+                    pitch = phimin;
+                }
+                camera.pitch = pitch;
+                camera.yaw = yaw;
                 // camera.update_angle(theta, phi);
                 // println!("{:?}", camera);
             }

@@ -6,7 +6,6 @@ use shader::shader_program::Shader;
 use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
-use world::camera::Camera;
 use world::free_camera::FreeCamera;
 use world::view::View;
 
@@ -29,7 +28,7 @@ pub unsafe fn game_loop(
     let framerate = 120.0;
 
     // Inicializa camera
-    let mut camera = FreeCamera::new(glm::vec3(0.0, 0.0, 0.0), glm::vec4(0.0, 0.0, -1.0, 0.0));
+    let mut camera = FreeCamera::new(glm::vec3(0.0, 0.0, 1.0), &0.0, &0.0);
 
     // // Inicializa matrizes de view e projeção com a camera criada
     let mut view = View::new(-0.01, -10.0, &camera);

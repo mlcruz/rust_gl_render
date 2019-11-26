@@ -1,9 +1,7 @@
 use glm::Matrix4;
-use models::matrix::camera_view_matrix;
 use models::matrix::ortographic_matrix;
 use models::matrix::perpective_matrix;
 use std::mem;
-use world::camera::Camera;
 use world::free_camera::FreeCamera;
 use world::lighting::Lighting;
 static FIELD_OF_VIEW: f32 = 3.141592 / 3.0;
@@ -41,7 +39,7 @@ impl View {
     }
 
     pub fn render(&self, program: &u32) -> Self {
-        let camera_origin = glm::vec4(0.0, 0.0, 1.0, 1.0);
+        let camera_origin = glm::vec4(0.0, 0.0, 0.0, 1.0);
 
         unsafe {
             let view_uniform =
