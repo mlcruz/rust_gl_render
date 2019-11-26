@@ -12,8 +12,9 @@ pub struct Camera {
     pub z: f32,
     pub x: f32,
 
-    pub position: glm::Vector4<f32>,    // Ponto "c", centro da câmera
+    pub position: glm::Vector4<f32>, // Ponto "c", centro da câmera
     pub target: glm::Vector4<f32>, // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+
     pub view_vector: glm::Vector4<f32>, // Vetor "view", sentido para onde a câmera está virada
     pub up_vector: glm::Vector4<f32>, // Vetor "up" fixado para apontar para o "céu" (eito Y global)
     pub camera_origin: glm::Vec4,

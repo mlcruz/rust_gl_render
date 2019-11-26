@@ -2,6 +2,7 @@ use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
 use models::matrix::cross_product;
 use models::matrix::normalize_vector;
 use world::camera::Camera;
+use world::view::View;
 
 // Trata possiveis entradas do usuario
 pub fn handle_input(
@@ -9,6 +10,7 @@ pub fn handle_input(
     should_break: &mut bool,
     is_view_orto: &mut bool,
     camera: &mut Camera,
+    view: &mut View,
     speed: &mut f64,
 ) {
     match event {
@@ -48,9 +50,9 @@ pub fn handle_input(
                     camera.translate_position(&glm::vec4(0.00, 0.0, -0.01, 0.0));
                 }
                 (glutin::VirtualKeyCode::A, _) => {
-                    //cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
                     let mut new_pos =
                         normalize_vector(cross_product(camera.target, camera.up_vector)) * 0.01;
+
                     if new_pos.x == 0.0 && new_pos.y == 0.0 && new_pos.z == 0.0 {
                         new_pos = glm::vec4(0.01, 0.0, 0.0, 0.0);
                     }
@@ -87,6 +89,7 @@ pub fn handle_input(
                     phi = phimin;
                 }
                 camera.update_angle(theta, phi);
+                println!("{:?}", camera);
             }
             _ => (),
         },

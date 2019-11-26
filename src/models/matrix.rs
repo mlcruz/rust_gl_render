@@ -117,6 +117,14 @@ pub fn norm(v: glm::Vec4) -> f32 {
 }
 
 #[allow(dead_code)]
+pub fn norm_vec3(v: glm::Vec3) -> f32 {
+    let vx = v.x;
+    let vy = v.y;
+    let vz = v.z;
+    sqrt(vx * vx + vy * vy + vz * vz)
+}
+
+#[allow(dead_code)]
 pub fn rotation_matrix(angle: f32, axis: glm::Vec4) -> GLMatrix {
     let c = cos(angle);
     let s = sin(angle);
@@ -244,6 +252,15 @@ pub fn compute_normal(p1: &glm::Vec4, p2: &glm::Vec4, p3: &glm::Vec4) -> glm::Ve
 pub fn normalize_vector(v: glm::Vec4) -> glm::Vec4 {
     if v.x != 0.0 || v.y != 0.0 || v.z != 0.0 {
         v / norm(v)
+    } else {
+        v
+    }
+}
+
+#[allow(dead_code)]
+pub fn normalize_vector3(v: glm::Vec3) -> glm::Vec3 {
+    if v.x != 0.0 || v.y != 0.0 || v.z != 0.0 {
+        v / norm_vec3(v)
     } else {
         v
     }

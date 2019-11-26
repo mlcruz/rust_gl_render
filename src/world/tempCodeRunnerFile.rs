@@ -1,1 +1,1 @@
-1
+normalize_vector

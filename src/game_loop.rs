@@ -61,12 +61,10 @@ pub unsafe fn game_loop(
                 &mut should_break,
                 &mut is_view_orto,
                 &mut camera,
+                &mut view,
                 &mut speed,
             );
         });
-
-        // Atualiza possiveis modificações de camera;
-        view.update_camera(&camera);
 
         // Prepara view
         if is_view_orto {
@@ -74,6 +72,8 @@ pub unsafe fn game_loop(
         } else {
             view.render(&program);
         }
+
+        view.update_camera(&camera);
 
         // Prepara objetos para serem desenhados
         draw_queue.push(Drawable::new(&cow, &program));
