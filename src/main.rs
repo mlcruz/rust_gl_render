@@ -4,19 +4,20 @@ extern crate glutin;
 extern crate image;
 extern crate tobj;
 
+mod drawable;
 mod models;
 mod shader;
 mod world;
 use glutin::dpi::LogicalSize;
-mod draw_frame;
+mod game_loop;
 mod handle_input;
-use draw_frame::game_loop;
+use game_loop::game_loop;
 
 fn main() {
     // Inicializa loop de eventos da janela
     let mut events_loop = glutin::EventsLoop::new();
 
-    // Iniciliza janela e contexto, com perfil core, versão 3.3, tamanho 800x600
+    // Iniciliza janela e contexto, com perfil core, versão 3.3, tamanho 1360x768
     let window = glutin::WindowBuilder::new()
         .with_title("Rust Render")
         .with_dimensions(<LogicalSize>::new(1360f64, 768.0f64));

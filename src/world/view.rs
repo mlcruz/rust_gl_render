@@ -101,6 +101,7 @@ impl View {
 
     pub fn update_camera(&mut self, camera: &Camera) -> Self {
         self.camera = camera.clone();
+
         self.view_matrix =
             camera_view_matrix(camera.position, camera.view_vector, camera.up_vector).matrix;
         *self

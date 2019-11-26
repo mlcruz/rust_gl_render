@@ -1,3 +1,4 @@
+use drawable::Drawable;
 use handle_input::handle_input;
 use models::draw::Draw;
 use models::scene_object::SceneObject;
@@ -8,29 +9,7 @@ use std::time::Instant;
 use world::camera::Camera;
 use world::view::View;
 
-// Estrutura representando combinação final de objeto e shader a ser desenhado
-#[allow(dead_code)]
-pub struct Drawable<'a> {
-    object: &'a SceneObject,
-    shader: &'a u32,
-}
-
-#[allow(dead_code)]
-impl<'a> Drawable<'a> {
-    fn new(object: &'a SceneObject, shader: &'a u32) -> Self {
-        Drawable { object, shader }
-    }
-
-    fn update_object(&self, object: &'a SceneObject) -> Self {
-        Drawable { object, ..*self }
-    }
-
-    fn update_shader(&self, shader: &'a u32) -> Self {
-        Drawable { shader, ..*self }
-    }
-}
-
-#[allow(dead_code)]
+#[allow(dead_code, unused_assignments)]
 pub unsafe fn game_loop(
     events_loop: &mut glutin::EventsLoop,
     gl_window: &glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::Window>,
@@ -54,14 +33,22 @@ pub unsafe fn game_loop(
     // Inicializa matrizes de view e projeção com a camera criada
     let mut view = View::new(-0.01, -10.0, &camera);
 
+    // Contador de tempo de frame
     let mut delta_time: f64 = 0.001;
+
+    // Controles de estado de loop
     let mut is_view_orto = false;
     let mut should_break = false;
+    let mut speed = 0.0f64;
 
     loop {
         // Inicializa cronometro de tempo de renderização de uma frame
         let timer = Instant::now();
-        let speed = delta_time * 1.0;
+
+        // 1.0 unidade por segundo
+        speed = delta_time * 1.0;
+
+        // Lista de objetos a serem desenhados
         let mut draw_queue: Vec<Drawable> = Vec::new();
 
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
@@ -74,7 +61,7 @@ pub unsafe fn game_loop(
                 &mut should_break,
                 &mut is_view_orto,
                 &mut camera,
-                &speed,
+                &mut speed,
             );
         });
 
@@ -94,20 +81,25 @@ pub unsafe fn game_loop(
 
         // Tempo de renderização de uma frame
         delta_time = timer.elapsed().as_secs_f64();
+
+        // Força framerate
         sleep(Duration::from_secs_f64(glm::max(
             (1.0 / framerate) - delta_time,
             0.0,
         )));
 
+        // Atualiza tempo de renderização após pausa de framerate
         delta_time = timer.elapsed().as_secs_f64();
         gl_window.swap_buffers().unwrap();
 
+        // Interrompe loop
         if should_break {
             break;
         }
     }
 }
 
+// Desenha items com seus respectivos shaders
 pub fn draw_frame(draw_list: &Vec<Drawable>) {
     draw_list.as_slice().iter().for_each(|item| {
         item.object.draw(item.shader);

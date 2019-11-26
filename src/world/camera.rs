@@ -26,7 +26,7 @@ impl Camera {
         let y = distance * sin(phi);
         let z = distance * cos(phi) * cos(theta);
 
-        let position = glm::vec4(x, y, z, 1.0);
+        let position = glm::vec4(x, y, -z, 1.0);
         let target = glm::vec4(0.0, 0.0, 0.0, 1.0); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
 
         Camera {
@@ -39,7 +39,7 @@ impl Camera {
             position,
             target,
             view_vector: target - position, // Vetor "view", sentido para onde a câmera está virada
-            up_vector: glm::vec4(0.0, 1.0, 0.0, 0.0), // Vetor "up" fixado para apontar para o "céu" (eito Y global),
+            up_vector: glm::vec4(0.0, 1.0, 0.0, 1.0), // Vetor "up" fixado para apontar para o "céu" (eito Y global),
             camera_origin: glm::vec4(0.0, 0.0, 0.0, 1.0),
         }
     }
@@ -54,7 +54,6 @@ impl Camera {
 
         self.target = glm::vec4(-self.x, -self.y, self.z, 1.0);
         self.view_vector = self.target - self.position;
-
         self
     }
 

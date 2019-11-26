@@ -1,4 +1,6 @@
 use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
+use models::matrix::cross_product;
+use models::matrix::normalize_vector;
 use world::camera::Camera;
 
 // Trata possiveis entradas do usuario
@@ -7,7 +9,7 @@ pub fn handle_input(
     should_break: &mut bool,
     is_view_orto: &mut bool,
     camera: &mut Camera,
-    speed: &f64,
+    speed: &mut f64,
 ) {
     match event {
         Event::WindowEvent { event, .. } => match event {
@@ -40,16 +42,29 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::O, _) => *is_view_orto = true,
                 (glutin::VirtualKeyCode::P, _) => *is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {
+                    camera.translate_position(&glm::vec4(0.00, 0.0, 0.01, 0.0));
+                }
+                (glutin::VirtualKeyCode::S, _) => {
                     camera.translate_position(&glm::vec4(0.00, 0.0, -0.01, 0.0));
                 }
                 (glutin::VirtualKeyCode::A, _) => {
-                    camera.translate_position(&glm::vec4(-0.01, 0.0, 0.0, 0.0));
-                }
-                (glutin::VirtualKeyCode::S, _) => {
-                    camera.translate_position(&glm::vec4(0.00, 0.0, 0.01, 0.0));
+                    //cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+                    let mut new_pos =
+                        normalize_vector(cross_product(camera.target, camera.up_vector)) * 0.01;
+                    if new_pos.x == 0.0 && new_pos.y == 0.0 && new_pos.z == 0.0 {
+                        new_pos = glm::vec4(0.01, 0.0, 0.0, 0.0);
+                    }
+                    camera.update_position(&(camera.position - new_pos));
                 }
                 (glutin::VirtualKeyCode::D, _) => {
-                    camera.translate_position(&glm::vec4(0.01, 0.0, 0.00, 0.0));
+                    let mut new_pos =
+                        normalize_vector(cross_product(camera.target, camera.up_vector)) * 0.01;
+
+                    if new_pos.x == 0.0 && new_pos.y == 0.0 && new_pos.z == 0.0 {
+                        new_pos = glm::vec4(0.01, 0.0, 0.0, 0.0);
+                    }
+
+                    camera.update_position(&(camera.position + new_pos));
                 }
                 _ => (),
             },
@@ -58,9 +73,8 @@ pub fn handle_input(
         Event::DeviceEvent { event, .. } => match event {
             DeviceEvent::MouseMotion { delta } => {
                 let (xoffset, yoffset) = delta;
-
-                let theta = camera.theta + (((xoffset as f64) * speed) as f32);
-                let mut phi = camera.phi + (((yoffset as f64) * speed) as f32);
+                let theta = camera.theta + (((xoffset as f64) * *speed) as f32);
+                let mut phi = camera.phi + (((yoffset as f64) * *speed) as f32);
 
                 let phimax = 3.141592 / 2.0;
                 let phimin = -phimax;
@@ -72,7 +86,6 @@ pub fn handle_input(
                 if phi < phimin {
                     phi = phimin;
                 }
-
                 camera.update_angle(theta, phi);
             }
             _ => (),

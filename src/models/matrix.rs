@@ -240,6 +240,14 @@ pub fn compute_normal(p1: &glm::Vec4, p2: &glm::Vec4, p3: &glm::Vec4) -> glm::Ve
     let v = *p2 - *p1;
     -cross_product(u, v)
 }
+#[allow(dead_code)]
+pub fn normalize_vector(v: glm::Vec4) -> glm::Vec4 {
+    if v.x != 0.0 || v.y != 0.0 || v.z != 0.0 {
+        v / norm(v)
+    } else {
+        v
+    }
+}
 
 #[allow(dead_code)]
 pub fn camera_view_matrix(
