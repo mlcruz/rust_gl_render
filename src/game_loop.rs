@@ -122,7 +122,6 @@ pub unsafe fn game_loop(
     }
 }
 
-// Desenha items com seus respectivos shaders
 pub fn draw_frame(
     main: &SceneObject,
     shader: &u32,
@@ -135,7 +134,7 @@ pub fn draw_frame(
 
     draw_list.as_slice().iter().for_each(|item| {
         // Verifica intersecções entre objetos, destroi aqueles que intersectam e pede um objeto novo
-        if main.check_intersection(&item) {
+        if main.detect_colision(&item) {
             *should_add_obj = true;
         } else {
             item.draw(shader);

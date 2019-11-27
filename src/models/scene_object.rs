@@ -20,6 +20,7 @@ impl SceneObject {
         SceneObject::ObjModel(ObjModel::new(path))
     }
 
+    // Adiciona filhos no objeto
     pub fn add_children(&self, child: &SceneObject) -> Self {
         match self {
             SceneObject::ObjModel(obj_model) => match child {
@@ -76,7 +77,7 @@ impl SceneObject {
             }
         }
     }
-
+    // Retorna bbox minima da raiz
     pub fn get_bbox_min(&self) -> glm::Vec3 {
         match self {
             SceneObject::ObjModel(obj) => obj.bbox_min,
@@ -85,6 +86,7 @@ impl SceneObject {
         }
     }
 
+    // Retorma bbox maxima da raiz
     pub fn get_bbox_max(&self) -> glm::Vec3 {
         match self {
             SceneObject::ObjModel(obj) => obj.bbox_max,
@@ -92,6 +94,8 @@ impl SceneObject {
             SceneObject::ComplexObj(obj) => obj.root.bbox_max,
         }
     }
+
+    // Utiliza textura previamente carregada para o obj
     #[allow(dead_code)]
     pub fn with_texture(&self, texture: &u32) -> Self {
         match self {
@@ -107,6 +111,7 @@ impl SceneObject {
         }
     }
 
+    // Atribui vetor de refletancia especular para o obj
     pub fn with_specular_reflectance(&self, specular_reflectance: &glm::Vec3) -> Self {
         match self {
             SceneObject::ObjModel(obj) => {
@@ -123,6 +128,7 @@ impl SceneObject {
         }
     }
 
+    // Atribui um expoente q de phong para o obj
     pub fn with_specular_phong_q(&self, phong_q: &f32) -> Self {
         match self {
             SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.with_specular_phong_q(phong_q)),
@@ -137,6 +143,7 @@ impl SceneObject {
         }
     }
 
+    // Atribui um overide de cor para o obj
     pub fn with_color(&self, color: &glm::Vec3) -> Self {
         match self {
             SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.with_color(color)),
@@ -150,11 +157,14 @@ impl SceneObject {
             }),
         }
     }
+
+    // Carrega uma textura para o obj
     pub unsafe fn load_texture(&self, path: &str) -> Self {
         let (tex, _) = load_texture(path);
         self.with_texture(&tex)
     }
 
+    // Checa a interseção entra a bbox de 2 objs
     pub fn check_intersection(&self, obj2: &SceneObject) -> bool {
         //let model_translation = obj1.model.matrix.c3;
         let obj1 = self;
@@ -162,10 +172,12 @@ impl SceneObject {
         // Utiliza transação do obj para calcular pos global
         let obj1_t = obj1.get_matrix().matrix.c3;
         let obj2_t = obj2.get_matrix().matrix.c3;
+
         let obj1_bbox_min = obj1.get_bbox_min();
         let obj1_bbox_max = obj1.get_bbox_max();
         let obj2_bbox_min = obj2.get_bbox_min();
         let obj2_bbox_max = obj2.get_bbox_max();
+
         // Pos global da bbox  do obj1
         let obj1_bbox_min_pos = obj1.get_matrix().matrix
             * glm::vec4(obj1_bbox_min.x, obj1_bbox_min.y, obj1_bbox_min.z, 0.0)
@@ -173,6 +185,7 @@ impl SceneObject {
         let obj1_bbox_max_pos = obj1.get_matrix().matrix
             * glm::vec4(obj1_bbox_max.x, obj1_bbox_max.y, obj1_bbox_max.z, 0.0)
             + obj1_t;
+
         // Pos global da bbox  do obj2
         let obj2_bbox_min_pos = obj1.get_matrix().matrix
             * glm::vec4(obj2_bbox_min.x, obj2_bbox_min.y, obj2_bbox_min.z, 0.0)
@@ -180,12 +193,40 @@ impl SceneObject {
         let obj2_bbox_max_pos = obj1.get_matrix().matrix
             * glm::vec4(obj2_bbox_max.x, obj2_bbox_max.y, obj2_bbox_max.z, 0.0)
             + obj2_t;
+
         check_bbox_bbox_intersection(
             &obj1_bbox_min_pos,
             &obj1_bbox_max_pos,
             &obj2_bbox_min_pos,
             &obj2_bbox_max_pos,
         )
+    }
+
+    #[allow(dead_code, unused_assignments)]
+    // Detecta se um objeto colidiu com outro, buscando recursivamente nos filhos em caso de objs complexos
+    pub fn detect_colision(&self, obj2: &SceneObject) -> bool {
+        let mut is_coliding = false;
+
+        match self {
+            SceneObject::ObjModel(obj) => {
+                is_coliding = obj.check_intersection(obj2);
+            }
+            SceneObject::CompositeObj(obj) => {
+                is_coliding = obj.root.check_intersection(obj2);
+
+                obj.children.as_slice().iter().for_each(|item| {
+                    is_coliding = item.check_intersection(obj2) | is_coliding;
+                });
+            }
+            SceneObject::ComplexObj(obj) => {
+                is_coliding = obj.root.check_intersection(obj2);
+
+                obj.children.as_slice().iter().for_each(|item| {
+                    is_coliding = item.detect_colision(obj2) | is_coliding;
+                });
+            }
+        }
+        return is_coliding;
     }
 }
 

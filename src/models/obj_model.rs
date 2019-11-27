@@ -8,6 +8,8 @@ use gl::types::GLfloat;
 use gl::types::GLsizeiptr;
 use gl::types::GLuint;
 use models::load_texture::load_texture;
+use models::scene_object::check_bbox_bbox_intersection;
+use models::scene_object::SceneObject;
 use std::ffi::c_void;
 use std::ffi::CString;
 use std::mem;
@@ -306,6 +308,43 @@ impl ObjModel {
             color_overide: *color,
             ..*self
         }
+    }
+
+    pub fn check_intersection(&self, obj2: &SceneObject) -> bool {
+        //let model_translation = obj1.model.matrix.c3;
+        let obj1 = self;
+
+        // Utiliza transação do obj para calcular pos global
+        let obj1_t = obj1.get_matrix().matrix.c3;
+        let obj2_t = obj2.get_matrix().matrix.c3;
+
+        let obj1_bbox_min = obj1.bbox_min;
+        let obj1_bbox_max = obj1.bbox_max;
+        let obj2_bbox_min = obj2.get_bbox_min();
+        let obj2_bbox_max = obj2.get_bbox_max();
+
+        // Pos global da bbox  do obj1
+        let obj1_bbox_min_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_min.x, obj1_bbox_min.y, obj1_bbox_min.z, 0.0)
+            + obj1_t;
+        let obj1_bbox_max_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_max.x, obj1_bbox_max.y, obj1_bbox_max.z, 0.0)
+            + obj1_t;
+
+        // Pos global da bbox  do obj2
+        let obj2_bbox_min_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj2_bbox_min.x, obj2_bbox_min.y, obj2_bbox_min.z, 0.0)
+            + obj2_t;
+        let obj2_bbox_max_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj2_bbox_max.x, obj2_bbox_max.y, obj2_bbox_max.z, 0.0)
+            + obj2_t;
+
+        check_bbox_bbox_intersection(
+            &obj1_bbox_min_pos,
+            &obj1_bbox_max_pos,
+            &obj2_bbox_min_pos,
+            &obj2_bbox_max_pos,
+        )
     }
 }
 
