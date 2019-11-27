@@ -1,1 +1,0 @@
-game_state.camera_height = -10.0;

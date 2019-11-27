@@ -25,6 +25,7 @@ pub struct GameState {
     pub obj_plane_height: f32,
     pub speed_mult: f64,
     pub look_at: glm::Vec4,
+    pub camera_speed_mult: f32,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -48,10 +49,11 @@ pub unsafe fn game_loop(
         should_add_obj: true,
         draw_queue: Vec::new(),
         framerate: 120,
-        score: 0,
+        score: 5,
         camera_height: 0.0,
         obj_plane_height: -20.0,
         speed_mult: 3.0,
+        camera_speed_mult: 0.0,
         look_at: glm::vec4(0.0, -1.0, 0.000000000001, 0.0),
     };
 
@@ -62,6 +64,11 @@ pub unsafe fn game_loop(
         .translate(0.0, game_state.obj_plane_height, -0.0);
 
     let base_cube = SceneObject::new("src/data/objs/cube.obj");
+
+    let mut plane = SceneObject::new("src/data/objs/plane.obj")
+        .scale(8.0, 8.0, 8.0)
+        .translate(0.0, game_state.obj_plane_height, 0.0)
+        .with_color(&glm::vec3(0.6, 0.6, 0.6));
 
     let framerate = 120.0;
 
@@ -105,39 +112,31 @@ pub unsafe fn game_loop(
                 &mut main_obj,
             );
         });
-
         if game_state.should_add_obj {
             let mut new_obj = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
 
-            if game_state.score > 3 {
+            if game_state.score > 2 {
                 new_obj = new_obj.with_color(&gen_random_vec3());
                 new_obj2 = new_obj2.with_color(&gen_random_vec3());
                 new_obj3 = new_obj3.with_color(&gen_random_vec3());
             }
 
-            if game_state.score > 5 {
+            if game_state.score > 4 {
                 let my_color = main_obj.get_color();
                 if my_color.x == 1.0 {
                     main_obj = main_obj.with_color(&gen_random_vec3());
                 }
             }
 
-            if game_state.score > 8 {
+            if game_state.score > 6 {
                 game_state.is_view_orto = false;
-            }
-
-            if game_state.score > 10 {
-                game_state.camera_height = -10.0;
-            }
-
-            if game_state.score > 13 {
-                if game_state.score == 14 {
-                    look_at_camera.pos.z = look_at_camera.pos.z - 8.5;
+                if game_state.score == 7 {
+                    look_at_camera.pos.z = look_at_camera.pos.z - 15.0;
                 }
-                game_state.camera_height = -15.0;
-                game_state.look_at = glm::vec4(0.0, -0.5, 0.5, 0.0);
+                game_state.camera_height = -13.0;
+                game_state.look_at = glm::vec4(0.0, -0.35, 1.0, 0.0);
             }
 
             game_state.draw_queue.push(new_obj);
@@ -178,6 +177,9 @@ pub unsafe fn game_loop(
         } else {
             view.perpective().render(&program);
         }
+
+        // Desenha plano
+        plane.draw(&program);
 
         // Desenha objetos
         draw_frame(&main_obj, &program, &mut game_state);

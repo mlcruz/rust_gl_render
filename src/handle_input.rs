@@ -30,18 +30,18 @@ pub fn handle_input(
             } => match (virtual_code, state) {
                 // Atualiza camera
                 (glutin::VirtualKeyCode::Up, _) => {
-                    camera.pos.z = camera.pos.z - 0.025;
+                    camera.pos.z = camera.pos.z + (*speed * game_state.camera_speed_mult);
                 }
                 (glutin::VirtualKeyCode::Down, _) => {
                     // camera.update_angle(camera.theta, camera.phi - 0.025);
-                    camera.pos.z = camera.pos.z + 0.025;
+                    camera.pos.z = camera.pos.z - (*speed * game_state.camera_speed_mult);
                 }
                 (glutin::VirtualKeyCode::Left, _) => {
-                    camera.pos.x = camera.pos.x - 0.025;
+                    camera.pos.x = camera.pos.x + (*speed * game_state.camera_speed_mult);
                     // camera.update_angle(camera.theta + 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::Right, _) => {
-                    camera.pos.x = camera.pos.x + 0.025;
+                    camera.pos.x = camera.pos.x - (*speed * game_state.camera_speed_mult);
                     // camera.update_angle(camera.theta - 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::End, _) => {}
