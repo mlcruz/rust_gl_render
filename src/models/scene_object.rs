@@ -76,6 +76,22 @@ impl SceneObject {
             }
         }
     }
+
+    pub fn get_bbox_min(&self) -> glm::Vec3 {
+        match self {
+            SceneObject::ObjModel(obj) => obj.bbox_min,
+            SceneObject::CompositeObj(obj) => obj.root.bbox_min,
+            SceneObject::ComplexObj(obj) => obj.root.bbox_min,
+        }
+    }
+
+    pub fn get_bbox_max(&self) -> glm::Vec3 {
+        match self {
+            SceneObject::ObjModel(obj) => obj.bbox_max,
+            SceneObject::CompositeObj(obj) => obj.root.bbox_max,
+            SceneObject::ComplexObj(obj) => obj.root.bbox_max,
+        }
+    }
     #[allow(dead_code)]
     pub fn with_texture(&self, texture: &u32) -> Self {
         match self {
