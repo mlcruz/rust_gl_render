@@ -1,3 +1,4 @@
+use game_loop::GameState;
 use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
 use models::scene_object::SceneObject;
 
@@ -8,8 +9,7 @@ use world::view::View;
 // Trata possiveis entradas do usuario
 pub fn handle_input(
     event: glutin::Event,
-    should_break: &mut bool,
-    is_view_orto: &mut bool,
+    game_state: &mut GameState,
     camera: &mut FreeCamera,
     _view: &mut View,
     speed: &mut f64,
@@ -18,7 +18,7 @@ pub fn handle_input(
     match event {
         Event::WindowEvent { event, .. } => match event {
             // Em caso de evento de fechamento de tela, seta controle do loop de eventos para encerrar
-            WindowEvent::CloseRequested => *should_break = true,
+            WindowEvent::CloseRequested => game_state.should_break = true,
             WindowEvent::KeyboardInput {
                 input:
                     KeyboardInput {
@@ -43,8 +43,8 @@ pub fn handle_input(
                 }
                 (glutin::VirtualKeyCode::End, _) => {}
                 (glutin::VirtualKeyCode::Home, _) => {}
-                (glutin::VirtualKeyCode::O, _) => *is_view_orto = true,
-                (glutin::VirtualKeyCode::P, _) => *is_view_orto = false,
+                (glutin::VirtualKeyCode::O, _) => game_state.is_view_orto = true,
+                (glutin::VirtualKeyCode::P, _) => game_state.is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {
                     //camera.pos.z = camera.pos.z - 0.01;
                     *main_obj = main_obj.translate(0.0, 0.0, 0.01);

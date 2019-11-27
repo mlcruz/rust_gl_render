@@ -9,6 +9,19 @@ use std::time::Instant;
 use world::free_camera::FreeCamera;
 use world::view::View;
 
+// Controle do loop principal do jogo
+
+// Controle de estado do jogo
+#[allow(dead_code, unused_assignments)]
+pub struct GameState {
+    pub should_break: bool,
+    pub should_add_obj: bool,
+    pub is_view_orto: bool,
+    pub draw_queue: Vec<SceneObject>,
+    pub score: i32,
+    pub framerate: i32,
+}
+
 #[allow(dead_code, unused_assignments)]
 pub unsafe fn game_loop(
     events_loop: &mut glutin::EventsLoop,
@@ -23,6 +36,7 @@ pub unsafe fn game_loop(
 
     gl::Enable(gl::DEPTH_TEST);
 
+    // Inicializa objetos do cenario
     let mut cube = SceneObject::new("src/data/objs/cube.obj")
         .with_color(&glm::vec3(1.0, 1.0, 1.0))
         .scale(0.2, 0.2, 0.2)
@@ -50,16 +64,19 @@ pub unsafe fn game_loop(
     let mut delta_time: f64 = 0.001;
 
     // Controles de estado de loop
-    let mut is_view_orto = false;
-    let mut should_break = false;
     let mut speed = 0.0f64;
-    let mut should_add_obj = true;
 
     let mut rand_pos_x: f32 = (rand::random::<i32>() % 1000) as f32 / 1000.0;
     let mut rand_pos_z: f32 = (rand::random::<i32>() % 1000) as f32 / 1000.0;
 
-    // Lista de objetos a serem desenhados
-    let mut draw_queue: Vec<SceneObject> = Vec::new();
+    let mut game_state = GameState {
+        is_view_orto: false,
+        should_break: false,
+        should_add_obj: true,
+        draw_queue: Vec::new(),
+        framerate: 120,
+        score: 0,
+    };
 
     loop {
         // Inicializa cronometro de tempo de renderização de uma frame
@@ -75,8 +92,7 @@ pub unsafe fn game_loop(
         events_loop.poll_events(|event| {
             handle_input(
                 event,
-                &mut should_break,
-                &mut is_view_orto,
+                &mut game_state,
                 &mut look_at_camera,
                 &mut view,
                 &mut speed,
@@ -88,19 +104,21 @@ pub unsafe fn game_loop(
         view.update_camera(&look_at_camera);
 
         // Prepara view
-        if is_view_orto {
+        if game_state.is_view_orto {
             view.ortographic().render(&program);
         } else {
             view.render(&program);
         }
 
-        if should_add_obj {
+        if game_state.should_add_obj {
             rand_pos_x = (rand::random::<i32>() % 1000) as f32 / 1000.0;
             rand_pos_z = (rand::random::<i32>() % 1000) as f32 / 1000.0;
-            draw_queue.push(cube2.clone().translate(rand_pos_x, 0.0, rand_pos_z));
-            should_add_obj = false;
+            game_state
+                .draw_queue
+                .push(cube2.clone().translate(rand_pos_x, 0.0, rand_pos_z));
+            game_state.should_add_obj = false;
         }
-        draw_frame(&cube, &program, &mut draw_queue, &mut should_add_obj);
+        draw_frame(&cube, &program, &mut game_state);
 
         // Tempo de renderização de uma frame
         delta_time = timer.elapsed().as_secs_f64();
@@ -116,31 +134,27 @@ pub unsafe fn game_loop(
         gl_window.swap_buffers().unwrap();
 
         // Interrompe loop
-        if should_break {
+        if game_state.should_break {
             break;
         }
     }
 }
 
-pub fn draw_frame(
-    main: &SceneObject,
-    shader: &u32,
-    draw_list: &mut Vec<SceneObject>,
-    should_add_obj: &mut bool,
-) {
+pub fn draw_frame(main: &SceneObject, shader: &u32, game_state: &mut GameState) {
     main.draw(shader);
 
     let mut new_items: Vec<SceneObject> = vec![];
-
-    draw_list.as_slice().iter().for_each(|item| {
+    let mut should_add_obj = false;
+    game_state.draw_queue.as_slice().iter().for_each(|item| {
         // Verifica intersecções entre objetos, destroi aqueles que intersectam e pede um objeto novo
         if main.detect_colision(&item) {
-            *should_add_obj = true;
+            should_add_obj = true;
         } else {
             item.draw(shader);
             new_items.push(item.clone());
         }
     });
 
-    *draw_list = new_items;
+    game_state.draw_queue = new_items;
+    game_state.should_add_obj = should_add_obj;
 }
