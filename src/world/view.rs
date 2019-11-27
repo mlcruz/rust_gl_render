@@ -99,7 +99,6 @@ impl View {
 
     pub fn update_camera(&mut self, camera: &FreeCamera) -> Self {
         self.camera = camera.clone();
-        self.camera.refresh();
         *self
     }
 

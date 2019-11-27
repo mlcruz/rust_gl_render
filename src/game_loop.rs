@@ -1,6 +1,7 @@
 use drawable::Drawable;
 use handle_input::handle_input;
 use models::draw::Draw;
+use models::matrix::MatrixTransform;
 use models::scene_object::SceneObject;
 use shader::shader_program::Shader;
 use std::thread::sleep;
@@ -16,22 +17,31 @@ pub unsafe fn game_loop(
 ) {
     // Compila e linka shaders
     let program = Shader::new(
-        "src/data/shader/vertex.glsl",
-        "src/data/shader/fragment.glsl",
+        "src/data/shader/vertex/default.glsl",
+        "src/data/shader/fragment/default.glsl",
     )
     .program;
 
     gl::Enable(gl::DEPTH_TEST);
 
     let cow = SceneObject::new("src/data/objs/cow.obj");
+    let cube = SceneObject::new("src/data/objs/cube.obj")
+        .with_color(&glm::vec3(1.0, 1.0, 1.0))
+        .scale(0.2, 0.2, 0.2)
+        .translate(0.0, -10.0, -0.0);
 
     let framerate = 120.0;
 
-    // Inicializa camera
-    let mut camera = FreeCamera::new(glm::vec3(0.0, 0.0, 1.0), &0.0, &0.0);
+    // Inicializa camera livre
+    let mut camera = FreeCamera::new(glm::vec3(0.0, 0.0, 0.0), &0.0, &0.0);
 
+    // Inicializa camera look at e define vetor fixo
+    let mut look_at_camera = FreeCamera::new(glm::vec3(0.0, 0.0, 0.0), &0.0, &0.0);
+    look_at_camera.front = glm::vec4(0.0, -1.0, 0.000000000001, 0.0);
+
+    // Inicializa camera
     // // Inicializa matrizes de view e projeção com a camera criada
-    let mut view = View::new(-0.01, -10.0, &camera);
+    let mut view = View::new(-0.01, -20.0, &look_at_camera);
 
     // Contador de tempo de frame
     let mut delta_time: f64 = 0.001;
@@ -60,13 +70,14 @@ pub unsafe fn game_loop(
                 event,
                 &mut should_break,
                 &mut is_view_orto,
-                &mut camera,
+                &mut look_at_camera,
                 &mut view,
                 &mut speed,
             );
         });
 
-        view.update_camera(&camera);
+        look_at_camera.refresh();
+        view.update_camera(&look_at_camera);
 
         // Prepara view
         if is_view_orto {
@@ -76,7 +87,7 @@ pub unsafe fn game_loop(
         }
 
         // Prepara objetos para serem desenhados
-        draw_queue.push(Drawable::new(&cow, &program));
+        draw_queue.push(Drawable::new(&cube, &program));
         draw_frame(&draw_queue);
 
         // Tempo de renderização de uma frame

@@ -5,10 +5,11 @@ use models::matrix::GLMatrix;
 #[derive(Debug, Copy)]
 pub struct FreeCamera {
     pub pos: glm::Vec4,
-    pub view_matrix: GLMatrix,
     pub distance: f32,
     pub pitch: f32,
     pub yaw: f32,
+    pub view_matrix: GLMatrix,
+    pub front: glm::Vec4,
 }
 
 impl FreeCamera {
@@ -34,21 +35,34 @@ impl FreeCamera {
             pitch: 0.0,
             yaw: 0.0,
             view_matrix: camera_view_matrix(pos_as_point, front * distance, up_world),
+            front,
         }
     }
 
+    #[allow(dead_code)]
+    // Atualiza view matrix da camera para refletir updates
     pub fn refresh(&mut self) -> &Self {
         let pos_as_point = glm::vec4(self.pos.x, self.pos.y, self.pos.z, 1.0);
         let up_world = glm::vec4(0.0, 1.0, 0.0, 0.0);
 
-        let front = normalize_vector(glm::vec4(
+        self.view_matrix = camera_view_matrix(pos_as_point, self.front * self.distance, up_world);
+        self
+    }
+
+    // Atualiza estado da camera a partir dos angulos
+    #[allow(dead_code)]
+    pub fn refresh_as_free_camera(&mut self) -> &Self {
+        let pos_as_point = glm::vec4(self.pos.x, self.pos.y, self.pos.z, 1.0);
+        let up_world = glm::vec4(0.0, 1.0, 0.0, 0.0);
+
+        self.front = normalize_vector(glm::vec4(
             glm::cos(self.yaw) * glm::cos(self.pitch),
             glm::sin(self.pitch),
             glm::sin(self.yaw) * glm::cos(self.pitch),
             0.0,
         ));
 
-        self.view_matrix = camera_view_matrix(pos_as_point, front * self.distance, up_world);
+        self.view_matrix = camera_view_matrix(pos_as_point, self.front * self.distance, up_world);
         self
     }
 }

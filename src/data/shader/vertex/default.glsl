@@ -24,8 +24,8 @@ void main()
     position_model=model_coefficients;
     
     normal=inverse(transpose(model))*normal_coefficients;
-    normal.w=0.;
     
+    normal.w=0.;
     texcoords=texture_coefficients;
     
 }

@@ -27,11 +27,18 @@ uniform vec3 global_lighting;
 // Parametros de origem da camera
 uniform vec4 camera_origin;
 
+// Parametros de reflexão specular
 uniform vec3 specular_reflectance;
 
+// Parametros de luz ambiente
 uniform vec3 ambient_lighting;
 
+// Parametro de sobreescrita de cor
+uniform vec3 color_overide;
+
+// Parametro de expoente q de phong
 uniform float phong_q;
+
 out vec3 color;
 
 // Constantes

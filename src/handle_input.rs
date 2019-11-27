@@ -44,8 +44,6 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::P, _) => *is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {
                     camera.pos.z = camera.pos.z - 0.01;
-                    camera.refresh();
-                    //  camera.translate_position(&glm::vec4(0.00, 0.0, 0.01, 0.0));
                 }
                 (glutin::VirtualKeyCode::S, _) => {
                     camera.pos.z = camera.pos.z + 0.01;
@@ -87,8 +85,6 @@ pub fn handle_input(
                 }
                 camera.pitch = pitch;
                 camera.yaw = yaw;
-                // camera.update_angle(theta, phi);
-                // println!("{:?}", camera);
             }
             _ => (),
         },

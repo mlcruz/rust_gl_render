@@ -28,8 +28,9 @@ pub struct ObjModel {
     bbox_min: glm::Vec3,
     bbox_max: glm::Vec3,
     texture_override: u32,
-    specular_reflectance_overide: glm::Vec3,
     phong_q_overide: f32,
+    specular_reflectance_overide: glm::Vec3,
+    color_overide: glm::Vec3,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -53,6 +54,7 @@ impl ObjModel {
             texture_override: 0,
             specular_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
             phong_q_overide: 1.0,
+            color_overide: glm::vec3(0.0, 0.0, 0.0),
         };
 
         let mut position_array = Vec::new();
@@ -298,6 +300,13 @@ impl ObjModel {
             ..*self
         }
     }
+
+    pub fn with_color(&self, color: &glm::Vec3) -> Self {
+        Self {
+            color_overide: *color,
+            ..*self
+        }
+    }
 }
 
 impl MatrixTransform for ObjModel {
@@ -326,11 +335,15 @@ impl Draw for ObjModel {
 
             gl::BindVertexArray(self.vao);
 
-            // Sobreescreve texture carregada pelo objeto por alguma outra
+            // Carrega uniforms com atributos do objeto
+            // Sobreescreve texture carregada pelo objeto por alguma ou tra
             gl::Uniform1i(
                 gl::GetUniformLocation(*program, CString::new("texture_overide").unwrap().as_ptr()),
                 self.texture_override as i32,
             );
+
+            let color_overide_uniform =
+                gl::GetUniformLocation(*program, CString::new("color_overide").unwrap().as_ptr());
 
             let model_uniform =
                 gl::GetUniformLocation(*program, CString::new("model").unwrap().as_ptr());
@@ -365,6 +378,13 @@ impl Draw for ObjModel {
                 self.bbox_max.y,
                 self.bbox_max.z,
                 1.0,
+            );
+
+            gl::Uniform3f(
+                color_overide_uniform,
+                self.color_overide.x,
+                self.color_overide.y,
+                self.color_overide.z,
             );
 
             gl::Uniform3f(

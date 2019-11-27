@@ -120,6 +120,20 @@ impl SceneObject {
             }),
         }
     }
+
+    pub fn with_color(&self, color: &glm::Vec3) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.with_color(color)),
+            SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
+                root: obj.root.with_color(color),
+                children: obj.children.clone(),
+            }),
+            SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
+                root: obj.root.with_color(color),
+                children: obj.children.clone(),
+            }),
+        }
+    }
     pub unsafe fn load_texture(&self, path: &str) -> Self {
         let (tex, _) = load_texture(path);
         self.with_texture(&tex)
