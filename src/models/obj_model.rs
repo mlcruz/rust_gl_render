@@ -29,10 +29,10 @@ pub struct ObjModel {
     index_len: usize,
     pub bbox_min: glm::Vec3,
     pub bbox_max: glm::Vec3,
-    texture_override: u32,
-    phong_q_overide: f32,
-    specular_reflectance_overide: glm::Vec3,
-    color_overide: glm::Vec3,
+    pub texture_override: u32,
+    pub phong_q_overide: f32,
+    pub specular_reflectance_overide: glm::Vec3,
+    pub color_overide: glm::Vec3,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();

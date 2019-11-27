@@ -95,6 +95,14 @@ impl SceneObject {
         }
     }
 
+    pub fn get_color(&self) -> glm::Vec3 {
+        match self {
+            SceneObject::ObjModel(obj) => obj.color_overide,
+            SceneObject::CompositeObj(obj) => obj.root.color_overide,
+            SceneObject::ComplexObj(obj) => obj.root.color_overide,
+        }
+    }
+
     // Utiliza textura previamente carregada para o obj
     #[allow(dead_code)]
     pub fn with_texture(&self, texture: &u32) -> Self {
@@ -201,8 +209,8 @@ impl SceneObject {
             &obj2_bbox_max_pos,
         )
     }
-
     #[allow(dead_code, unused_assignments)]
+
     // Detecta se um objeto colidiu com outro, buscando recursivamente nos filhos em caso de objs complexos
     pub fn detect_colision(&self, obj2: &SceneObject) -> bool {
         let mut is_coliding = false;

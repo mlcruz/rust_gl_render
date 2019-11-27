@@ -1,1 +1,1 @@
-#[allow(dead_code, unused_assignments)]
+game_state.camera_height = -10.0;

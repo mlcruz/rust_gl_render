@@ -12,7 +12,7 @@ pub fn handle_input(
     game_state: &mut GameState,
     camera: &mut FreeCamera,
     _view: &mut View,
-    speed: &mut f64,
+    speed: &mut f32,
     main_obj: &mut SceneObject,
 ) {
     match event {
@@ -30,15 +30,18 @@ pub fn handle_input(
             } => match (virtual_code, state) {
                 // Atualiza camera
                 (glutin::VirtualKeyCode::Up, _) => {
-                    // camera.update_angle(camera.theta, camera.phi + 0.025);
+                    camera.pos.z = camera.pos.z - 0.025;
                 }
                 (glutin::VirtualKeyCode::Down, _) => {
                     // camera.update_angle(camera.theta, camera.phi - 0.025);
+                    camera.pos.z = camera.pos.z + 0.025;
                 }
                 (glutin::VirtualKeyCode::Left, _) => {
+                    camera.pos.x = camera.pos.x - 0.025;
                     // camera.update_angle(camera.theta + 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::Right, _) => {
+                    camera.pos.x = camera.pos.x + 0.025;
                     // camera.update_angle(camera.theta - 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::End, _) => {}
@@ -46,20 +49,20 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::O, _) => game_state.is_view_orto = true,
                 (glutin::VirtualKeyCode::P, _) => game_state.is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {
-                    //camera.pos.z = camera.pos.z - 0.01;
-                    *main_obj = main_obj.translate(0.0, 0.0, 0.01);
+                    //  camera.pos.z = camera.pos.z - 0.01;
+                    *main_obj = main_obj.translate(0.0, 0.0, *speed);
                 }
                 (glutin::VirtualKeyCode::S, _) => {
                     //camera.pos.z = camera.pos.z + 0.01;
-                    *main_obj = main_obj.translate(0.0, 0.0, -0.01);
+                    *main_obj = main_obj.translate(0.0, 0.0, -*speed);
                 }
                 (glutin::VirtualKeyCode::A, _) => {
                     // camera.pos.x = camera.pos.x - 0.01;
-                    *main_obj = main_obj.translate(0.01, 0.0, 0.00);
+                    *main_obj = main_obj.translate(*speed, 0.0, 0.00);
                 }
                 (glutin::VirtualKeyCode::D, _) => {
                     //camera.pos.x = camera.pos.x + 0.01;
-                    *main_obj = main_obj.translate(-0.01, 0.0, 0.00);
+                    *main_obj = main_obj.translate(-*speed, 0.0, 0.00);
 
                     // let mut new_pos =
                     //     normalize_vector(cross_product(camera.target, camera.up_vector)) * 0.01;
@@ -77,8 +80,8 @@ pub fn handle_input(
         Event::DeviceEvent { event, .. } => match event {
             DeviceEvent::MouseMotion { delta } => {
                 let (xoffset, yoffset) = delta;
-                let yaw = camera.yaw + (((xoffset as f64) * *speed) as f32);
-                let mut pitch = camera.pitch - (((yoffset as f64) * *speed) as f32);
+                let yaw = camera.yaw + (((xoffset as f64) * *speed as f64) as f32);
+                let mut pitch = camera.pitch - (((yoffset as f64) * *speed as f64) as f32);
 
                 let phimax = 3.141592 / 2.0;
                 let phimin = -phimax;
