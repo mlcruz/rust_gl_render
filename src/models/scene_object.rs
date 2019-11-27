@@ -154,6 +154,39 @@ impl SceneObject {
         let (tex, _) = load_texture(path);
         self.with_texture(&tex)
     }
+
+    pub fn check_intersection(&self, obj2: &SceneObject) -> bool {
+        //let model_translation = obj1.model.matrix.c3;
+        let obj1 = self;
+
+        // Utiliza transação do obj para calcular pos global
+        let obj1_t = obj1.get_matrix().matrix.c3;
+        let obj2_t = obj2.get_matrix().matrix.c3;
+        let obj1_bbox_min = obj1.get_bbox_min();
+        let obj1_bbox_max = obj1.get_bbox_max();
+        let obj2_bbox_min = obj2.get_bbox_min();
+        let obj2_bbox_max = obj2.get_bbox_max();
+        // Pos global da bbox  do obj1
+        let obj1_bbox_min_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_min.x, obj1_bbox_min.y, obj1_bbox_min.z, 0.0)
+            + obj1_t;
+        let obj1_bbox_max_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_max.x, obj1_bbox_max.y, obj1_bbox_max.z, 0.0)
+            + obj1_t;
+        // Pos global da bbox  do obj2
+        let obj2_bbox_min_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj2_bbox_min.x, obj2_bbox_min.y, obj2_bbox_min.z, 0.0)
+            + obj2_t;
+        let obj2_bbox_max_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj2_bbox_max.x, obj2_bbox_max.y, obj2_bbox_max.z, 0.0)
+            + obj2_t;
+        check_bbox_bbox_intersection(
+            &obj1_bbox_min_pos,
+            &obj1_bbox_max_pos,
+            &obj2_bbox_min_pos,
+            &obj2_bbox_max_pos,
+        )
+    }
 }
 
 #[allow(dead_code)]
@@ -183,7 +216,7 @@ impl MatrixTransform for SceneObject {
         }
     }
 
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self {
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self {
         match self {
             SceneObject::ObjModel(obj_model) => {
                 let new_me = obj_model.update_matrix(matrix).clone();
@@ -213,4 +246,27 @@ impl MatrixTransform for SceneObject {
             }
         }
     }
+}
+
+#[allow(dead_code)]
+pub fn check_point_bbox_intersection(
+    bbox_min: &glm::Vec4,
+    bbox_max: &glm::Vec4,
+    point: &glm::Vec4,
+) -> bool {
+    return (point.x >= bbox_min.x && point.x <= bbox_max.x)
+        && (point.y >= bbox_min.y && point.y <= bbox_max.y)
+        && (point.z >= bbox_min.z && point.z <= bbox_max.z);
+}
+
+#[allow(dead_code)]
+pub fn check_bbox_bbox_intersection(
+    bbox1_min: &glm::Vec4,
+    bbox1_max: &glm::Vec4,
+    bbox2_min: &glm::Vec4,
+    bbox2_max: &glm::Vec4,
+) -> bool {
+    return (bbox1_min.x <= bbox2_max.x && bbox1_max.x >= bbox2_min.x)
+        && (bbox1_min.y <= bbox2_max.y && bbox1_max.y >= bbox2_min.y)
+        && (bbox1_min.z <= bbox2_max.z && bbox1_max.z >= bbox2_min.z);
 }

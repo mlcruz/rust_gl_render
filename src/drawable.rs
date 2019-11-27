@@ -9,7 +9,7 @@ pub struct Drawable<'a> {
 
 #[allow(dead_code)]
 impl<'a> Drawable<'a> {
-    pub fn new(object: &'a SceneObject, shader: &'a u32) -> Self {
+    pub fn new(object: &'a mut SceneObject, shader: &'a u32) -> Self {
         Drawable { object, shader }
     }
 

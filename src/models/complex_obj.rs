@@ -28,7 +28,7 @@ impl MatrixTransform for ComplexObj {
     fn get_matrix(&self) -> &GLMatrix {
         self.root.get_matrix()
     }
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self {
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self {
         self.root.model.update(matrix);
         self
     }

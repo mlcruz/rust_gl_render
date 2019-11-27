@@ -26,7 +26,7 @@ impl MatrixTransform for CompositeObj {
     fn get_matrix(&self) -> &GLMatrix {
         &self.root.model
     }
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self {
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self {
         self.root.model.update(matrix);
         self
     }

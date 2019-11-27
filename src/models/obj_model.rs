@@ -313,7 +313,7 @@ impl MatrixTransform for ObjModel {
     fn get_matrix(&self) -> &GLMatrix {
         &self.model
     }
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self {
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self {
         self.model = matrix.clone();
         self
     }

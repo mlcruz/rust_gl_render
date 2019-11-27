@@ -2,6 +2,7 @@ extern crate gl;
 extern crate glm;
 extern crate glutin;
 extern crate image;
+extern crate rand;
 extern crate tobj;
 
 mod drawable;

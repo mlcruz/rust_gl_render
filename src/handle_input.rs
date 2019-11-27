@@ -1,5 +1,7 @@
 use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
+use models::scene_object::SceneObject;
 
+use models::matrix::MatrixTransform;
 use world::free_camera::FreeCamera;
 use world::view::View;
 
@@ -11,6 +13,7 @@ pub fn handle_input(
     camera: &mut FreeCamera,
     _view: &mut View,
     speed: &mut f64,
+    main_obj: &mut SceneObject,
 ) {
     match event {
         Event::WindowEvent { event, .. } => match event {
@@ -43,16 +46,20 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::O, _) => *is_view_orto = true,
                 (glutin::VirtualKeyCode::P, _) => *is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {
-                    camera.pos.z = camera.pos.z - 0.01;
+                    //camera.pos.z = camera.pos.z - 0.01;
+                    *main_obj = main_obj.translate(0.0, 0.0, 0.01);
                 }
                 (glutin::VirtualKeyCode::S, _) => {
-                    camera.pos.z = camera.pos.z + 0.01;
+                    //camera.pos.z = camera.pos.z + 0.01;
+                    *main_obj = main_obj.translate(0.0, 0.0, -0.01);
                 }
                 (glutin::VirtualKeyCode::A, _) => {
-                    camera.pos.x = camera.pos.x - 0.01;
+                    // camera.pos.x = camera.pos.x - 0.01;
+                    *main_obj = main_obj.translate(0.01, 0.0, 0.00);
                 }
                 (glutin::VirtualKeyCode::D, _) => {
-                    camera.pos.x = camera.pos.x + 0.01;
+                    //camera.pos.x = camera.pos.x + 0.01;
+                    *main_obj = main_obj.translate(-0.01, 0.0, 0.00);
 
                     // let mut new_pos =
                     //     normalize_vector(cross_product(camera.target, camera.up_vector)) * 0.01;

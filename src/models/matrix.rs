@@ -376,7 +376,7 @@ impl From<[f32; 16]> for GLMatrix {
 
 pub trait MatrixTransform: Sized {
     fn get_matrix(&self) -> &GLMatrix;
-    fn update_matrix(&mut self, matrix: &GLMatrix) -> &Self;
+    fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self;
     fn from_matrix(&self, matrix: &GLMatrix) -> Self;
 
     fn translate(&self, x: f32, y: f32, z: f32) -> Self {
