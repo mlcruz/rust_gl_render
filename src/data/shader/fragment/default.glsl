@@ -39,6 +39,9 @@ uniform vec3 color_overide;
 // Parametro de expoente q de phong
 uniform float phong_q;
 
+// Textura map type: Tipo de mapeamento da textura. 0 - Plano; 1- Planar XY; 2- Esferico; 3- Cilindrico
+uniform int texture_map_type;
+
 out vec3 color;
 void main()
 {

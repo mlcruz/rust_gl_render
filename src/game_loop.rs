@@ -34,9 +34,16 @@ pub unsafe fn game_loop(
     gl_window: &glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::Window>,
 ) {
     // Compila e linka shaders
-    let program = Shader::new(
+    let default_shader = Shader::new(
         "src/data/shader/vertex/default.glsl",
         "src/data/shader/fragment/default.glsl",
+    )
+    .program;
+
+    // Compila e linka shaders
+    let lambert_illumination = Shader::new(
+        "src/data/shader/vertex/default.glsl",
+        "src/data/shader/fragment/lambert_ilumination.glsl",
     )
     .program;
 
@@ -71,6 +78,8 @@ pub unsafe fn game_loop(
         .with_color(&glm::vec3(0.6, 0.6, 0.6));
 
     let framerate = 120.0;
+
+    let mut current_shader = &default_shader;
 
     // Inicializa camera livre
     //let camera = FreeCamera::new(glm::vec3(0.0, 0.0, 0.0), &0.0, &0.0);
@@ -137,6 +146,11 @@ pub unsafe fn game_loop(
                 }
                 game_state.camera_height = -13.0;
                 game_state.look_at = glm::vec4(0.0, -0.35, 1.0, 0.0);
+                game_state.camera_speed_mult = 1.0;
+            }
+
+            if game_state.score > 8 {
+                current_shader = &lambert_illumination;
             }
 
             game_state.draw_queue.push(new_obj);
@@ -173,16 +187,16 @@ pub unsafe fn game_loop(
 
         // Prepara view
         if game_state.is_view_orto {
-            view.ortographic().render(&program);
+            view.ortographic().render(&current_shader);
         } else {
-            view.perpective().render(&program);
+            view.perpective().render(&current_shader);
         }
 
         // Desenha plano
-        plane.draw(&program);
+        plane.draw(&current_shader);
 
         // Desenha objetos
-        draw_frame(&main_obj, &program, &mut game_state);
+        draw_frame(&main_obj, &current_shader, &mut game_state);
 
         // Tempo de renderização de uma frame
         delta_time = timer.elapsed().as_secs_f64();

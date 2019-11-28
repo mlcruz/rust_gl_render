@@ -33,6 +33,7 @@ pub struct ObjModel {
     pub phong_q_overide: f32,
     pub specular_reflectance_overide: glm::Vec3,
     pub color_overide: glm::Vec3,
+    pub texture_map_type: i32,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -43,6 +44,15 @@ impl ObjModel {
         // Carrega arquivo obj
         let (models, _materials) = tobj::load_obj(Path::new(path)).unwrap();
 
+        // Define propriedades do arquivo obj que representa um obj na tela
+        // vao -> Endereço da vao do objeto, não é criada em clones do obj
+        // ebo -> Indices do obj
+        // texture,normal,geometry vbo -> Auto descritivo
+        // model: Matrix model inicial do obj. Padrão é matriz identidade
+        // Tamanho do indice dos vertices do obj
+        // bbox_min/max -> Bounding box computada na inicialização do obj
+        // Texture overide -> Local da textura que sobreescreve a textura atual do obj se texture map type for setado.
+        // Textura map type: Tipo de mapeamento da textura. 0 - Arquivo OBJ; 1- Planar XY; 2- Esferico; 3- Cilindrico
         let mut myself = ObjModel {
             vao: 0u32,
             ebo: 0u32,
@@ -54,6 +64,7 @@ impl ObjModel {
             bbox_min: glm::vec3(0.0, 0.0, 0.0),
             bbox_max: glm::vec3(0.0, 0.0, 0.0),
             texture_override: 0,
+            texture_map_type: 0,
             specular_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
             phong_q_overide: 1.0,
             color_overide: glm::vec3(0.0, 0.0, 0.0),
@@ -274,9 +285,17 @@ impl ObjModel {
         myself
     }
 
-    pub fn with_texture(&self, texture: &u32) -> Self {
+    pub fn with_texture(&self, texture: &u32, texture_map_type: i32) -> Self {
         Self {
             texture_override: *texture,
+            texture_map_type: texture_map_type,
+            ..*self
+        }
+    }
+
+    pub fn with_texture_map_type(&self, texture_map_type: i32) -> Self {
+        Self {
+            texture_map_type: texture_map_type,
             ..*self
         }
     }
@@ -311,7 +330,6 @@ impl ObjModel {
     }
 
     pub fn check_intersection(&self, obj2: &SceneObject) -> bool {
-        //let model_translation = obj1.model.matrix.c3;
         let obj1 = self;
 
         // Utiliza transação do obj para calcular pos global
@@ -374,11 +392,14 @@ impl Draw for ObjModel {
 
             gl::BindVertexArray(self.vao);
 
-            // Carrega uniforms com atributos do objeto
-            // Sobreescreve texture carregada pelo objeto por alguma ou tra
+            // Carrega uniforms com atributos do objeto definidos na inicialização
             gl::Uniform1i(
                 gl::GetUniformLocation(*program, CString::new("texture_overide").unwrap().as_ptr()),
                 self.texture_override as i32,
+            );
+            let texture_map_type_uniform = gl::GetUniformLocation(
+                *program,
+                CString::new("texture_map_type").unwrap().as_ptr(),
             );
 
             let color_overide_uniform =
@@ -411,6 +432,8 @@ impl Draw for ObjModel {
                 1.0,
             );
 
+            gl::Uniform1i(texture_map_type_uniform, self.texture_map_type);
+
             gl::Uniform4f(
                 bbox_max_uniform,
                 self.bbox_max.x,
@@ -441,6 +464,7 @@ impl Draw for ObjModel {
             );
             gl::Uniform1f(phong_q_uniform, self.phong_q_overide);
 
+            // Desenha elemento
             gl::DrawElements(
                 gl::TRIANGLES,
                 self.index_len as i32,

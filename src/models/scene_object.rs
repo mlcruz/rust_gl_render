@@ -105,15 +105,17 @@ impl SceneObject {
 
     // Utiliza textura previamente carregada para o obj
     #[allow(dead_code)]
-    pub fn with_texture(&self, texture: &u32) -> Self {
+    pub fn with_texture(&self, texture: &u32, texture_map_type: i32) -> Self {
         match self {
-            SceneObject::ObjModel(obj) => SceneObject::ObjModel(obj.with_texture(texture)),
+            SceneObject::ObjModel(obj) => {
+                SceneObject::ObjModel(obj.with_texture(texture, texture_map_type))
+            }
             SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
-                root: obj.root.with_texture(texture),
+                root: obj.root.with_texture(texture, texture_map_type),
                 children: obj.children.clone(),
             }),
             SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
-                root: obj.root.with_texture(texture),
+                root: obj.root.with_texture(texture, texture_map_type),
                 children: obj.children.clone(),
             }),
         }
@@ -167,9 +169,26 @@ impl SceneObject {
     }
 
     // Carrega uma textura para o obj
-    pub unsafe fn load_texture(&self, path: &str) -> Self {
+    pub unsafe fn load_texture(&self, path: &str, texture_map_type: i32) -> Self {
         let (tex, _) = load_texture(path);
-        self.with_texture(&tex)
+        self.with_texture(&tex, texture_map_type)
+    }
+    #[allow(dead_code)]
+    // Muda modo de mapeamento de textura para o obj
+    pub unsafe fn with_texture_map_type(&self, texture_map_type: i32) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => {
+                SceneObject::ObjModel(obj.with_texture_map_type(texture_map_type))
+            }
+            SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
+                root: obj.root.with_texture_map_type(texture_map_type),
+                children: obj.children.clone(),
+            }),
+            SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
+                root: obj.root.with_texture_map_type(texture_map_type),
+                children: obj.children.clone(),
+            }),
+        }
     }
 
     // Checa a interseção entra a bbox de 2 objs

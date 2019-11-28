@@ -73,6 +73,14 @@ pub fn handle_input(
 
                     // camera.update_position(&(camera.position + new_pos));
                 }
+                (glutin::VirtualKeyCode::Add, _) => {
+                    game_state.score = game_state.score + 1;
+                    game_state.should_add_obj = true;
+                }
+                (glutin::VirtualKeyCode::Minus, _) => {
+                    game_state.score = game_state.score - 1;
+                    game_state.should_add_obj = true;
+                }
                 _ => (),
             },
             _ => (),
