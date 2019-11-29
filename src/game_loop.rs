@@ -27,6 +27,7 @@ pub struct GameState {
     pub speed_mult: f64,
     pub look_at: glm::Vec4,
     pub camera_speed_mult: f32,
+    pub current_camera: i32,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -68,6 +69,7 @@ pub unsafe fn game_loop(
         speed_mult: 3.0,
         camera_speed_mult: 0.0,
         look_at: glm::vec4(0.0, -1.0, 0.000000000001, 0.0),
+        current_camera: 0,
     };
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
@@ -102,7 +104,8 @@ pub unsafe fn game_loop(
     let mut current_shader = &default_shader;
 
     // Inicializa camera livre
-    //let camera = FreeCamera::new(glm::vec3(0.0, 0.0, 0.0), &0.0, &0.0);
+    let mut free_camera =
+        FreeCamera::new(glm::vec3(0.0, game_state.camera_height, 0.0), &0.0, &0.0);
 
     // Inicializa camera look at e define vetor fixo
     let mut look_at_camera =
@@ -136,6 +139,7 @@ pub unsafe fn game_loop(
                 event,
                 &mut game_state,
                 &mut look_at_camera,
+                &mut free_camera,
                 &mut view,
                 &mut (speed as f32),
                 &mut main_obj,
@@ -261,6 +265,12 @@ pub unsafe fn game_loop(
             if game_state.score == 12 {
                 println!("Phong Ilumination!");
             }
+
+            if game_state.score == 14 {
+                println!("Camera livre!");
+                game_state.current_camera = 1;
+            }
+
             game_state.draw_queue.push(new_obj1);
 
             // Adiciona entre 0 a 2 objetos extras na cena
@@ -291,7 +301,21 @@ pub unsafe fn game_loop(
         look_at_camera.distance = game_state.camera_height - game_state.obj_plane_height;
 
         look_at_camera.refresh();
-        view.update_camera(&look_at_camera);
+
+        // Atualiza estado da camera
+        free_camera.pos = glm::vec4(
+            free_camera.pos.x,
+            game_state.camera_height,
+            free_camera.pos.z,
+            free_camera.pos.w,
+        );
+        free_camera.distance = game_state.camera_height - game_state.obj_plane_height;
+
+        if game_state.current_camera == 0 {
+            view.update_camera(&look_at_camera);
+        } else {
+            view.update_camera(&free_camera);
+        }
 
         // Prepara view
         if game_state.is_view_orto {

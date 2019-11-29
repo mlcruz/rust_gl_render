@@ -10,7 +10,8 @@ use world::view::View;
 pub fn handle_input(
     event: glutin::Event,
     game_state: &mut GameState,
-    camera: &mut FreeCamera,
+    look_at_camera: &mut FreeCamera,
+    free_camera: &mut FreeCamera,
     _view: &mut View,
     speed: &mut f32,
     main_obj: &mut SceneObject,
@@ -30,18 +31,22 @@ pub fn handle_input(
             } => match (virtual_code, state) {
                 // Atualiza camera
                 (glutin::VirtualKeyCode::Up, _) => {
-                    camera.pos.z = camera.pos.z + (*speed * game_state.camera_speed_mult);
+                    look_at_camera.pos.z =
+                        look_at_camera.pos.z + (*speed * game_state.camera_speed_mult);
                 }
                 (glutin::VirtualKeyCode::Down, _) => {
                     // camera.update_angle(camera.theta, camera.phi - 0.025);
-                    camera.pos.z = camera.pos.z - (*speed * game_state.camera_speed_mult);
+                    look_at_camera.pos.z =
+                        look_at_camera.pos.z - (*speed * game_state.camera_speed_mult);
                 }
                 (glutin::VirtualKeyCode::Left, _) => {
-                    camera.pos.x = camera.pos.x + (*speed * game_state.camera_speed_mult);
+                    look_at_camera.pos.x =
+                        look_at_camera.pos.x + (*speed * game_state.camera_speed_mult);
                     // camera.update_angle(camera.theta + 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::Right, _) => {
-                    camera.pos.x = camera.pos.x - (*speed * game_state.camera_speed_mult);
+                    look_at_camera.pos.x =
+                        look_at_camera.pos.x - (*speed * game_state.camera_speed_mult);
                     // camera.update_angle(camera.theta - 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::End, _) => {}
@@ -102,8 +107,8 @@ pub fn handle_input(
         Event::DeviceEvent { event, .. } => match event {
             DeviceEvent::MouseMotion { delta } => {
                 let (xoffset, yoffset) = delta;
-                let yaw = camera.yaw + (((xoffset as f64) * *speed as f64) as f32);
-                let mut pitch = camera.pitch - (((yoffset as f64) * *speed as f64) as f32);
+                let yaw = look_at_camera.yaw + (((xoffset as f64) * *speed as f64) as f32);
+                let mut pitch = look_at_camera.pitch - (((yoffset as f64) * *speed as f64) as f32);
 
                 let phimax = 3.141592 / 2.0;
                 let phimin = -phimax;
@@ -115,8 +120,8 @@ pub fn handle_input(
                 if pitch < phimin {
                     pitch = phimin;
                 }
-                camera.pitch = pitch;
-                camera.yaw = yaw;
+                look_at_camera.pitch = pitch;
+                look_at_camera.yaw = yaw;
             }
             _ => (),
         },

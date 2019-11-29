@@ -1,1 +1,0 @@
-texture_pool.as_slice()[rand_int2 as usize]
