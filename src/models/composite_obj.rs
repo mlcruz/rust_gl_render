@@ -46,7 +46,7 @@ impl Draw for CompositeObj {
 
         self.children.iter().for_each(|item| {
             item.from_matrix(&GLMatrix {
-                matrix: item.model.matrix * self.root.model.matrix,
+                matrix: self.root.model.matrix * item.model.matrix,
             })
             .draw(program);
         });

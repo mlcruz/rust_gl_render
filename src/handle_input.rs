@@ -73,29 +73,29 @@ pub fn handle_input(
 
                     // camera.update_position(&(camera.position + new_pos));
                 }
-                (glutin::VirtualKeyCode::Add, _) => {
+                (glutin::VirtualKeyCode::Add, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score + 1;
                     game_state.should_add_obj = true;
                     println!("{:?}", game_state.score);
                 }
-                (glutin::VirtualKeyCode::Equals, _) => {
+                (glutin::VirtualKeyCode::Equals, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score + 1;
                     game_state.should_add_obj = true;
                     println!("{:?}", game_state.score);
                 }
-                (glutin::VirtualKeyCode::Subtract, _) => {
+                (glutin::VirtualKeyCode::Subtract, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score - 1;
                     game_state.should_add_obj = true;
                     game_state.draw_queue = Vec::new();
                     println!("{:?}", game_state.score);
                 }
-                (glutin::VirtualKeyCode::Minus, _) => {
+                (glutin::VirtualKeyCode::Minus, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score - 1;
                     game_state.should_add_obj = true;
                     game_state.draw_queue = Vec::new();
                     println!("{:?}", game_state.score);
                 }
-                _ => println!("{:?}", virtual_code),
+                _ => (), // _ => println!("{:?} {:?}", virtual_code, state),
             },
             _ => (),
         },

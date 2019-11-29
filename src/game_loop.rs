@@ -1,5 +1,6 @@
 use handle_input::handle_input;
 use models::draw::Draw;
+use models::load_texture::load_texture;
 use models::matrix::normalize_vector;
 use models::matrix::MatrixTransform;
 use models::scene_object::SceneObject;
@@ -56,7 +57,7 @@ pub unsafe fn game_loop(
         should_add_obj: true,
         draw_queue: Vec::new(),
         framerate: 120,
-        score: 5,
+        score: 0,
         camera_height: 0.0,
         obj_plane_height: -20.0,
         speed_mult: 3.0,
@@ -64,19 +65,33 @@ pub unsafe fn game_loop(
         look_at: glm::vec4(0.0, -1.0, 0.000000000001, 0.0),
     };
 
+    let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
+    let (grass_texture, _) = load_texture("src/data/textures/grass.jpg");
+    let (fabric_texture, _) = load_texture("src/data/textures/fabric.jpg");
+    let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
+
+    let texture_pool = vec![&grass_texture, &fabric_texture, &pearl_texture];
+    let plane_pool = vec![&pearl_texture, &fabric_texture];
+    let mut plane = SceneObject::new("src/data/objs/plane.obj")
+        .scale(5.0, 5.0, 5.0)
+        .translate(0.0, game_state.obj_plane_height, 0.0)
+        .with_color(&glm::vec3(0.6, 0.6, 0.6));
+
+    let mut sad_plane = SceneObject::new("src/data/objs/plane.obj")
+        .scale(1.0, 1.0, 1.0)
+        .translate(0.0, game_state.obj_plane_height + 0.001, 0.0)
+        .with_color(&glm::vec3(0.6, 0.6, 0.6));
+
+    let sad_head =
+        SceneObject::new("src/data/objs/sphere.obj").with_color(&glm::vec3(0.0, 0.0, 0.0));
     // Inicializa objetos do cenario
+
     let mut main_obj = SceneObject::new("src/data/objs/cube.obj")
         .with_color(&glm::vec3(1.0, 1.0, 1.0))
         .scale(0.2, 0.2, 0.2)
         .translate(0.0, game_state.obj_plane_height, -0.0);
 
     let base_cube = SceneObject::new("src/data/objs/cube.obj");
-
-    let plane = SceneObject::new("src/data/objs/plane.obj")
-        .scale(8.0, 8.0, 8.0)
-        .translate(0.0, game_state.obj_plane_height, 0.0)
-        .with_color(&glm::vec3(0.6, 0.6, 0.6));
-
     let framerate = 120.0;
 
     let mut current_shader = &default_shader;
@@ -128,37 +143,101 @@ pub unsafe fn game_loop(
             let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
 
             // Posiveis alterações feitas em iterações anteriores são revertidas
-
             game_state.look_at = glm::vec4(0.0, -1.0, 0.000000000001, 0.0);
             game_state.camera_height = 0.0;
-            look_at_camera.pos.z = 0.0;
 
             game_state.is_view_orto = true;
             current_shader = &default_shader;
 
-            if game_state.score > 2 {
+            if game_state.score >= 2 {
                 new_obj = new_obj.with_color(&gen_random_vec3());
                 new_obj2 = new_obj2.with_color(&gen_random_vec3());
                 new_obj3 = new_obj3.with_color(&gen_random_vec3());
             }
 
-            if game_state.score > 4 {
-                let my_color = main_obj.get_color();
-                if my_color.x == 1.0 {
-                    main_obj = main_obj.with_color(&gen_random_vec3());
-                }
+            if game_state.score == 2 {
+                println!("Cor!")
+            }
+            if game_state.score == 4 {
+                main_obj = main_obj.with_color(&gen_random_vec3());
+                let rand_plane_color = gen_random_vec3();
+                plane = plane.with_color(&rand_plane_color);
+                sad_plane = sad_plane.with_color(&rand_plane_color);
+            }
+            if game_state.score == 5 {
+                look_at_camera.pos.z = 0.0;
             }
 
-            if game_state.score > 6 {
+            if game_state.score >= 6 {
                 game_state.is_view_orto = false;
-                look_at_camera.pos.z = -15.0;
-                game_state.camera_height = -13.0;
+                if look_at_camera.pos.z == 0.0
+                    && look_at_camera.pos.x == 0.0
+                    && game_state.camera_height == 0.0
+                {
+                    look_at_camera.pos.z = -6.0;
+                }
+                game_state.camera_height = -17.0;
                 game_state.look_at = glm::vec4(0.0, -0.35, 1.0, 0.0);
                 game_state.camera_speed_mult = 1.0;
             }
-
-            if game_state.score > 8 {
+            if game_state.score == 6 {
+                println!("Proj. Perpesctiva e camera movel!");
+            }
+            if game_state.score >= 8 {
                 current_shader = &lambert_illumination;
+                let rand_int = gen_random_usize() % texture_pool.len();
+
+                main_obj = main_obj.add_children(
+                    &sad_head
+                        .with_texture(&texture_pool.as_slice()[rand_int], 4)
+                        .scale(0.35, 0.35, 0.35)
+                        .translate(0.5, 1.5, -0.0),
+                );
+            }
+            if game_state.score == 8 {
+                println!("Iluminação de lambert!")
+            }
+
+            if game_state.score >= 10 {
+                main_obj = main_obj.with_color(&glm::vec3(0.0, 0.0, 0.0));
+
+                // Textutas aleatorioas
+                let rand_int = gen_random_usize() % texture_pool.len();
+                let rand_int3 = gen_random_usize() % texture_pool.len();
+                let rand_int4 = gen_random_usize() % texture_pool.len();
+                let rand_int5 = gen_random_usize() % texture_pool.len();
+
+                let rand_int2 = gen_random_usize() % plane_pool.len();
+
+                // Tipos Mapeamentos de textura aleatorios
+                let rand_int7 = (gen_random_i32() % 5) + 1;
+                let rand_int8 = (gen_random_i32() % 5) + 1;
+
+                if main_obj.get_texture_override() == 0 {
+                    main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_int], 1);
+                }
+
+                if plane.get_texture_override() == 0 {
+                    plane = plane.with_color(&glm::vec3(0.0, 0.0, 0.0));
+                    plane = plane.with_texture(&plane_pool.as_slice()[rand_int2], 2);
+                    sad_plane = sad_plane.with_color(&glm::vec3(0.0, 0.0, 0.0));
+                    sad_plane = sad_plane.with_texture(&sad_texture, 2);
+                }
+
+                new_obj = new_obj
+                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
+                    .with_texture(&texture_pool.as_slice()[rand_int3], 1);
+                new_obj2 = new_obj2
+                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
+                    .with_texture(&texture_pool.as_slice()[rand_int4], rand_int7);
+
+                new_obj3 = new_obj3
+                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
+                    .with_texture(&texture_pool.as_slice()[rand_int5], rand_int8);
+            }
+
+            if game_state.score == 10 {
+                println!("Texturas!");
             }
 
             game_state.draw_queue.push(new_obj);
@@ -202,9 +281,10 @@ pub unsafe fn game_loop(
 
         // Desenha plano
         plane.draw(&current_shader);
+        sad_plane.draw(&current_shader);
 
         // Desenha objetos
-        draw_frame(&main_obj, &current_shader, &mut game_state);
+        draw_frame(&mut main_obj, &current_shader, &mut game_state);
 
         // Tempo de renderização de uma frame
         delta_time = timer.elapsed().as_secs_f64();
@@ -226,7 +306,7 @@ pub unsafe fn game_loop(
     }
 }
 
-pub fn draw_frame(main: &SceneObject, shader: &u32, game_state: &mut GameState) {
+pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameState) {
     main.draw(shader);
 
     let mut new_items: Vec<SceneObject> = vec![];
@@ -270,6 +350,10 @@ pub fn gen_random() -> f32 {
 
 pub fn gen_random_i32() -> i32 {
     rand::random::<i32>()
+}
+
+pub fn gen_random_usize() -> usize {
+    rand::random::<usize>()
 }
 
 // Gera vec normalizado aletorio

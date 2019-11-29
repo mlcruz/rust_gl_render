@@ -56,14 +56,14 @@ impl Draw for ComplexObj {
             SceneObject::CompositeObj(composite_obj) => {
                 composite_obj
                     .from_matrix(&GLMatrix {
-                        matrix: composite_obj.root.model.matrix * self.root.model.matrix,
+                        matrix: self.root.model.matrix * composite_obj.root.model.matrix,
                     })
                     .draw(program);
             }
             SceneObject::ComplexObj(complex_obj) => {
                 complex_obj
                     .from_matrix(&GLMatrix {
-                        matrix: complex_obj.root.model.matrix * self.root.model.matrix,
+                        matrix: self.root.model.matrix * complex_obj.root.model.matrix,
                     })
                     .draw(program);
             }

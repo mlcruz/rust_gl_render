@@ -103,6 +103,22 @@ impl SceneObject {
         }
     }
 
+    pub fn get_texture_map_type(&self) -> i32 {
+        match self {
+            SceneObject::ObjModel(obj) => obj.texture_map_type,
+            SceneObject::CompositeObj(obj) => obj.root.texture_map_type,
+            SceneObject::ComplexObj(obj) => obj.root.texture_map_type,
+        }
+    }
+
+    pub fn get_texture_override(&self) -> u32 {
+        match self {
+            SceneObject::ObjModel(obj) => obj.texture_override,
+            SceneObject::CompositeObj(obj) => obj.root.texture_override,
+            SceneObject::ComplexObj(obj) => obj.root.texture_override,
+        }
+    }
+
     // Utiliza textura previamente carregada para o obj
     #[allow(dead_code)]
     pub fn with_texture(&self, texture: &u32, texture_map_type: i32) -> Self {

@@ -39,12 +39,16 @@ uniform vec3 color_overide;
 // Parametro de expoente q de phong
 uniform float phong_q;
 
-// Textura map type: Tipo de mapeamento da textura. 0 - ARQUIVO OBJ; 1- Planar XY; 2- Esferico; 3- Cilindrico
+// Textura map type: Tipo de mapeamento da textura. 0 - ARQUIVO OBJ; 1- Planar XY;2- Planar XZ; 3- 2- Planar YZ ; 4- Esferico; 5- Cilindrico
 uniform int texture_map_type;
 
 uniform vec4 lighting_direction;
 
 out vec3 color;
+
+// Constantes
+#define M_PI 3.14159265358979323846
+#define M_PI_2 1.57079632679489661923
 
 void main()
 {
@@ -89,13 +93,51 @@ void main()
             
             U=(position_model.x-minx)/(maxx-minx);
             V=(position_model.y-miny)/(maxy-miny);
+        }else if(texture_map_type==2){
+            
+            // Mapeia textura de maneira planar em zx
+            float minx=bbox_min.x;
+            float maxx=bbox_max.x;
+            
+            float miny=bbox_min.y;
+            float maxy=bbox_max.y;
+            
+            float minz=bbox_min.z;
+            float maxz=bbox_max.z;
+            
+            U=(position_model.x-minx)/(maxx-minx);
+            V=(position_model.z-minz)/(maxz-minz);
+        }else if(texture_map_type==3){
+            
+            // Mapeia textura de maneira planar em yz
+            float minx=bbox_min.x;
+            float maxx=bbox_max.x;
+            
+            float miny=bbox_min.y;
+            float maxy=bbox_max.y;
+            
+            float minz=bbox_min.z;
+            float maxz=bbox_max.z;
+            
+            U=(position_model.y-miny)/(maxy-miny);
+            V=(position_model.z-minz)/(maxz-minz);
+        }
+        else if(texture_map_type==4){
+            
+            vec4 bbox_center=(bbox_min+bbox_max)/2.;
+            float radius=length(bbox_max.x-bbox_center.x);
+            
+            float theta=atan(position_model.x,position_model.z);
+            float phi=asin(position_model.y/radius);
+            
+            U=(theta+M_PI)/(2*M_PI);
+            V=(phi+M_PI_2)/M_PI;
         }
         else{
             
             // Coordenadas de textura do plano, obtidas do arquivo OBJ.
             U=texcoords.x;
             V=texcoords.y;
-            
         }
         
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
@@ -105,9 +147,9 @@ void main()
     vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
-    vec3 ambient_term=color_overide*ambient_lighting;
+    vec3 ambient_term=object_reflectance*ambient_lighting;
     
-    color=(lambert_diffuse_term*object_reflectance);
+    color=(lambert_diffuse_term*object_reflectance)+ambient_term;
     
     color=pow(color,vec3(1.,1.,1.)/2.2);
 }
