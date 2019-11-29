@@ -106,22 +106,25 @@ pub fn handle_input(
         },
         Event::DeviceEvent { event, .. } => match event {
             DeviceEvent::MouseMotion { delta } => {
-                let (xoffset, yoffset) = delta;
-                let yaw = look_at_camera.yaw + (((xoffset as f64) * *speed as f64) as f32);
-                let mut pitch = look_at_camera.pitch - (((yoffset as f64) * *speed as f64) as f32);
+                if game_state.current_camera == 1 {
+                    let (xoffset, yoffset) = delta;
+                    let yaw = free_camera.yaw + (((xoffset as f64) * (*speed / 3.0) as f64) as f32);
+                    let mut pitch =
+                        free_camera.pitch - (((yoffset as f64) * (*speed / 3.0) as f64) as f32);
 
-                let phimax = 3.141592 / 2.0;
-                let phimin = -phimax;
+                    let phimax = 3.141592 / 2.0;
+                    let phimin = -phimax;
 
-                if pitch > phimax {
-                    pitch = phimax;
+                    if pitch > phimax {
+                        pitch = phimax;
+                    }
+
+                    if pitch < phimin {
+                        pitch = phimin;
+                    }
+                    free_camera.pitch = pitch;
+                    free_camera.yaw = yaw;
                 }
-
-                if pitch < phimin {
-                    pitch = phimin;
-                }
-                look_at_camera.pitch = pitch;
-                look_at_camera.yaw = yaw;
             }
             _ => (),
         },

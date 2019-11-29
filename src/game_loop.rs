@@ -148,7 +148,7 @@ pub unsafe fn game_loop(
                 &mut main_obj,
             );
         });
-        // Gera uma alteração de estado do loop do logo
+        // Gera uma alteração de estado do loop do jogo
         if game_state.should_add_obj {
             let mut new_obj1 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
@@ -282,6 +282,7 @@ pub unsafe fn game_loop(
             }
 
             if game_state.score > 16 {
+                main_obj = main_obj.get_root();
                 game_state.current_camera = 1;
             }
             if (game_state.score == 16) {
@@ -306,8 +307,9 @@ pub unsafe fn game_loop(
             game_state.should_add_obj = false;
         }
 
+        // Atualiza estado da camera look-at
         if move_camera {
-            // Atualiza estado da camera look-at
+            // Camera movel
             look_at_camera.pos = glm::vec4(
                 main_obj.get_matrix().matrix.c3.x,
                 main_obj.get_matrix().matrix.c3.y + 0.5,
@@ -318,7 +320,7 @@ pub unsafe fn game_loop(
             look_at_camera.front = game_state.look_at;
             look_at_camera.distance = game_state.camera_height - game_state.obj_plane_height;
         } else {
-            // Atualiza estado da camera look-at
+            // Camera fixa
             look_at_camera.pos = glm::vec4(
                 look_at_camera.pos.x,
                 game_state.camera_height,
@@ -336,7 +338,7 @@ pub unsafe fn game_loop(
         free_camera.pos = glm::vec4(
             main_obj.get_matrix().matrix.c3.x,
             main_obj.get_matrix().matrix.c3.y + 0.5,
-            main_obj.get_matrix().matrix.c3.z - 0.5,
+            main_obj.get_matrix().matrix.c3.z + 0.2,
             free_camera.pos.w,
         );
         free_camera.refresh_as_free_camera();

@@ -86,6 +86,14 @@ impl SceneObject {
         }
     }
 
+    pub fn get_root(&self) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => SceneObject::ObjModel(*obj),
+            SceneObject::CompositeObj(obj) => SceneObject::ObjModel(obj.root),
+            SceneObject::ComplexObj(obj) => SceneObject::ObjModel(obj.root),
+        }
+    }
+
     // Retorma bbox maxima da raiz
     pub fn get_bbox_max(&self) -> glm::Vec3 {
         match self {
