@@ -48,6 +48,11 @@ pub unsafe fn game_loop(
     )
     .program;
 
+    let phong_illumination = Shader::new(
+        "src/data/shader/vertex/default.glsl",
+        "src/data/shader/fragment/phong_ilumination.glsl",
+    )
+    .program;
     gl::Enable(gl::DEPTH_TEST);
 
     // Inicializa estado do jogo
@@ -138,7 +143,7 @@ pub unsafe fn game_loop(
         });
         // Gera uma alteração de estado do loop do logo
         if game_state.should_add_obj {
-            let mut new_obj = generate_random_obj(&base_cube, game_state.obj_plane_height);
+            let mut new_obj1 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
 
@@ -150,7 +155,7 @@ pub unsafe fn game_loop(
             current_shader = &default_shader;
 
             if game_state.score >= 2 {
-                new_obj = new_obj.with_color(&gen_random_vec3());
+                new_obj1 = new_obj1.with_color(&gen_random_vec3());
                 new_obj2 = new_obj2.with_color(&gen_random_vec3());
                 new_obj3 = new_obj3.with_color(&gen_random_vec3());
             }
@@ -224,7 +229,7 @@ pub unsafe fn game_loop(
                     sad_plane = sad_plane.with_texture(&sad_texture, 2);
                 }
 
-                new_obj = new_obj
+                new_obj1 = new_obj1
                     .with_color(&glm::vec3(0.0, 0.0, 0.0))
                     .with_texture(&texture_pool.as_slice()[rand_int3], 1);
                 new_obj2 = new_obj2
@@ -240,7 +245,23 @@ pub unsafe fn game_loop(
                 println!("Texturas!");
             }
 
-            game_state.draw_queue.push(new_obj);
+            if game_state.score >= 12 {
+                current_shader = &phong_illumination;
+                plane = plane
+                    .with_specular_reflectance(&glm::vec3(0.6, 0.2, 0.4))
+                    .with_specular_phong_q(&8.0);
+
+                main_obj = main_obj.with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3));
+
+                new_obj1 = new_obj1.with_specular_reflectance(&gen_random_vec3());
+                new_obj2 = new_obj2.with_specular_reflectance(&gen_random_vec3());
+                new_obj3 = new_obj3.with_specular_reflectance(&gen_random_vec3());
+            }
+
+            if game_state.score == 12 {
+                println!("Phong Ilumination!");
+            }
+            game_state.draw_queue.push(new_obj1);
 
             // Adiciona entre 0 a 2 objetos extras na cena
             if game_state.score > 2 {

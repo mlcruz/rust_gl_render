@@ -39,10 +39,9 @@ uniform vec3 color_overide;
 // Parametro de expoente q de phong
 uniform float phong_q;
 
-// Textura map type: Tipo de mapeamento da textura. 0 - Plano; 1- Planar XY; 2- Esferico; 3- Cilindrico
+// Textura map type: Tipo de mapeamento da textura. 0 - ARQUIVO OBJ; 1- Planar XY;2- Planar XZ; 3- 2- Planar YZ ; 4- Esferico; 5- Cilindrico
 uniform int texture_map_type;
 
-// Vetor do sentido da iluminação global
 uniform vec4 lighting_direction;
 
 out vec3 color;
@@ -51,14 +50,10 @@ out vec3 color;
 #define M_PI 3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
 
-// Coordenadas de textura U e V
-float U=0.;
-float V=0.;
-
 void main()
 {
+    // INICIALIZAÇÂO:
     
-    // Obtemos a posição da câmera utilizando a inversa da matriz que define o
     // sistema de coordenadas da câmera.
     vec4 camera_position=inverse(view)*camera_origin;
     
@@ -74,36 +69,95 @@ void main()
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v=normalize(camera_position-p);
     
+    // Coordenadas de textura U e V
+    float U=0.;
+    float V=0.;
+    
+    vec3 object_reflectance=color_overide;
+    
     // Vetor que define o sentido da reflexão especular ideal.
     vec4 r=-l+2*n*(dot(n,l));
+
+    // FIM INICIALIZACAO
     
-    float minx=bbox_min.x;
-    float maxx=bbox_max.x;
-    
-    float miny=bbox_min.y;
-    float maxy=bbox_max.y;
-    
-    float minz=bbox_min.z;
-    float maxz=bbox_max.z;
-    
-    U=(position_model.x-minx)/(maxx-minx);
-    V=(position_model.y-miny)/(maxy-miny);
-    
-    vec3 Kd0=texture(texture_overide,vec2(U,V)).rgb;
+    // Se não exite cor para sobreescrever textura atual, utiliza textura
+    if(color_overide==vec3(0.,0.,0.)){
+        if(texture_map_type==1){
+            
+            // Mapeia textura de maneira planar em xy
+            float minx=bbox_min.x;
+            float maxx=bbox_max.x;
+            
+            float miny=bbox_min.y;
+            float maxy=bbox_max.y;
+            
+            float minz=bbox_min.z;
+            float maxz=bbox_max.z;
+            
+            U=(position_model.x-minx)/(maxx-minx);
+            V=(position_model.y-miny)/(maxy-miny);
+        }else if(texture_map_type==2){
+            
+            // Mapeia textura de maneira planar em zx
+            float minx=bbox_min.x;
+            float maxx=bbox_max.x;
+            
+            float miny=bbox_min.y;
+            float maxy=bbox_max.y;
+            
+            float minz=bbox_min.z;
+            float maxz=bbox_max.z;
+            
+            U=(position_model.x-minx)/(maxx-minx);
+            V=(position_model.z-minz)/(maxz-minz);
+        }else if(texture_map_type==3){
+            
+            // Mapeia textura de maneira planar em yz
+            float minx=bbox_min.x;
+            float maxx=bbox_max.x;
+            
+            float miny=bbox_min.y;
+            float maxy=bbox_max.y;
+            
+            float minz=bbox_min.z;
+            float maxz=bbox_max.z;
+            
+            U=(position_model.y-miny)/(maxy-miny);
+            V=(position_model.z-minz)/(maxz-minz);
+        }
+        else if(texture_map_type==4){
+            
+            vec4 bbox_center=(bbox_min+bbox_max)/2.;
+            float radius=length(bbox_max.x-bbox_center.x);
+            
+            float theta=atan(position_model.x,position_model.z);
+            float phi=asin(position_model.y/radius);
+            
+            U=(theta+M_PI)/(2*M_PI);
+            V=(phi+M_PI_2)/M_PI;
+        }
+        else{
+            
+            // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+            U=texcoords.x;
+            V=texcoords.y;
+        }
+        
+        object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
+    }
     
     // Termo difuso utilizando a lei dos cossenos de Lambert
-    vec3 lambert_diffuse_term=Kd0*global_lighting*max(0,dot(n,l));
+    vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
-    vec3 ambient_term=Kd0*ambient_lighting;
-    
+    vec3 ambient_term=object_reflectance*ambient_lighting;
+
     // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=specular_reflectance*global_lighting*pow(max(0,dot(r,v)),phong_q);
+    vec3 phong_specular_term=global_lighting*pow(max(0,dot(r,v)),phong_q);
     
-    color=lambert_diffuse_term+ambient_term+phong_specular_term;
+    // Multiplicamos o vetor de refletancia especular pela cor da textura
+    color=(lambert_diffuse_term*object_reflectance)+ambient_term+((object_reflectance*specular_reflectance)*phong_specular_term);
     
-    // Cor final com correção gamma, considerando monitor sRGB.
-    // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
     color=pow(color,vec3(1.,1.,1.)/2.2);
 }
 
