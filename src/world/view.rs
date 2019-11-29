@@ -34,6 +34,7 @@ impl View {
             lighting: Lighting::new(
                 &glm::vec3(1.0, 1.0, 1.0),
                 &glm::vec3(0.9412, 0.7255, 0.7255),
+                &glm::vec4(1.0, 1.0, 0.0, 0.0),
             ),
         }
     }
@@ -50,6 +51,11 @@ impl View {
             let global_lighting_uniform =
                 gl::GetUniformLocation(*program, CString::new("global_lighting").unwrap().as_ptr());
 
+            let global_lighting_direction_uniform = gl::GetUniformLocation(
+                *program,
+                CString::new("lighting_direction").unwrap().as_ptr(),
+            );
+
             let camera_origin_uniform =
                 gl::GetUniformLocation(*program, CString::new("camera_origin").unwrap().as_ptr());
 
@@ -57,7 +63,6 @@ impl View {
                 *program,
                 CString::new("ambient_lighting").unwrap().as_ptr(),
             );
-
             gl::Uniform3f(
                 ambient_lighting_uniform,
                 self.lighting.ambient.x,
@@ -92,6 +97,14 @@ impl View {
                 camera_origin.y,
                 camera_origin.z,
                 camera_origin.w,
+            );
+
+            gl::Uniform4f(
+                global_lighting_direction_uniform,
+                self.lighting.global_direction.x,
+                self.lighting.global_direction.y,
+                self.lighting.global_direction.z,
+                self.lighting.global_direction.w,
             );
         }
         *self
@@ -128,8 +141,8 @@ impl View {
 
     pub fn with_ambient_lighting(&self, ambient: &glm::Vec3) -> Self {
         let new_lighting = Lighting {
-            global: self.lighting.global,
             ambient: *ambient,
+            ..self.lighting
         };
         Self {
             lighting: new_lighting,
@@ -140,7 +153,18 @@ impl View {
     pub fn with_global_lighting(&self, global: &glm::Vec3) -> Self {
         let new_lighting = Lighting {
             global: *global,
-            ambient: self.lighting.ambient,
+            ..self.lighting
+        };
+        Self {
+            lighting: new_lighting,
+            ..*self
+        }
+    }
+
+    pub fn with_global_direction(&self, global_direction: &glm::Vec4) -> Self {
+        let new_lighting = Lighting {
+            global_direction: *global_direction,
+            ..self.lighting
         };
         Self {
             lighting: new_lighting,

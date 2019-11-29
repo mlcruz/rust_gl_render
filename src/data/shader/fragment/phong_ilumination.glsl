@@ -42,6 +42,9 @@ uniform float phong_q;
 // Textura map type: Tipo de mapeamento da textura. 0 - Plano; 1- Planar XY; 2- Esferico; 3- Cilindrico
 uniform int texture_map_type;
 
+// Vetor do sentido da iluminação global
+uniform vec4 lighting_direction;
+
 out vec3 color;
 
 // Constantes
@@ -66,7 +69,7 @@ void main()
     vec4 n=normalize(normal);
     
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l=normalize(vec4(1.,1.,0.,0.));
+    vec4 l=normalize(lighting_direction);
     
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v=normalize(camera_position-p);
