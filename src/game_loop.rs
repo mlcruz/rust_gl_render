@@ -112,6 +112,7 @@ pub unsafe fn game_loop(
         FreeCamera::new(glm::vec3(0.0, game_state.camera_height, 0.0), &0.0, &0.0);
 
     look_at_camera.front = game_state.look_at;
+    free_camera.front = game_state.look_at;
 
     // Inicializa camera
     // Inicializa matriz de projeção com a camera criada
@@ -122,6 +123,8 @@ pub unsafe fn game_loop(
 
     // Controle de velocidade
     let mut speed = 0.0f64;
+
+    let mut move_camera = false;
 
     loop {
         // Inicializa cronometro de tempo de renderização de uma frame
@@ -150,13 +153,15 @@ pub unsafe fn game_loop(
             let mut new_obj1 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
+            move_camera = false;
 
             // Posiveis alterações feitas em iterações anteriores são revertidas
             game_state.look_at = glm::vec4(0.0, -1.0, 0.000000000001, 0.0);
             game_state.camera_height = 0.0;
-
             game_state.is_view_orto = true;
             current_shader = &default_shader;
+
+            game_state.current_camera = 0;
 
             if game_state.score >= 2 {
                 new_obj1 = new_obj1.with_color(&gen_random_vec3());
@@ -170,6 +175,7 @@ pub unsafe fn game_loop(
             if game_state.score == 4 {
                 main_obj = main_obj.with_color(&gen_random_vec3());
                 let rand_plane_color = gen_random_vec3();
+
                 plane = plane.with_color(&rand_plane_color);
                 sad_plane = sad_plane.with_color(&rand_plane_color);
             }
@@ -184,6 +190,7 @@ pub unsafe fn game_loop(
                     && game_state.camera_height == 0.0
                 {
                     look_at_camera.pos.z = -6.0;
+                    free_camera.pos.z = -6.0;
                 }
                 game_state.camera_height = -17.0;
                 game_state.look_at = glm::vec4(0.0, -0.35, 1.0, 0.0);
@@ -268,7 +275,17 @@ pub unsafe fn game_loop(
 
             if game_state.score == 14 {
                 println!("Camera livre!");
+            }
+
+            if game_state.score > 14 {
+                move_camera = true;
+            }
+
+            if game_state.score > 16 {
                 game_state.current_camera = 1;
+            }
+            if (game_state.score == 16) {
+                println!("Primeira Pessoa!")
             }
 
             game_state.draw_queue.push(new_obj1);
@@ -289,27 +306,40 @@ pub unsafe fn game_loop(
             game_state.should_add_obj = false;
         }
 
-        // Atualiza estado da camera
-        look_at_camera.pos = glm::vec4(
-            look_at_camera.pos.x,
-            game_state.camera_height,
-            look_at_camera.pos.z,
-            look_at_camera.pos.w,
-        );
+        if move_camera {
+            // Atualiza estado da camera look-at
+            look_at_camera.pos = glm::vec4(
+                main_obj.get_matrix().matrix.c3.x,
+                main_obj.get_matrix().matrix.c3.y + 0.5,
+                main_obj.get_matrix().matrix.c3.z - 0.5,
+                look_at_camera.pos.w,
+            );
 
-        look_at_camera.front = game_state.look_at;
-        look_at_camera.distance = game_state.camera_height - game_state.obj_plane_height;
+            look_at_camera.front = game_state.look_at;
+            look_at_camera.distance = game_state.camera_height - game_state.obj_plane_height;
+        } else {
+            // Atualiza estado da camera look-at
+            look_at_camera.pos = glm::vec4(
+                look_at_camera.pos.x,
+                game_state.camera_height,
+                look_at_camera.pos.z,
+                look_at_camera.pos.w,
+            );
+
+            look_at_camera.front = game_state.look_at;
+            look_at_camera.distance = game_state.camera_height - game_state.obj_plane_height;
+        }
 
         look_at_camera.refresh();
 
-        // Atualiza estado da camera
+        // Atualiza estado da camera free
         free_camera.pos = glm::vec4(
-            free_camera.pos.x,
-            game_state.camera_height,
-            free_camera.pos.z,
+            main_obj.get_matrix().matrix.c3.x,
+            main_obj.get_matrix().matrix.c3.y + 0.5,
+            main_obj.get_matrix().matrix.c3.z - 0.5,
             free_camera.pos.w,
         );
-        free_camera.distance = game_state.camera_height - game_state.obj_plane_height;
+        free_camera.refresh_as_free_camera();
 
         if game_state.current_camera == 0 {
             view.update_camera(&look_at_camera);
