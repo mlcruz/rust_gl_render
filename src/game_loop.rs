@@ -285,7 +285,7 @@ pub unsafe fn game_loop(
                 main_obj = main_obj.get_root();
                 game_state.current_camera = 1;
             }
-            if (game_state.score == 16) {
+            if game_state.score == 16 {
                 println!("Primeira Pessoa!")
             }
 
