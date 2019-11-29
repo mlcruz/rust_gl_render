@@ -76,12 +76,26 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Add, _) => {
                     game_state.score = game_state.score + 1;
                     game_state.should_add_obj = true;
+                    println!("{:?}", game_state.score);
+                }
+                (glutin::VirtualKeyCode::Equals, _) => {
+                    game_state.score = game_state.score + 1;
+                    game_state.should_add_obj = true;
+                    println!("{:?}", game_state.score);
+                }
+                (glutin::VirtualKeyCode::Subtract, _) => {
+                    game_state.score = game_state.score - 1;
+                    game_state.should_add_obj = true;
+                    game_state.draw_queue = Vec::new();
+                    println!("{:?}", game_state.score);
                 }
                 (glutin::VirtualKeyCode::Minus, _) => {
                     game_state.score = game_state.score - 1;
                     game_state.should_add_obj = true;
+                    game_state.draw_queue = Vec::new();
+                    println!("{:?}", game_state.score);
                 }
-                _ => (),
+                _ => println!("{:?}", virtual_code),
             },
             _ => (),
         },

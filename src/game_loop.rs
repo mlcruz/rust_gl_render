@@ -72,7 +72,7 @@ pub unsafe fn game_loop(
 
     let base_cube = SceneObject::new("src/data/objs/cube.obj");
 
-    let mut plane = SceneObject::new("src/data/objs/plane.obj")
+    let plane = SceneObject::new("src/data/objs/plane.obj")
         .scale(8.0, 8.0, 8.0)
         .translate(0.0, game_state.obj_plane_height, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.6));
@@ -121,10 +121,20 @@ pub unsafe fn game_loop(
                 &mut main_obj,
             );
         });
+        // Gera uma alteração de estado do loop do logo
         if game_state.should_add_obj {
             let mut new_obj = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
+
+            // Posiveis alterações feitas em iterações anteriores são revertidas
+
+            game_state.look_at = glm::vec4(0.0, -1.0, 0.000000000001, 0.0);
+            game_state.camera_height = 0.0;
+            look_at_camera.pos.z = 0.0;
+
+            game_state.is_view_orto = true;
+            current_shader = &default_shader;
 
             if game_state.score > 2 {
                 new_obj = new_obj.with_color(&gen_random_vec3());
@@ -141,9 +151,7 @@ pub unsafe fn game_loop(
 
             if game_state.score > 6 {
                 game_state.is_view_orto = false;
-                if game_state.score == 7 {
-                    look_at_camera.pos.z = look_at_camera.pos.z - 15.0;
-                }
+                look_at_camera.pos.z = -15.0;
                 game_state.camera_height = -13.0;
                 game_state.look_at = glm::vec4(0.0, -0.35, 1.0, 0.0);
                 game_state.camera_speed_mult = 1.0;
