@@ -327,4 +327,24 @@ pub fn handle_input(
         },
         _ => (),
     }
+
+    if view.lighting.ambient.x < 0.0 {
+        view.lighting.ambient.x = 0.0
+    }
+    if view.lighting.ambient.y < 0.0 {
+        view.lighting.ambient.y = 0.0
+    }
+    if view.lighting.ambient.z < 0.0 {
+        view.lighting.ambient.z = 0.0
+    }
+
+    if view.lighting.global.x < 0.0 {
+        view.lighting.global.x = 0.0
+    }
+    if view.lighting.global.y < 0.0 {
+        view.lighting.global.y = 0.0
+    }
+    if view.lighting.global.z < 0.0 {
+        view.lighting.global.z = 0.0
+    }
 }

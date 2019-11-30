@@ -93,17 +93,17 @@ pub unsafe fn game_loop(
     //let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
     let (dark_wood_texture, _) = load_texture("src/data/textures/dark_wood.jpg");
     let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
-    let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
+    //  let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
     // let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
 
     // let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
-    let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
+    //let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
     //  let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
 
     let texture_pool = vec![
         // &pearl_texture,
         &gold_texture,
-        &sea_water_texture,
+        //   &sea_water_texture,
         //  &copper_texture,
         // &steel_texture,
         // &dark_wood_texture,
@@ -114,7 +114,7 @@ pub unsafe fn game_loop(
     let plane_pool = vec![
         //  &pearl_texture,
         &dark_wood_texture,
-        &ice_texture,
+        //   &ice_texture,
         //   &light_wood,
         //  &old_wood_texture,
     ];
@@ -128,7 +128,8 @@ pub unsafe fn game_loop(
     let mut sad_plane = SceneObject::new("src/data/objs/plane.obj")
         .scale(1.0, 1.0, 1.0)
         .translate(0.0, game_state.obj_plane_height + 0.001, 0.0)
-        .with_color(&glm::vec3(0.6, 0.6, 0.6));
+        .with_color(&glm::vec3(0.6, 0.6, 0.6))
+        .with_ambient_reflectance(&glm::vec3(1.0, 1.0, 1.0));
 
     let sad_head =
         SceneObject::new("src/data/objs/sphere.obj").with_color(&glm::vec3(0.0, 0.0, 0.0));
@@ -647,7 +648,7 @@ pub fn generate_random_obj(base: &SceneObject, obj_plane_height: f32) -> SceneOb
             glm::max(0.1, glm::min(seedf1 * 0.5, 0.2)),
             glm::max(0.1, glm::min(seedf1 * 0.5, 0.2)),
         )
-        .translate(4.0 * seed1.x, obj_plane_height, 4.0 * seed1.z);
+        .translate(4.6 * seed1.x, obj_plane_height, 4.6 * seed1.z);
     new_obj
 }
 

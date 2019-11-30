@@ -135,15 +135,15 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
-    vec3 final_ambient_reflectance=vec3((object_reflectance.x*.2)+.1,(object_reflectance.y*.2)+.1,(object_reflectance.z*.2)+.1);
+    // Termo difuso utilizando a lei dos cossenos de Lambert
+    vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
+    
+    vec3 final_ambient_reflectance=lambert_diffuse_term/2;
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
     if(ambient_reflectance!=vec3(0.,0.,0.)){
         final_ambient_reflectance=ambient_reflectance;
     }
-    
-    // Termo difuso utilizando a lei dos cossenos de Lambert
-    vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
     vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
@@ -153,7 +153,7 @@ void main()
     
     // Multiplicamos o vetor de refletancia especular pela cor da textura
     // Utilizamos um vetor (specular_reflectance) para controlar a intensidade da refletancia especular do objeto
-    color=(lambert_diffuse_term*object_reflectance)+ambient_term+((object_reflectance*specular_reflectance)*phong_specular_term);
+    color=(lambert_diffuse_term*object_reflectance)+ambient_term+(specular_reflectance*phong_specular_term);
     
     color=pow(color,vec3(1.,1.,1.)/2.2);
 }
