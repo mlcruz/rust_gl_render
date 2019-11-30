@@ -31,10 +31,11 @@ pub struct ObjModel {
     pub bbox_max: glm::Vec3,
     pub texture_override: u32,
     pub phong_q_overide: f32,
-    pub specular_reflectance_overide: glm::Vec3,
+    pub specular_reflectance_override: glm::Vec3,
     pub ambient_reflectance_overide: glm::Vec3,
     pub color_overide: glm::Vec3,
     pub texture_map_type: i32,
+    pub lighting_direction_override: glm::Vec4,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -67,10 +68,11 @@ impl ObjModel {
             bbox_max: glm::vec3(0.0, 0.0, 0.0),
             texture_override: 0,
             texture_map_type: 0,
-            specular_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
+            specular_reflectance_override: glm::vec3(0.0, 0.0, 0.0),
             ambient_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
             phong_q_overide: 1.0,
             color_overide: glm::vec3(0.0, 0.0, 0.0),
+            lighting_direction_override: glm::vec4(0.0, 0.0, 0.0, 0.0),
         };
 
         let mut position_array = Vec::new();
@@ -313,7 +315,17 @@ impl ObjModel {
 
     pub fn with_specular_reflectance(&self, specular_reflectance: &glm::Vec3) -> Self {
         Self {
-            specular_reflectance_overide: *specular_reflectance,
+            specular_reflectance_override: *specular_reflectance,
+            ..*self
+        }
+    }
+
+    pub fn with_lighting_direction_override(
+        &self,
+        lighting_direction_override: &glm::Vec4,
+    ) -> Self {
+        Self {
+            lighting_direction_override: *lighting_direction_override,
             ..*self
         }
     }
@@ -428,6 +440,12 @@ impl Draw for ObjModel {
                 *program,
                 CString::new("specular_reflectance").unwrap().as_ptr(),
             );
+            let lighting_direction_uniform = gl::GetUniformLocation(
+                *program,
+                CString::new("lighting_direction_override")
+                    .unwrap()
+                    .as_ptr(),
+            );
 
             let ambient_reflectance_uniform = gl::GetUniformLocation(
                 *program,
@@ -456,6 +474,13 @@ impl Draw for ObjModel {
                 self.bbox_max.z,
                 1.0,
             );
+            gl::Uniform4f(
+                lighting_direction_uniform,
+                self.lighting_direction_override.x,
+                self.lighting_direction_override.y,
+                self.lighting_direction_override.z,
+                1.0,
+            );
 
             gl::Uniform3f(
                 color_overide_uniform,
@@ -466,9 +491,9 @@ impl Draw for ObjModel {
 
             gl::Uniform3f(
                 specular_reflectance_uniform,
-                self.specular_reflectance_overide.x,
-                self.specular_reflectance_overide.y,
-                self.specular_reflectance_overide.z,
+                self.specular_reflectance_override.x,
+                self.specular_reflectance_override.y,
+                self.specular_reflectance_override.z,
             );
 
             gl::Uniform3f(

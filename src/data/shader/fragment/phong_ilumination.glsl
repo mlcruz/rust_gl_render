@@ -45,7 +45,11 @@ uniform float phong_q;
 // Textura map type: Tipo de mapeamento da textura. 0 - ARQUIVO OBJ; 1- Planar XY;2- Planar XZ; ; 3- Esferico; 4- Cilindrico
 uniform int texture_map_type;
 
+// Direção da iluminação global
 uniform vec4 lighting_direction;
+
+// Possivel vetor de sobrescrita da iluminaçção global
+uniform vec4 lighting_direction_override;.
 
 out vec3 color;
 
@@ -68,6 +72,11 @@ void main()
     
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
     vec4 l=normalize(lighting_direction);
+    
+    // Sobreescreve iluminação global, se existir parametro
+    if(lighting_direction_override!=vec4(0.,0.,0.,0.)){
+        l=normalize(lighting_direction_override);
+    }
     
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v=normalize(camera_position-p);

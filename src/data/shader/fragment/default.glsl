@@ -45,7 +45,11 @@ uniform float phong_q;
 // Textura map type: Tipo de mapeamento da textura. 0 - Plano; 1- Planar XY; 2- Esferico; 3- Cilindrico
 uniform int texture_map_type;
 
+// Direção da iluminação global
 uniform vec4 lighting_direction;
+
+// Possivel vetor de sobrescrita da iluminaçção global
+uniform vec4 lighting_direction_override;
 
 out vec3 color;
 void main()
