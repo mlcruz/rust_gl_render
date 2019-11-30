@@ -37,6 +37,11 @@ fn main() {
     gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
 
     unsafe {
+        // Habilita Backface Culling
+        gl::Enable(gl::CULL_FACE);
+        gl::CullFace(gl::BACK);
+        gl::FrontFace(gl::CCW);
+
         game_loop(&mut events_loop, &gl_window);
     }
 }

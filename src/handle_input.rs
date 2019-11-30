@@ -3,6 +3,7 @@ use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
 use models::matrix::cross_product;
 use models::matrix::normalize_vector;
 use models::scene_object::SceneObject;
+use world::lighting::Lighting;
 
 use models::matrix::MatrixTransform;
 use world::free_camera::FreeCamera;
@@ -31,7 +32,7 @@ pub fn handle_input(
                     },
                 ..
             } => match (virtual_code, state) {
-                //Trata input do usuario
+                // Trata input do usuario
                 // Atualiza camera
                 (glutin::VirtualKeyCode::Up, _) => {
                     look_at_camera.pos.z =
@@ -48,6 +49,13 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Right, _) => {
                     look_at_camera.pos.x =
                         look_at_camera.pos.x - (*speed * game_state.camera_speed_mult);
+                }
+                (glutin::VirtualKeyCode::R, _) => {
+                    view.lighting = Lighting::new(
+                        &glm::vec3(1.0, 1.0, 1.0),
+                        &glm::vec3(0.9412, 0.7255, 0.7255),
+                        &glm::vec4(1.0, 1.0, 0.0, 0.0),
+                    );
                 }
                 (glutin::VirtualKeyCode::Numpad7, _) => {
                     view.lighting.global = glm::vec3(
@@ -290,6 +298,7 @@ pub fn handle_input(
         },
         Event::DeviceEvent { event, .. } => match event {
             DeviceEvent::MouseMotion { delta } => {
+                // Trata movimentação do angula da camera utilizando o mouse
                 if game_state.current_camera == 1 {
                     let (xoffset, yoffset) = delta;
                     let yaw = free_camera.yaw + (((xoffset as f64) * (*speed / 3.0) as f64) as f32);

@@ -14,6 +14,12 @@ pub enum SceneObject {
     ComplexObj(ComplexObj),
 }
 
+// Um objeto na cena é formado por:
+// 1) Objeto simples (ver obj_model.rs)
+// 2) Objeto simple como raiz e qualquer numero de filhos, que tem aplicadas as transformações das raiz
+// 3) Objetos complexos que são formados por objetos simples como raiz, e qualquer numero de filhos, podendedo esses ser objs complexos.
+//    Todas as transformações de um obj complexo são calculadas e aplicadas recursivamente em cada filho da raiz.
+//    A colisão é detectada entre qualquer numero de n objetos complexos
 #[allow(dead_code)]
 impl SceneObject {
     pub fn new(path: &str) -> Self {
@@ -86,6 +92,7 @@ impl SceneObject {
         }
     }
 
+    // Retorna raiz do obj
     pub fn get_root(&self) -> Self {
         match self {
             SceneObject::ObjModel(obj) => SceneObject::ObjModel(*obj),
@@ -281,6 +288,7 @@ impl SceneObject {
     }
 }
 
+// Desenha um obj da cena de maneira generica
 #[allow(dead_code)]
 impl Draw for SceneObject {
     fn draw(&self, program: &u32) -> &Self {

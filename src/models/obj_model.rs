@@ -44,6 +44,7 @@ impl ObjModel {
         // Carrega arquivo obj
         let (models, _materials) = tobj::load_obj(Path::new(path)).unwrap();
 
+        // Objeto simples:
         // Define propriedades do arquivo obj que representa um obj na tela
         // vao -> Endereço da vao do objeto, não é criada em clones do obj
         // ebo -> Indices do obj
@@ -332,7 +333,7 @@ impl ObjModel {
     pub fn check_intersection(&self, obj2: &SceneObject) -> bool {
         let obj1 = self;
 
-        // Utiliza transação do obj para calcular pos global
+        // Utiliza coluna de translação da matrix do obj para calcular pos global
         let obj1_t = obj1.get_matrix().matrix.c3;
         let obj2_t = obj2.get_matrix().matrix.c3;
 
@@ -349,7 +350,7 @@ impl ObjModel {
             * glm::vec4(obj1_bbox_max.x, obj1_bbox_max.y, obj1_bbox_max.z, 0.0)
             + obj1_t;
 
-        // Pos global da bbox  do obj2
+        // Pos global da bbox do obj2
         let obj2_bbox_min_pos = obj1.get_matrix().matrix
             * glm::vec4(obj2_bbox_min.x, obj2_bbox_min.y, obj2_bbox_min.z, 0.0)
             + obj2_t;

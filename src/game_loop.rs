@@ -22,7 +22,6 @@ pub struct GameState {
     pub is_view_orto: bool,
     pub draw_queue: Vec<SceneObject>,
     pub score: i32,
-    pub framerate: i32,
     pub camera_height: f32,
     pub obj_plane_height: f32,
     pub speed_mult: f64,
@@ -34,6 +33,7 @@ pub struct GameState {
     pub curr_x: f64,
     pub dir: f64,
     pub complex_objs: bool,
+    pub max_framerate: f64,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -68,7 +68,6 @@ pub unsafe fn game_loop(
         should_break: false,
         should_add_obj: true,
         draw_queue: Vec::new(),
-        framerate: 120,
         score: 0,
         camera_height: 0.0,
         obj_plane_height: -20.0,
@@ -81,9 +80,10 @@ pub unsafe fn game_loop(
         curr_x: 0.0,
         dir: 1.0,
         complex_objs: false,
+        max_framerate: 120.0,
     };
 
-    // Carrega texturas do jogo
+    ////////////////////// Carrega texturas do jogo /////////////////////////
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
     let (grass_texture, _) = load_texture("src/data/textures/grass.jpg");
@@ -93,7 +93,7 @@ pub unsafe fn game_loop(
     let texture_pool = vec![&grass_texture, &fabric_texture, &pearl_texture];
     let plane_pool = vec![&pearl_texture, &fabric_texture];
 
-    // Carrega objs do jogo
+    /////////////////////// Carrega objs do jogo /////////////////////////////
     let mut plane = SceneObject::new("src/data/objs/plane.obj")
         .scale(5.0, 5.0, 5.0)
         .translate(0.0, game_state.obj_plane_height, 0.0)
@@ -124,11 +124,9 @@ pub unsafe fn game_loop(
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
         .with_texture_map_type(4);
 
+    // Pool de texturas para objs aleatorios
     let complex_obj_pool = vec![&cow, &bunny];
     let simple_obj_pool = vec![&base_cube, &sphere];
-
-    // Define framerate
-    let framerate = 120.0;
 
     let mut current_shader = &default_shader;
 
@@ -185,12 +183,12 @@ pub unsafe fn game_loop(
         if game_state.should_add_obj {
             // Aumenta obj apos cada ponto
             // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
+            main_obj = main_obj.tscale(1.0 + 0.01, 1.0 + 0.01, 1.0 + 0.01);
+
             // Calcula aumento da altura da camera causado pelo aumento do obj
             let init_x = main_obj.get_matrix().matrix.c0[0];
             let init_y = main_obj.get_matrix().matrix.c1[1];
             let init_z = main_obj.get_matrix().matrix.c2[2];
-
-            main_obj = main_obj.tscale(1.0 + 0.01, 1.0 + 0.01, 1.0 + 0.01);
 
             // Calcula aumento da altura da camera
             delta_vec_x = delta_vec_x + main_obj.get_matrix().matrix.c0[0] - init_x;
@@ -429,6 +427,7 @@ pub unsafe fn game_loop(
             look_at_camera.distance = game_state.camera_height - game_state.obj_plane_height;
         }
 
+        // Atualiza camera sem calcular vetor de direção
         look_at_camera.refresh();
 
         // Atualiza estado da camera livre, corrigindo possiveis aumentos de altura da camera
@@ -438,6 +437,7 @@ pub unsafe fn game_loop(
             main_obj.get_matrix().matrix.c3.z + 0.2,
             free_camera.pos.w,
         );
+        // Recarrega camera utilizando angulos para calcular vetor de direção da camera
         free_camera.refresh_as_free_camera();
         if game_state.current_camera == 0 {
             view.update_camera(&look_at_camera);
@@ -464,7 +464,7 @@ pub unsafe fn game_loop(
 
         // Força framerate
         sleep(Duration::from_secs_f64(glm::max(
-            (1.0 / framerate) - delta_time,
+            (1.0 / game_state.max_framerate) - delta_time,
             0.0,
         )));
 
