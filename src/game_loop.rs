@@ -90,35 +90,41 @@ pub unsafe fn game_loop(
     ////////////////////// Carrega texturas do jogo /////////////////////////
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
-    //let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
+    let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
 
-    //let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
+    let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
     let (dark_wood_texture, _) = load_texture("src/data/textures/dark_wood.jpg");
     let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
-    //  let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
-    // let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
+    let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
+    let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
 
-    // let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
-    //let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
-    //  let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
+    let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
+    let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
+    let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
+    let (earth_texture, _) = load_texture("src/data/textures/earth.jpg");
+    let (lava_texture, _) = load_texture("src/data/textures/lava.jpg");
+    let (fire_texture, _) = load_texture("src/data/textures/fire.jpg");
 
     let texture_pool = vec![
-        // &pearl_texture,
+        &pearl_texture,
         &gold_texture,
-        //   &sea_water_texture,
-        //  &copper_texture,
-        // &steel_texture,
-        // &dark_wood_texture,
-        //  &ice_texture,
-        //   &light_wood,
-        //  &old_wood_texture,
+        &sea_water_texture,
+        &copper_texture,
+        &steel_texture,
+        &dark_wood_texture,
+        &ice_texture,
+        &light_wood,
+        &old_wood_texture,
+        &earth_texture,
+        &fire_texture,
+        &lava_texture,
     ];
     let plane_pool = vec![
-        //  &pearl_texture,
+        &pearl_texture,
+        &ice_texture,
         &dark_wood_texture,
-        //   &ice_texture,
-        //   &light_wood,
-        //  &old_wood_texture,
+        &light_wood,
+        &old_wood_texture,
     ];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
@@ -168,8 +174,13 @@ pub unsafe fn game_loop(
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
         .with_texture_map_type(3);
 
+    let naked_dude = SceneObject::new("src/data/objs/naked_dude.obj")
+        .scale(0.2, 0.2, 0.2)
+        .translate(0.0, 0.4, 0.0)
+        .with_texture_map_type(0);
+
     // Pool de objs aleatorios
-    let complex_obj_pool = vec![&cow, &bunny];
+    let complex_obj_pool = vec![&cow, &bunny, &naked_dude];
     let simple_obj_pool = vec![&base_cube, &sphere, &cylinder, &pyramid];
 
     let mut current_shader = &default_shader;
@@ -221,6 +232,8 @@ pub unsafe fn game_loop(
                 &mut view,
                 &mut (speed as f32),
                 &mut main_obj,
+                &mut plane,
+                &texture_pool,
             );
         });
         // Gera uma alteração de estado do loop do jogo
@@ -305,10 +318,9 @@ pub unsafe fn game_loop(
             // Cor no obj principal
             if game_state.score == 4 * game_state.progression_multiplier {
                 main_obj = main_obj.with_color(&gen_random_vec3());
-                let rand_plane_color = gen_random_vec3();
+                let rand_plane_color = gen_random_vec3() + glm::vec3(0.2, 0.2, 0.2);
 
                 plane = plane.with_color(&rand_plane_color);
-                sad_plane = sad_plane.with_color(&rand_plane_color);
             }
             if game_state.score == 5 * game_state.progression_multiplier {
                 look_at_camera.pos.z = 0.0;
@@ -411,6 +423,14 @@ pub unsafe fn game_loop(
                 println!("Texturas!");
             }
 
+            // Desenha objs complexos
+            if game_state.score > 12 * game_state.progression_multiplier {
+                game_state.complex_objs = true;
+            }
+            if game_state.score == 12 * game_state.progression_multiplier {
+                println!("Objs complexos!");
+            }
+
             // Camera junto com obj principal
             if game_state.score > 14 * game_state.progression_multiplier {
                 move_camera = true;
@@ -423,14 +443,6 @@ pub unsafe fn game_loop(
             }
             if game_state.score == 16 * game_state.progression_multiplier {
                 println!("Primeira Pessoa!")
-            }
-
-            // Desenha objs complexos
-            if game_state.score > 18 * game_state.progression_multiplier {
-                game_state.complex_objs = true;
-            }
-            if game_state.score == 18 * game_state.progression_multiplier {
-                println!("Objs complexos!");
             }
 
             // Ilum de phong

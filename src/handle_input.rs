@@ -1,3 +1,4 @@
+use game_loop::gen_random_usize;
 use game_loop::GameState;
 use glutin::{DeviceEvent, Event, KeyboardInput, WindowEvent};
 use models::matrix::cross_product;
@@ -18,6 +19,8 @@ pub fn handle_input(
     view: &mut View,
     speed: &mut f32,
     main_obj: &mut SceneObject,
+    plane: &mut SceneObject,
+    texture_pool: &Vec<&u32>,
 ) {
     match event {
         Event::WindowEvent { event, .. } => match event {
@@ -77,12 +80,16 @@ pub fn handle_input(
                         game_state.lighting_source.y = game_state.lighting_source.y - 0.05;
                     }
                 }
-                (glutin::VirtualKeyCode::R, _) => {
+                (glutin::VirtualKeyCode::R, glutin::ElementState::Pressed) => {
                     view.lighting = Lighting::new(
                         &glm::vec3(1.0, 1.0, 1.0),
                         &glm::vec3(0.9412, 0.7255, 0.7255),
                         &glm::vec4(1.0, 1.0, 0.0, 0.0),
                     );
+
+                    let rand_intp = gen_random_usize() % texture_pool.len();
+                    *plane = plane.with_texture(&texture_pool.as_slice()[rand_intp], 2);
+                    *main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_intp], 1);
                 }
                 (glutin::VirtualKeyCode::B, glutin::ElementState::Pressed) => {
                     game_state.with_bezier = !game_state.with_bezier;
