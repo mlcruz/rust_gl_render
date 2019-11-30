@@ -7,17 +7,13 @@ use glm::Vector4;
 
 #[allow(dead_code)]
 #[derive(Copy, Debug)]
+// Criamos uma estrutura propria para implementar metodos sobre matrizes de maneira generica
 pub struct GLMatrix {
     pub matrix: glm::Mat4,
 }
 
 // glm::mat4 espera a matrix em row major
 pub const fn points_to_mat4(points: &[f32; 16]) -> glm::Mat4 {
-    // glm::mat4(
-    //     points[0], points[4], points[8], points[12], points[1], points[5], points[9], points[13],
-    //     points[2], points[6], points[10], points[14], points[3], points[7], points[11], points[15],
-    // )
-
     glm::Mat4 {
         c0: Vector4 {
             x: points[0],
@@ -374,6 +370,7 @@ impl From<[f32; 16]> for GLMatrix {
     }
 }
 
+// Define operações com matrix
 pub trait MatrixTransform: Sized {
     fn get_matrix(&self) -> &GLMatrix;
     fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self;
@@ -401,5 +398,17 @@ pub trait MatrixTransform: Sized {
 
     fn scale(&self, x: f32, y: f32, z: f32) -> Self {
         self.from_matrix(&self.get_matrix().scale(x, y, z))
+    }
+
+    #[allow(unused_assignments)]
+    // Translate para 0, scala e translate de volta
+    fn tscale(&self, x: f32, y: f32, z: f32) -> Self {
+        let translation_vec = self.get_matrix().matrix.c3;
+        let mut new_self =
+            self.translate(-translation_vec.x, -translation_vec.y, -translation_vec.z);
+
+        new_self = new_self.scale(x, y, z);
+        new_self = new_self.translate(translation_vec.x, translation_vec.y, translation_vec.z);
+        new_self
     }
 }

@@ -28,6 +28,7 @@ pub struct GameState {
     pub look_at: glm::Vec4,
     pub camera_speed_mult: f32,
     pub current_camera: i32,
+    pub can_fly: bool,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -70,7 +71,10 @@ pub unsafe fn game_loop(
         camera_speed_mult: 0.0,
         look_at: glm::vec4(0.0, -1.0, 0.000000000001, 0.0),
         current_camera: 0,
+        can_fly: false,
     };
+
+    // Carrega texturas do jogo
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
     let (grass_texture, _) = load_texture("src/data/textures/grass.jpg");
@@ -79,6 +83,8 @@ pub unsafe fn game_loop(
 
     let texture_pool = vec![&grass_texture, &fabric_texture, &pearl_texture];
     let plane_pool = vec![&pearl_texture, &fabric_texture];
+
+    // Carrega objs do jogo
     let mut plane = SceneObject::new("src/data/objs/plane.obj")
         .scale(5.0, 5.0, 5.0)
         .translate(0.0, game_state.obj_plane_height, 0.0)
@@ -91,7 +97,6 @@ pub unsafe fn game_loop(
 
     let sad_head =
         SceneObject::new("src/data/objs/sphere.obj").with_color(&glm::vec3(0.0, 0.0, 0.0));
-    // Inicializa objetos do cenario
 
     let mut main_obj = SceneObject::new("src/data/objs/cube.obj")
         .with_color(&glm::vec3(1.0, 1.0, 1.0))
@@ -99,6 +104,8 @@ pub unsafe fn game_loop(
         .translate(0.0, game_state.obj_plane_height, -0.0);
 
     let base_cube = SceneObject::new("src/data/objs/cube.obj");
+
+    // Define framerate
     let framerate = 120.0;
 
     let mut current_shader = &default_shader;
@@ -124,7 +131,13 @@ pub unsafe fn game_loop(
     // Controle de velocidade
     let mut speed = 0.0f64;
 
+    // Define se camera se move junto com obj
     let mut move_camera = false;
+
+    //vetor para calculo de aumento da altura da camera
+    let mut delta_vec_x = 0.0;
+    let mut delta_vec_y = 0.0;
+    let mut delta_vec_z = 0.0;
 
     loop {
         // Inicializa cronometro de tempo de renderização de uma frame
@@ -132,10 +145,8 @@ pub unsafe fn game_loop(
 
         // speed_mult unidades por segundo
         speed = delta_time * game_state.speed_mult;
-
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         gl::ClearColor(0.3, 0.3, 0.3, 1.0);
-
         // Trata eventos
         events_loop.poll_events(|event| {
             handle_input(
@@ -150,6 +161,21 @@ pub unsafe fn game_loop(
         });
         // Gera uma alteração de estado do loop do jogo
         if game_state.should_add_obj {
+            // Aumenta obj apos cada ponto
+            // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
+            // Calcula aumento da altura da camera causado pelo aumento do obj
+            let init_x = main_obj.get_matrix().matrix.c0[0];
+            let init_y = main_obj.get_matrix().matrix.c1[1];
+            let init_z = main_obj.get_matrix().matrix.c2[2];
+
+            main_obj = main_obj.tscale(1.0 + 0.01, 1.0 + 0.01, 1.0 + 0.01);
+
+            // Calcula aumento da altura da camera
+            delta_vec_x = delta_vec_x + main_obj.get_matrix().matrix.c0[0] - init_x;
+            delta_vec_y = delta_vec_y + main_obj.get_matrix().matrix.c1[1] - init_y;
+            delta_vec_z = delta_vec_z + main_obj.get_matrix().matrix.c2[2] - init_z;
+
+            // Gera objs aleatorios a serem inseridos na cena
             let mut new_obj1 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
             let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
@@ -163,6 +189,7 @@ pub unsafe fn game_loop(
 
             game_state.current_camera = 0;
 
+            // Cor nos objetos novos
             if game_state.score >= 2 {
                 new_obj1 = new_obj1.with_color(&gen_random_vec3());
                 new_obj2 = new_obj2.with_color(&gen_random_vec3());
@@ -172,6 +199,8 @@ pub unsafe fn game_loop(
             if game_state.score == 2 {
                 println!("Cor!")
             }
+
+            // Cor no obj principal
             if game_state.score == 4 {
                 main_obj = main_obj.with_color(&gen_random_vec3());
                 let rand_plane_color = gen_random_vec3();
@@ -183,6 +212,7 @@ pub unsafe fn game_loop(
                 look_at_camera.pos.z = 0.0;
             }
 
+            // Proj perspectiva e camera movel
             if game_state.score >= 6 {
                 game_state.is_view_orto = false;
                 if look_at_camera.pos.z == 0.0
@@ -199,10 +229,13 @@ pub unsafe fn game_loop(
             if game_state.score == 6 {
                 println!("Proj. Perpesctiva e camera movel!");
             }
+
+            // Ilum de lambert
             if game_state.score >= 8 {
                 current_shader = &lambert_illumination;
                 let rand_int = gen_random_usize() % texture_pool.len();
 
+                // Adiciona esfera no topo do obj
                 main_obj = main_obj.add_children(
                     &sad_head
                         .with_texture(&texture_pool.as_slice()[rand_int], 4)
@@ -214,6 +247,7 @@ pub unsafe fn game_loop(
                 println!("Iluminação de lambert!")
             }
 
+            // Texturas
             if game_state.score >= 10 {
                 main_obj = main_obj.with_color(&glm::vec3(0.0, 0.0, 0.0));
 
@@ -256,6 +290,7 @@ pub unsafe fn game_loop(
                 println!("Texturas!");
             }
 
+            // Ilum de phong
             if game_state.score >= 12 {
                 current_shader = &phong_illumination;
                 plane = plane
@@ -273,14 +308,12 @@ pub unsafe fn game_loop(
                 println!("Phong Ilumination!");
             }
 
-            if game_state.score == 14 {
-                println!("Camera livre!");
-            }
-
+            // Camera junto com obj principal
             if game_state.score > 14 {
                 move_camera = true;
             }
 
+            // Troca para camera livre em primeira pessoa
             if game_state.score > 16 {
                 main_obj = main_obj.get_root();
                 game_state.current_camera = 1;
@@ -289,6 +322,7 @@ pub unsafe fn game_loop(
                 println!("Primeira Pessoa!")
             }
 
+            // Adiciona um obj novo na fila de desenho
             game_state.draw_queue.push(new_obj1);
 
             // Adiciona entre 0 a 2 objetos extras na cena
@@ -334,15 +368,14 @@ pub unsafe fn game_loop(
 
         look_at_camera.refresh();
 
-        // Atualiza estado da camera free
+        // Atualiza estado da camera livre, corrigindo possiveis aumentos de altura da camera
         free_camera.pos = glm::vec4(
-            main_obj.get_matrix().matrix.c3.x,
-            main_obj.get_matrix().matrix.c3.y + 0.5,
+            main_obj.get_matrix().matrix.c3.x + delta_vec_x,
+            main_obj.get_matrix().matrix.c3.y + 0.5 + delta_vec_y,
             main_obj.get_matrix().matrix.c3.z + 0.2,
             free_camera.pos.w,
         );
         free_camera.refresh_as_free_camera();
-
         if game_state.current_camera == 0 {
             view.update_camera(&look_at_camera);
         } else {
@@ -389,9 +422,12 @@ pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameSta
     let mut new_items: Vec<SceneObject> = vec![];
     let mut should_add_obj = false;
     let mut score = 0;
+
+    // Desenha cada objeto da fila de desenho e checa interseções
     game_state.draw_queue.as_slice().iter().for_each(|item| {
         // Verifica intersecções entre objetos, destroi aqueles que intersectam e pede um objeto novo
         if main.check_intersection(&item) {
+            // Remove obj da cena e indica criação de novo obj
             should_add_obj = true;
             score = score + 1;
         } else {
@@ -400,6 +436,7 @@ pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameSta
         }
     });
 
+    // Atualiza estado do jogo
     game_state.draw_queue = new_items;
     game_state.should_add_obj = should_add_obj;
     game_state.score = score + game_state.score;

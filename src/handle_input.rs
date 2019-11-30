@@ -31,6 +31,7 @@ pub fn handle_input(
                     },
                 ..
             } => match (virtual_code, state) {
+                //Trata input do usuario
                 // Atualiza camera
                 (glutin::VirtualKeyCode::Up, _) => {
                     look_at_camera.pos.z =
@@ -56,8 +57,15 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::O, _) => game_state.is_view_orto = true,
                 (glutin::VirtualKeyCode::P, _) => game_state.is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {
+                    // Atualiza obj para mover em direção ao vetor de direção frontal da camera
                     if game_state.current_camera == 1 {
-                        *main_obj = main_obj.translate(*speed, 0.0, 0.0);
+                        let mut new_vec = normalize_vector(free_camera.front) * *speed;
+
+                        // Permite movimentação no plano y
+                        if game_state.can_fly == false {
+                            new_vec.y = 0.0;
+                        }
+                        *main_obj = main_obj.translate(new_vec.x, new_vec.y, new_vec.z)
                     } else {
                         *main_obj = main_obj.translate(0.0, 0.0, *speed);
                     }
@@ -65,18 +73,23 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::S, _) => {
                     //camera.pos.z = camera.pos.z + 0.01;
                     if game_state.current_camera == 1 {
-                        *main_obj = main_obj.translate(-*speed, 0.0, 0.0);
+                        let mut new_vec = normalize_vector(free_camera.front) * *speed;
+                        if game_state.can_fly == false {
+                            new_vec.y = 0.0;
+                        }
+                        *main_obj = main_obj.translate(-new_vec.x, -new_vec.y, -new_vec.z)
                     } else {
                         *main_obj = main_obj.translate(0.0, 0.0, -*speed);
                     }
                 }
                 (glutin::VirtualKeyCode::A, _) => {
                     if game_state.current_camera == 1 {
-                        let new_vew = normalize_vector(cross_product(
+                        // Move na direção do vetor normal ao vetor de direçao
+                        let new_vec = normalize_vector(cross_product(
                             free_camera.front,
                             glm::vec4(0.0, 1.0, 0.0, 0.0),
                         )) * *speed;
-                        *main_obj = main_obj.translate(-new_vew.x, -new_vew.y, -new_vew.z);
+                        *main_obj = main_obj.translate(-new_vec.x, -new_vec.y, -new_vec.z);
                     } else {
                         *main_obj = main_obj.translate(*speed, 0.0, 0.00);
                     }
@@ -85,11 +98,11 @@ pub fn handle_input(
                     //camera.pos.x = camera.pos.x + 0.01;
 
                     if game_state.current_camera == 1 {
-                        let new_vew = normalize_vector(cross_product(
+                        let new_vec = normalize_vector(cross_product(
                             free_camera.front,
                             glm::vec4(0.0, 1.0, 0.0, 0.0),
                         )) * *speed;
-                        *main_obj = main_obj.translate(new_vew.x, new_vew.y, new_vew.z);
+                        *main_obj = main_obj.translate(new_vec.x, new_vec.y, new_vec.z);
                     } else {
                         *main_obj = main_obj.translate(-*speed, 0.0, 0.00);
                     }
