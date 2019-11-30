@@ -83,8 +83,8 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::R, glutin::ElementState::Pressed) => {
                     view.lighting = Lighting::new(
                         &glm::vec3(1.0, 1.0, 1.0),
-                        &glm::vec3(0.9412, 0.7255, 0.7255),
-                        &glm::vec4(1.0, 1.0, 0.0, 0.0),
+                        &glm::vec3(0.6, 0.5, 0.6),
+                        &glm::vec4(0.0, 0.0, 0.0, 0.0),
                     );
 
                     let rand_intp = gen_random_usize() % texture_pool.len();

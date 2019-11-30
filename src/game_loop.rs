@@ -155,6 +155,7 @@ pub unsafe fn game_loop(
         .with_texture_map_type(1);
     let bunny = SceneObject::new("src/data/objs/bunny.obj")
         .translate(0.0, 0.8, 0.0)
+        .with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3))
         .with_texture_map_type(1);
     let base_cube = SceneObject::new("src/data/objs/cube.obj").with_texture_map_type(1);
 
@@ -177,6 +178,7 @@ pub unsafe fn game_loop(
     let naked_dude = SceneObject::new("src/data/objs/naked_dude.obj")
         .scale(0.2, 0.2, 0.2)
         .translate(0.0, 0.4, 0.0)
+        .with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3))
         .with_texture_map_type(0);
 
     // Pool de objs aleatorios
