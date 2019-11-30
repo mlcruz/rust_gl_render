@@ -88,35 +88,35 @@ pub unsafe fn game_loop(
     ////////////////////// Carrega texturas do jogo /////////////////////////
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
-    let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
+    //let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
 
-    let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
+    //let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
     let (dark_wood_texture, _) = load_texture("src/data/textures/dark_wood.jpg");
     let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
     let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
-    let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
+    // let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
 
-    let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
+    // let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
     let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
-    let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
+    //  let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
 
     let texture_pool = vec![
-        &pearl_texture,
+        // &pearl_texture,
         &gold_texture,
         &sea_water_texture,
-        &copper_texture,
-        &steel_texture,
-        &dark_wood_texture,
-        &ice_texture,
-        &light_wood,
-        &old_wood_texture,
+        //  &copper_texture,
+        // &steel_texture,
+        // &dark_wood_texture,
+        //  &ice_texture,
+        //   &light_wood,
+        //  &old_wood_texture,
     ];
     let plane_pool = vec![
-        &pearl_texture,
+        //  &pearl_texture,
         &dark_wood_texture,
         &ice_texture,
-        &light_wood,
-        &old_wood_texture,
+        //   &light_wood,
+        //  &old_wood_texture,
     ];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
@@ -139,6 +139,7 @@ pub unsafe fn game_loop(
         .translate(0.0, game_state.obj_plane_height, -0.0);
 
     let cow = SceneObject::new("src/data/objs/cow.obj")
+        .scale(1.5, 1.5, 1.5)
         .translate(0.0, 0.6, 0.0)
         .with_texture_map_type(1);
     let bunny = SceneObject::new("src/data/objs/bunny.obj")
@@ -411,15 +412,13 @@ pub unsafe fn game_loop(
                     .with_specular_reflectance(&glm::vec3(0.6, 0.2, 0.4))
                     .with_specular_phong_q(&8.0);
 
-                main_obj = main_obj.with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3));
+                main_obj = main_obj.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
 
-                let rand1 = gen_random();
-                let rand2 = gen_random();
                 let rand3 = gen_random();
                 let rand4 = gen_random();
 
-                new_obj0 = new_obj0.with_specular_reflectance(&glm::vec3(rand1, rand1, rand1));
-                new_obj1 = new_obj1.with_specular_reflectance(&glm::vec3(rand2, rand2, rand2));
+                new_obj0 = new_obj0.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
+                new_obj1 = new_obj1.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
 
                 // especular e ambiente aleatorio e q de phong
                 new_obj2 = new_obj2
@@ -428,7 +427,9 @@ pub unsafe fn game_loop(
                     .with_specular_phong_q(&glm::pow(2.0, (&gen_random_i32() % 8) as f32));
 
                 // Objeto com refletancia ambiente fixa
-                new_obj3 = new_obj3.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
+                new_obj3 = new_obj3
+                    .with_color(&glm::vec3(1.0, 1.0, 1.0))
+                    .with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
 
                 // Objeto reflexivo
                 new_obj4 = new_obj4
@@ -474,7 +475,7 @@ pub unsafe fn game_loop(
             }
 
             if game_state.score > 5 * game_state.progression_multiplier {
-                if gen_random_i32() % 3 == 0 {
+                if gen_random_i32() % 6 == 0 {
                     game_state.draw_queue.push(new_obj2);
                 }
             }

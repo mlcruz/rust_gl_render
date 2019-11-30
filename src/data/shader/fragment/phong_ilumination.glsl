@@ -135,7 +135,7 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
-    vec3 final_ambient_reflectance=vec3(object_reflectance.x*.3+.1,object_reflectance.y*.3+.1,object_reflectance.z*.3+.1);
+    vec3 final_ambient_reflectance=vec3((object_reflectance.x*.2)+.1,(object_reflectance.y*.2)+.1,(object_reflectance.z*.2)+.1);
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
     if(ambient_reflectance!=vec3(0.,0.,0.)){
