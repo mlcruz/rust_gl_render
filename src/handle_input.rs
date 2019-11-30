@@ -51,7 +51,7 @@ pub fn handle_input(
                 }
                 (glutin::VirtualKeyCode::Numpad7, _) => {
                     view.lighting.global = glm::vec3(
-                        view.lighting.global.x + 0.1,
+                        view.lighting.global.x + 0.05,
                         view.lighting.global.y,
                         view.lighting.global.z,
                     );
@@ -59,7 +59,7 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Numpad8, _) => {
                     view.lighting.global = glm::vec3(
                         view.lighting.global.x,
-                        view.lighting.global.y + 0.1,
+                        view.lighting.global.y + 0.05,
                         view.lighting.global.z,
                     );
                 }
@@ -67,12 +67,12 @@ pub fn handle_input(
                     view.lighting.global = glm::vec3(
                         view.lighting.global.x,
                         view.lighting.global.y,
-                        view.lighting.global.z + 0.1,
+                        view.lighting.global.z + 0.05,
                     );
                 }
                 (glutin::VirtualKeyCode::Numpad1, _) => {
                     view.lighting.global = glm::vec3(
-                        view.lighting.global.x - 0.1,
+                        view.lighting.global.x - 0.05,
                         view.lighting.global.y,
                         view.lighting.global.z,
                     );
@@ -80,7 +80,7 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Numpad2, _) => {
                     view.lighting.global = glm::vec3(
                         view.lighting.global.x,
-                        view.lighting.global.y - 0.1,
+                        view.lighting.global.y - 0.05,
                         view.lighting.global.z,
                     );
                 }
@@ -88,12 +88,60 @@ pub fn handle_input(
                     view.lighting.global = glm::vec3(
                         view.lighting.global.x,
                         view.lighting.global.y,
-                        view.lighting.global.z - 0.1,
+                        view.lighting.global.z - 0.05,
+                    );
+                }
+                (glutin::VirtualKeyCode::F1, _) => {
+                    view.lighting.global_direction = glm::vec4(
+                        view.lighting.global_direction.x - 0.05,
+                        view.lighting.global_direction.y,
+                        view.lighting.global_direction.z,
+                        view.lighting.global_direction.w,
+                    );
+                }
+                (glutin::VirtualKeyCode::F2, _) => {
+                    view.lighting.global_direction = glm::vec4(
+                        view.lighting.global_direction.x,
+                        view.lighting.global_direction.y - 0.05,
+                        view.lighting.global_direction.z,
+                        view.lighting.global_direction.w,
+                    );
+                }
+                (glutin::VirtualKeyCode::F3, _) => {
+                    view.lighting.global_direction = glm::vec4(
+                        view.lighting.global_direction.x,
+                        view.lighting.global_direction.y,
+                        view.lighting.global_direction.z - 0.05,
+                        view.lighting.global_direction.w,
+                    );
+                }
+                (glutin::VirtualKeyCode::F7, _) => {
+                    view.lighting.global_direction = glm::vec4(
+                        view.lighting.global_direction.x + 0.05,
+                        view.lighting.global_direction.y,
+                        view.lighting.global_direction.z,
+                        view.lighting.global_direction.w,
+                    );
+                }
+                (glutin::VirtualKeyCode::F8, _) => {
+                    view.lighting.global_direction = glm::vec4(
+                        view.lighting.global_direction.x,
+                        view.lighting.global_direction.y + 0.05,
+                        view.lighting.global_direction.z,
+                        view.lighting.global_direction.w,
+                    );
+                }
+                (glutin::VirtualKeyCode::F9, _) => {
+                    view.lighting.global_direction = glm::vec4(
+                        view.lighting.global_direction.x,
+                        view.lighting.global_direction.y,
+                        view.lighting.global_direction.z + 0.05,
+                        view.lighting.global_direction.w,
                     );
                 }
                 (glutin::VirtualKeyCode::Key1, _) => {
                     view.lighting.ambient = glm::vec3(
-                        view.lighting.ambient.x - 0.1,
+                        view.lighting.ambient.x - 0.05,
                         view.lighting.ambient.y,
                         view.lighting.ambient.z,
                     );
@@ -101,7 +149,7 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Key2, _) => {
                     view.lighting.ambient = glm::vec3(
                         view.lighting.ambient.x,
-                        view.lighting.ambient.y - 0.1,
+                        view.lighting.ambient.y - 0.05,
                         view.lighting.ambient.z,
                     );
                 }
@@ -109,12 +157,12 @@ pub fn handle_input(
                     view.lighting.ambient = glm::vec3(
                         view.lighting.ambient.x,
                         view.lighting.ambient.y,
-                        view.lighting.ambient.z - 0.1,
+                        view.lighting.ambient.z - 0.05,
                     );
                 }
                 (glutin::VirtualKeyCode::Key7, _) => {
                     view.lighting.ambient = glm::vec3(
-                        view.lighting.ambient.x + 0.1,
+                        view.lighting.ambient.x + 0.05,
                         view.lighting.ambient.y,
                         view.lighting.ambient.z,
                     );
@@ -122,7 +170,7 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Key8, _) => {
                     view.lighting.ambient = glm::vec3(
                         view.lighting.ambient.x,
-                        view.lighting.ambient.y + 0.1,
+                        view.lighting.ambient.y + 0.05,
                         view.lighting.ambient.z,
                     );
                 }
@@ -130,35 +178,35 @@ pub fn handle_input(
                     view.lighting.ambient = glm::vec3(
                         view.lighting.ambient.x,
                         view.lighting.ambient.y,
-                        view.lighting.ambient.z + 0.1,
+                        view.lighting.ambient.z + 0.05,
                     );
                 }
                 (glutin::VirtualKeyCode::Home, _) => {
                     view.lighting.global = glm::vec3(
-                        view.lighting.global.x - 0.1,
-                        view.lighting.global.y - 0.1,
-                        view.lighting.global.z - 0.1,
+                        view.lighting.global.x - 0.05,
+                        view.lighting.global.y - 0.05,
+                        view.lighting.global.z - 0.05,
                     );
                 }
                 (glutin::VirtualKeyCode::End, _) => {
                     view.lighting.global = glm::vec3(
-                        view.lighting.global.x + 0.1,
-                        view.lighting.global.y + 0.1,
-                        view.lighting.global.z + 0.1,
+                        view.lighting.global.x + 0.05,
+                        view.lighting.global.y + 0.05,
+                        view.lighting.global.z + 0.05,
                     )
                 }
                 (glutin::VirtualKeyCode::PageDown, _) => {
                     view.lighting.ambient = glm::vec3(
-                        view.lighting.ambient.x - 0.1,
-                        view.lighting.ambient.y - 0.1,
-                        view.lighting.ambient.z - 0.1,
+                        view.lighting.ambient.x - 0.05,
+                        view.lighting.ambient.y - 0.05,
+                        view.lighting.ambient.z - 0.05,
                     )
                 }
                 (glutin::VirtualKeyCode::PageUp, _) => {
                     view.lighting.ambient = glm::vec3(
-                        view.lighting.ambient.x + 0.1,
-                        view.lighting.ambient.y + 0.1,
-                        view.lighting.ambient.z + 0.1,
+                        view.lighting.ambient.x + 0.05,
+                        view.lighting.ambient.y + 0.05,
+                        view.lighting.ambient.z + 0.05,
                     )
                 }
                 (glutin::VirtualKeyCode::O, _) => game_state.is_view_orto = true,

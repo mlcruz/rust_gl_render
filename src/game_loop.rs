@@ -378,10 +378,10 @@ pub unsafe fn game_loop(
             }
 
             // Troca para camera livre em primeira pessoa
-            if game_state.score > 30 {
+            if game_state.score > 50 {
                 game_state.with_bezier = true;
             }
-            if game_state.score == 30 {
+            if game_state.score == 50 {
                 println!("Curvas de bezier!")
             }
 
