@@ -1,3 +1,4 @@
+use glm::builtin::pow;
 use handle_input::handle_input;
 use models::draw::Draw;
 use models::load_texture::load_texture;
@@ -29,6 +30,9 @@ pub struct GameState {
     pub camera_speed_mult: f32,
     pub current_camera: i32,
     pub can_fly: bool,
+    pub with_bezier: bool,
+    pub curr_x: f64,
+    pub dir: f64,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -72,6 +76,9 @@ pub unsafe fn game_loop(
         look_at: glm::vec4(0.0, -1.0, 0.000000000001, 0.0),
         current_camera: 0,
         can_fly: false,
+        with_bezier: false,
+        curr_x: 0.0,
+        dir: 1.0,
     };
 
     // Carrega texturas do jogo
@@ -186,6 +193,8 @@ pub unsafe fn game_loop(
             game_state.camera_height = 0.0;
             game_state.is_view_orto = true;
             current_shader = &default_shader;
+
+            game_state.with_bezier = false;
 
             game_state.current_camera = 0;
 
@@ -322,6 +331,14 @@ pub unsafe fn game_loop(
                 println!("Primeira Pessoa!")
             }
 
+            // Troca para camera livre em primeira pessoa
+            if game_state.score > 18 {
+                game_state.with_bezier = true;
+            }
+            if game_state.score == 18 {
+                println!("Mov utilizando curvas de bezier")
+            }
+
             // Adiciona um obj novo na fila de desenho
             game_state.draw_queue.push(new_obj1);
 
@@ -409,6 +426,17 @@ pub unsafe fn game_loop(
         delta_time = timer.elapsed().as_secs_f64();
         gl_window.swap_buffers().unwrap();
 
+        // Atualiza variavel acumuladora de [0..1] para curvas de bezier utilizando variação do tempo
+        if game_state.curr_x > 1.0 {
+            game_state.dir = -1.0;
+        }
+
+        if game_state.curr_x <= 0.0 {
+            game_state.dir = 1.0;
+        }
+        game_state.curr_x =
+            game_state.curr_x + (timer.elapsed().as_secs_f64() * game_state.dir) / 10.0;
+
         // Interrompe loop
         if game_state.should_break {
             break;
@@ -416,6 +444,7 @@ pub unsafe fn game_loop(
     }
 }
 
+#[allow(dead_code, unused_assignments)]
 pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameState) {
     main.draw(shader);
 
@@ -426,13 +455,39 @@ pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameSta
     // Desenha cada objeto da fila de desenho e checa interseções
     game_state.draw_queue.as_slice().iter().for_each(|item| {
         // Verifica intersecções entre objetos, destroi aqueles que intersectam e pede um objeto novo
-        if main.check_intersection(&item) {
+        let mut is_intersecting = false;
+
+        let b03 = pow(1.0 - game_state.curr_x, 3.0) as f32;
+        let b23 = 3.0 * pow(game_state.curr_x, 2.0) as f32 * (1.0 - game_state.curr_x) as f32;
+        let b13 = 3.0 * game_state.curr_x as f32 * pow(1.10 - game_state.curr_x, 2.0) as f32;
+        let b33 = pow(game_state.curr_x, 3.0) as f32;
+
+        let p1 = glm::vec4(-2.5, 0.0, 0.0, 0.0);
+        let p2 = glm::vec4(-2.00, 1.8, 1.25, 0.0);
+        let p3 = glm::vec4(2.0, 1.8, 0.5, 0.0);
+        let p4 = glm::vec4(4.5, 0.0, 1.25, 0.0);
+        let curve = (p1 * b03 + p2 * b13 + p3 * b23 + p4 * b33) / 4.0;
+
+        if game_state.with_bezier {
+            is_intersecting = main.check_intersection(&item.translate(curve.x, curve.y, curve.z))
+        } else {
+            is_intersecting = main.check_intersection(&item)
+        }
+
+        if is_intersecting {
             // Remove obj da cena e indica criação de novo obj
             should_add_obj = true;
             score = score + 1;
         } else {
-            item.draw(shader);
-            new_items.push(item.clone());
+            // Desenha alguns objs com mov em curva de bezier
+            if game_state.with_bezier {
+                item.translate(curve.x, curve.y, curve.z).draw(shader);
+
+                new_items.push(item.clone());
+            } else {
+                item.draw(shader);
+                new_items.push(item.clone());
+            }
         }
     });
 
