@@ -27,8 +27,11 @@ uniform vec3 global_lighting;
 // Parametros de origem da camera
 uniform vec4 camera_origin;
 
-// Parametros de reflexão specular
+// Parametros de refletancia specular
 uniform vec3 specular_reflectance;
+
+// Parametros de refletancia ambiente
+uniform vec3 ambient_reflectance;
 
 // Parametros de luz ambiente
 uniform vec3 ambient_lighting;
@@ -73,6 +76,9 @@ void main()
     float U=0.;
     float V=0.;
     
+    // A refletancia especular, difusa, e ambiente é calculada a partir das cores da textura do obj
+    // e podem ser sobreescritas pelo obj
+    
     vec3 object_reflectance=color_overide;
     
     // FIM INICIALIZACAO
@@ -107,22 +113,8 @@ void main()
             
             U=(position_model.x-minx)/(maxx-minx);
             V=(position_model.z-minz)/(maxz-minz);
-        }else if(texture_map_type==3){
-            
-            // Mapeia textura de maneira planar em yz
-            float minx=bbox_min.x;
-            float maxx=bbox_max.x;
-            
-            float miny=bbox_min.y;
-            float maxy=bbox_max.y;
-            
-            float minz=bbox_min.z;
-            float maxz=bbox_max.z;
-            
-            U=(position_model.y-miny)/(maxy-miny);
-            V=(position_model.z-minz)/(maxz-minz);
         }
-        else if(texture_map_type==4){
+        else if(texture_map_type==3){
             
             vec4 bbox_center=(bbox_min+bbox_max)/2.;
             float radius=length(bbox_max.x-bbox_center.x);
@@ -143,11 +135,18 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
+    vec3 final_ambient_reflectance=vec3(object_reflectance.x*.3+.1,object_reflectance.y*.3+.1,object_reflectance.z*.3+.1);
+    
+    // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
+    if(ambient_reflectance!=vec3(0.,0.,0.)){
+        final_ambient_reflectance=ambient_reflectance;
+    }
+    
     // Termo difuso utilizando a lei dos cossenos de Lambert
     vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
-    vec3 ambient_term=object_reflectance*ambient_lighting;
+    vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
     
     color=(lambert_diffuse_term*object_reflectance)+ambient_term;
     

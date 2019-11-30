@@ -57,6 +57,10 @@ pub fn handle_input(
                         &glm::vec4(1.0, 1.0, 0.0, 0.0),
                     );
                 }
+                (glutin::VirtualKeyCode::B, glutin::ElementState::Pressed) => {
+                    game_state.with_bezier = !game_state.with_bezier;
+                }
+
                 (glutin::VirtualKeyCode::Numpad7, _) => {
                     view.lighting.global = glm::vec3(
                         view.lighting.global.x + 0.05,

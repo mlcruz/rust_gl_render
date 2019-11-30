@@ -134,6 +134,14 @@ impl SceneObject {
         }
     }
 
+    pub fn get_ambient_lighting_override(&self) -> glm::Vec3 {
+        match self {
+            SceneObject::ObjModel(obj) => obj.ambient_reflectance_overide,
+            SceneObject::CompositeObj(obj) => obj.root.ambient_reflectance_overide,
+            SceneObject::ComplexObj(obj) => obj.root.ambient_reflectance_overide,
+        }
+    }
+
     // Utiliza textura previamente carregada para o obj
     #[allow(dead_code)]
     pub fn with_texture(&self, texture: &u32, texture_map_type: i32) -> Self {
@@ -164,6 +172,22 @@ impl SceneObject {
             }),
             SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
                 root: obj.root.with_specular_reflectance(specular_reflectance),
+                children: obj.children.clone(),
+            }),
+        }
+    }
+
+    pub fn with_ambient_reflectance(&self, ambient_reflectance: &glm::Vec3) -> Self {
+        match self {
+            SceneObject::ObjModel(obj) => {
+                SceneObject::ObjModel(obj.with_ambient_reflectance(ambient_reflectance))
+            }
+            SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
+                root: obj.root.with_ambient_reflectance(ambient_reflectance),
+                children: obj.children.clone(),
+            }),
+            SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
+                root: obj.root.with_ambient_reflectance(ambient_reflectance),
                 children: obj.children.clone(),
             }),
         }

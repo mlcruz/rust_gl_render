@@ -32,6 +32,7 @@ pub struct ObjModel {
     pub texture_override: u32,
     pub phong_q_overide: f32,
     pub specular_reflectance_overide: glm::Vec3,
+    pub ambient_reflectance_overide: glm::Vec3,
     pub color_overide: glm::Vec3,
     pub texture_map_type: i32,
 }
@@ -67,6 +68,7 @@ impl ObjModel {
             texture_override: 0,
             texture_map_type: 0,
             specular_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
+            ambient_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
             phong_q_overide: 1.0,
             color_overide: glm::vec3(0.0, 0.0, 0.0),
         };
@@ -316,6 +318,12 @@ impl ObjModel {
         }
     }
 
+    pub fn with_ambient_reflectance(&self, ambient_reflectance: &glm::Vec3) -> Self {
+        Self {
+            ambient_reflectance_overide: *ambient_reflectance,
+            ..*self
+        }
+    }
     pub fn with_specular_phong_q(&self, phong_q: &f32) -> Self {
         Self {
             phong_q_overide: *phong_q,
@@ -386,6 +394,7 @@ impl Clone for ObjModel {
     }
 }
 
+// Desenha objeto na tela
 impl Draw for ObjModel {
     fn draw(&self, program: &u32) -> &Self {
         unsafe {
@@ -418,6 +427,11 @@ impl Draw for ObjModel {
             let specular_reflectance_uniform = gl::GetUniformLocation(
                 *program,
                 CString::new("specular_reflectance").unwrap().as_ptr(),
+            );
+
+            let ambient_reflectance_uniform = gl::GetUniformLocation(
+                *program,
+                CString::new("ambient_reflectance").unwrap().as_ptr(),
             );
 
             let phong_q_uniform =
@@ -455,6 +469,13 @@ impl Draw for ObjModel {
                 self.specular_reflectance_overide.x,
                 self.specular_reflectance_overide.y,
                 self.specular_reflectance_overide.z,
+            );
+
+            gl::Uniform3f(
+                ambient_reflectance_uniform,
+                self.ambient_reflectance_overide.x,
+                self.ambient_reflectance_overide.y,
+                self.ambient_reflectance_overide.z,
             );
 
             gl::UniformMatrix4fv(

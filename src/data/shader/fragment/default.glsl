@@ -33,6 +33,9 @@ uniform vec3 specular_reflectance;
 // Parametros de luz ambiente
 uniform vec3 ambient_lighting;
 
+// Parametros de refletancia ambiente
+uniform vec3 ambient_reflectance;
+
 // Parametro de sobreescrita de cor
 uniform vec3 color_overide;
 

@@ -34,6 +34,7 @@ pub struct GameState {
     pub dir: f64,
     pub complex_objs: bool,
     pub max_framerate: f64,
+    pub progression_multiplier: i32,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -81,17 +82,42 @@ pub unsafe fn game_loop(
         dir: 1.0,
         complex_objs: false,
         max_framerate: 120.0,
+        progression_multiplier: 1,
     };
 
     ////////////////////// Carrega texturas do jogo /////////////////////////
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
-    let (grass_texture, _) = load_texture("src/data/textures/grass.jpg");
-    let (fabric_texture, _) = load_texture("src/data/textures/fabric.jpg");
     let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
 
-    let texture_pool = vec![&grass_texture, &fabric_texture, &pearl_texture];
-    let plane_pool = vec![&pearl_texture, &fabric_texture];
+    let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
+    let (dark_wood_texture, _) = load_texture("src/data/textures/dark_wood.jpg");
+    let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
+    let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
+    let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
+
+    let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
+    let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
+    let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
+
+    let texture_pool = vec![
+        &pearl_texture,
+        &gold_texture,
+        &sea_water_texture,
+        &copper_texture,
+        &steel_texture,
+        &dark_wood_texture,
+        &ice_texture,
+        &light_wood,
+        &old_wood_texture,
+    ];
+    let plane_pool = vec![
+        &pearl_texture,
+        &dark_wood_texture,
+        &ice_texture,
+        &light_wood,
+        &old_wood_texture,
+    ];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
     let mut plane = SceneObject::new("src/data/objs/plane.obj")
@@ -118,15 +144,26 @@ pub unsafe fn game_loop(
     let bunny = SceneObject::new("src/data/objs/bunny.obj")
         .translate(0.0, 0.8, 0.0)
         .with_texture_map_type(1);
-    let base_cube = SceneObject::new("src/data/objs/cube.obj");
+    let base_cube = SceneObject::new("src/data/objs/cube.obj").with_texture_map_type(1);
+
     let sphere = SceneObject::new("src/data/objs/sphere.obj")
         .translate(0.0, 0.4, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
-        .with_texture_map_type(4);
+        .with_texture_map_type(3);
 
-    // Pool de texturas para objs aleatorios
+    let cylinder = SceneObject::new("src/data/objs/cylinder.obj")
+        .translate(0.0, 0.4, 0.0)
+        .with_color(&glm::vec3(0.6, 0.6, 0.2))
+        .with_texture_map_type(3);
+
+    let pyramid = SceneObject::new("src/data/objs/cylinder.obj")
+        .translate(0.0, 0.4, 0.0)
+        .with_color(&glm::vec3(0.6, 0.6, 0.2))
+        .with_texture_map_type(1);
+
+    // Pool de objs aleatorios
     let complex_obj_pool = vec![&cow, &bunny];
-    let simple_obj_pool = vec![&base_cube, &sphere];
+    let simple_obj_pool = vec![&base_cube, &sphere, &cylinder, &pyramid];
 
     let mut current_shader = &default_shader;
 
@@ -182,15 +219,16 @@ pub unsafe fn game_loop(
         // Gera uma alteração de estado do loop do jogo
         if game_state.should_add_obj {
             // Aumenta obj apos cada ponto
-            // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
-            main_obj = main_obj.tscale(1.0 + 0.01, 1.0 + 0.01, 1.0 + 0.01);
 
-            // Calcula aumento da altura da camera causado pelo aumento do obj
+            // Calcula escalamento original do obj antes de ser escalamento
             let init_x = main_obj.get_matrix().matrix.c0[0];
             let init_y = main_obj.get_matrix().matrix.c1[1];
             let init_z = main_obj.get_matrix().matrix.c2[2];
 
-            // Calcula aumento da altura da camera
+            // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
+            main_obj = main_obj.tscale(1.0 + 0.003, 1.0 + 0.003, 1.0 + 0.003);
+
+            // Calcula aumento da altura da camera com diferença entre tamanho antes e depois do escalamento
             delta_vec_x = delta_vec_x + main_obj.get_matrix().matrix.c0[0] - init_x;
             delta_vec_y = delta_vec_y + main_obj.get_matrix().matrix.c1[1] - init_y;
             delta_vec_z = delta_vec_z + main_obj.get_matrix().matrix.c2[2] - init_z;
@@ -198,29 +236,42 @@ pub unsafe fn game_loop(
             let mut base_obj0 = &base_cube;
             let mut base_obj1 = &base_cube;
             let mut base_obj2 = &base_cube;
+            let mut base_obj3 = &base_cube;
+            let mut base_obj4 = &base_cube;
+
+            // Obj base 0 é sempre simples
+            let rand_int00 = gen_random_usize() % simple_obj_pool.len();
+            base_obj0 = &simple_obj_pool.as_slice()[rand_int00];
+
             if game_state.complex_objs {
-                let rand_int00 = gen_random_usize() % complex_obj_pool.len();
                 let rand_int01 = gen_random_usize() % complex_obj_pool.len();
                 let rand_int02 = gen_random_usize() % complex_obj_pool.len();
+                let rand_int03 = gen_random_usize() % complex_obj_pool.len();
+                let rand_int04 = gen_random_usize() % complex_obj_pool.len();
 
-                base_obj0 = &complex_obj_pool.as_slice()[rand_int00];
                 base_obj1 = &complex_obj_pool.as_slice()[rand_int01];
                 base_obj2 = &complex_obj_pool.as_slice()[rand_int02];
+                base_obj3 = &complex_obj_pool.as_slice()[rand_int03];
+                base_obj4 = &complex_obj_pool.as_slice()[rand_int04];
             } else {
                 // Objs aleatorioas
-                let rand_int00 = gen_random_usize() % simple_obj_pool.len();
                 let rand_int01 = gen_random_usize() % simple_obj_pool.len();
                 let rand_int02 = gen_random_usize() % simple_obj_pool.len();
+                let rand_int03 = gen_random_usize() % simple_obj_pool.len();
+                let rand_int04 = gen_random_usize() % simple_obj_pool.len();
 
-                base_obj0 = &simple_obj_pool.as_slice()[rand_int00];
                 base_obj1 = &simple_obj_pool.as_slice()[rand_int01];
                 base_obj2 = &simple_obj_pool.as_slice()[rand_int02];
+                base_obj3 = &simple_obj_pool.as_slice()[rand_int03];
+                base_obj4 = &simple_obj_pool.as_slice()[rand_int04];
             }
 
             // Gera objs aleatorios a serem inseridos na cena
-            let mut new_obj1 = generate_random_obj(&base_obj0, game_state.obj_plane_height);
-            let mut new_obj2 = generate_random_obj(&base_obj1, game_state.obj_plane_height);
-            let mut new_obj3 = generate_random_obj(&base_obj2, game_state.obj_plane_height);
+            let mut new_obj0 = generate_random_obj(&base_obj0, game_state.obj_plane_height);
+            let mut new_obj1 = generate_random_obj(&base_obj1, game_state.obj_plane_height);
+            let mut new_obj2 = generate_random_obj(&base_obj2, game_state.obj_plane_height);
+            let mut new_obj3 = generate_random_obj(&base_obj3, game_state.obj_plane_height);
+            let mut new_obj4 = generate_random_obj(&base_obj4, game_state.obj_plane_height);
             move_camera = false;
 
             // Posiveis alterações feitas em iterações anteriores são revertidas
@@ -229,35 +280,37 @@ pub unsafe fn game_loop(
             game_state.is_view_orto = true;
             current_shader = &default_shader;
 
-            game_state.with_bezier = false;
-
             game_state.current_camera = 0;
 
             // Cor nos objetos novos
-            if game_state.score >= 2 {
+            if game_state.score >= 2 * game_state.progression_multiplier {
+                new_obj0 = new_obj0.with_color(&gen_random_vec3());
                 new_obj1 = new_obj1.with_color(&gen_random_vec3());
                 new_obj2 = new_obj2.with_color(&gen_random_vec3());
-                new_obj3 = new_obj3.with_color(&gen_random_vec3());
+                new_obj3 = new_obj1.with_color(&gen_random_vec3());
+                new_obj4 = new_obj2.with_color(&gen_random_vec3());
             }
 
-            if game_state.score == 2 {
+            if game_state.score == 2 * game_state.progression_multiplier {
                 println!("Cor!")
             }
 
             // Cor no obj principal
-            if game_state.score == 4 {
+            if game_state.score == 4 * game_state.progression_multiplier {
                 main_obj = main_obj.with_color(&gen_random_vec3());
                 let rand_plane_color = gen_random_vec3();
 
                 plane = plane.with_color(&rand_plane_color);
                 sad_plane = sad_plane.with_color(&rand_plane_color);
             }
-            if game_state.score == 5 {
+            if game_state.score == 5 * game_state.progression_multiplier {
                 look_at_camera.pos.z = 0.0;
+                game_state.progression_multiplier = 2;
+                game_state.score = game_state.score * 2;
             }
 
             // Proj perspectiva e camera movel
-            if game_state.score >= 6 {
+            if game_state.score >= 6 * game_state.progression_multiplier {
                 game_state.is_view_orto = false;
                 if look_at_camera.pos.z == 0.0
                     && look_at_camera.pos.x == 0.0
@@ -270,12 +323,12 @@ pub unsafe fn game_loop(
                 game_state.look_at = glm::vec4(0.0, -0.35, 1.0, 0.0);
                 game_state.camera_speed_mult = 1.0;
             }
-            if game_state.score == 6 {
+            if game_state.score == 6 * game_state.progression_multiplier {
                 println!("Proj. Perpesctiva e camera movel!");
             }
 
             // Ilum de lambert
-            if game_state.score >= 8 {
+            if game_state.score >= 8 * game_state.progression_multiplier {
                 current_shader = &lambert_illumination;
                 let rand_int = gen_random_usize() % texture_pool.len();
 
@@ -287,56 +340,72 @@ pub unsafe fn game_loop(
                         .translate(0.5, 1.5, -0.0),
                 );
             }
-            if game_state.score == 8 {
+            if game_state.score == 8 * game_state.progression_multiplier {
                 println!("Iluminação de lambert!")
             }
 
             // Texturas
-            if game_state.score >= 10 {
+            if game_state.score >= 10 * game_state.progression_multiplier {
                 main_obj = main_obj.with_color(&glm::vec3(0.0, 0.0, 0.0));
 
-                // Textutas aleatorioas
-                let rand_int = gen_random_usize() % texture_pool.len();
+                // Textutas  aleatorias dos objs a serem criados
+                let rand_int_main = gen_random_usize() % texture_pool.len();
+                let rand_int0 = gen_random_usize() % texture_pool.len();
+                let rand_int1 = gen_random_usize() % texture_pool.len();
+                let rand_int2 = gen_random_usize() % texture_pool.len();
                 let rand_int3 = gen_random_usize() % texture_pool.len();
                 let rand_int4 = gen_random_usize() % texture_pool.len();
-                let rand_int5 = gen_random_usize() % texture_pool.len();
 
-                let rand_int2 = gen_random_usize() % plane_pool.len();
+                // Textura do plano
 
-                // Tipos Mapeamentos de textura aleatorios
-                let _rand_int7 = (gen_random_i32() % 5) + 1;
-                let rand_int8 = (gen_random_i32() % 5) + 1;
+                let rand_intp = gen_random_usize() % plane_pool.len();
+
+                // Tipos de mapeamentos de textura aleatorios
+                let rand_int_type0 = (gen_random_i32() % 4) + 1;
+                let rand_int_type1 = (gen_random_i32() % 4) + 1;
 
                 if main_obj.get_texture_override() == 0 {
-                    main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_int], 1);
+                    main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_int_main], 1);
                 }
 
                 if plane.get_texture_override() == 0 {
                     plane = plane.with_color(&glm::vec3(0.0, 0.0, 0.0));
-                    plane = plane.with_texture(&plane_pool.as_slice()[rand_int2], 2);
+                    plane = plane.with_texture(&plane_pool.as_slice()[rand_intp], 2);
                     sad_plane = sad_plane.with_color(&glm::vec3(0.0, 0.0, 0.0));
                     sad_plane = sad_plane.with_texture(&sad_texture, 2);
                 }
 
-                new_obj1 = new_obj1
-                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
-                    .with_texture(&texture_pool.as_slice()[rand_int3], 1);
-                new_obj2 = new_obj2.with_color(&glm::vec3(0.0, 0.0, 0.0)).with_texture(
-                    &texture_pool.as_slice()[rand_int4],
-                    new_obj2.get_texture_map_type(),
+                // Objeto mais comum mapeado com textura padrão
+                new_obj0 = new_obj0.with_color(&glm::vec3(0.0, 0.0, 0.0)).with_texture(
+                    &texture_pool.as_slice()[rand_int0],
+                    new_obj1.get_texture_map_type(),
                 );
 
+                // Segundo objeto mais comum mapeado com mapeamento linear
+                new_obj1 = new_obj1
+                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
+                    .with_texture(&texture_pool.as_slice()[rand_int1], 1);
+
+                // Outros objs mapeados com textura aleatoria
+                new_obj2 = new_obj2
+                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
+                    .with_texture(&texture_pool.as_slice()[rand_int2], rand_int_type0);
                 new_obj3 = new_obj3
                     .with_color(&glm::vec3(0.0, 0.0, 0.0))
-                    .with_texture(&texture_pool.as_slice()[rand_int5], rand_int8);
+                    .with_texture(&texture_pool.as_slice()[rand_int3], rand_int_type1);
+
+                // Objeto menos comum mapeado com um ponto da textura ou textura padrao do obj
+                new_obj4 = new_obj4
+                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
+                    .with_texture(&texture_pool.as_slice()[rand_int4], 0);
             }
 
-            if game_state.score == 10 {
+            if game_state.score == 10 * game_state.progression_multiplier {
                 println!("Texturas!");
             }
 
             // Ilum de phong
-            if game_state.score >= 12 {
+            if game_state.score >= 12 * game_state.progression_multiplier {
                 current_shader = &phong_illumination;
                 plane = plane
                     .with_specular_reflectance(&glm::vec3(0.6, 0.2, 0.4))
@@ -344,58 +413,81 @@ pub unsafe fn game_loop(
 
                 main_obj = main_obj.with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3));
 
-                new_obj1 = new_obj1.with_specular_reflectance(&gen_random_vec3());
-                new_obj2 = new_obj2.with_specular_reflectance(&gen_random_vec3());
-                new_obj3 = new_obj3.with_specular_reflectance(&gen_random_vec3());
+                let rand1 = gen_random();
+                let rand2 = gen_random();
+                let rand3 = gen_random();
+                let rand4 = gen_random();
+
+                new_obj0 = new_obj0.with_specular_reflectance(&glm::vec3(rand1, rand1, rand1));
+                new_obj1 = new_obj1.with_specular_reflectance(&glm::vec3(rand2, rand2, rand2));
+
+                // especular e ambiente aleatorio e q de phong
+                new_obj2 = new_obj2
+                    .with_specular_reflectance(&glm::vec3(rand3, rand3, rand3))
+                    .with_ambient_reflectance(&glm::vec3(rand4, rand4, rand4))
+                    .with_specular_phong_q(&glm::pow(2.0, (&gen_random_i32() % 8) as f32));
+
+                // Objeto com refletancia ambiente fixa
+                new_obj3 = new_obj3.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
+
+                // Objeto reflexivo
+                new_obj4 = new_obj4
+                    .with_color(&glm::vec3(1.0, 1.0, 1.0))
+                    .with_ambient_reflectance(&glm::vec3(1.0, 1.0, 1.0))
+                    .with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
             }
 
-            if game_state.score == 12 {
+            if game_state.score == 12 * game_state.progression_multiplier {
                 println!("Phong Ilumination!");
             }
 
             // Camera junto com obj principal
-            if game_state.score > 14 {
+            if game_state.score > 14 * game_state.progression_multiplier {
                 move_camera = true;
             }
 
             // Troca para camera livre em primeira pessoa
-            if game_state.score > 16 {
+            if game_state.score > 16 * game_state.progression_multiplier {
                 main_obj = main_obj.get_root();
                 game_state.current_camera = 1;
             }
-            if game_state.score == 16 {
+            if game_state.score == 16 * game_state.progression_multiplier {
                 println!("Primeira Pessoa!")
             }
 
             // Desenha objs complexos
-            if game_state.score > 18 {
+            if game_state.score > 18 * game_state.progression_multiplier {
                 game_state.complex_objs = true;
             }
-            if game_state.score == 18 {
+            if game_state.score == 18 * game_state.progression_multiplier {
                 println!("Objs complexos!")
             }
 
-            // Troca para camera livre em primeira pessoa
-            if game_state.score > 50 {
-                game_state.with_bezier = true;
-            }
-            if game_state.score == 50 {
-                println!("Curvas de bezier!")
-            }
-
             // Adiciona um obj novo na fila de desenho
-            game_state.draw_queue.push(new_obj1);
+            game_state.draw_queue.push(new_obj0);
 
-            // Adiciona entre 0 a 2 objetos extras na cena
-            if game_state.score > 2 {
+            // Adiciona entre 0 a 4 objetos extras na cena
+            if game_state.score > 2 * game_state.progression_multiplier {
+                if gen_random_i32() % 3 < 2 {
+                    game_state.draw_queue.push(new_obj1);
+                }
+            }
+
+            if game_state.score > 5 * game_state.progression_multiplier {
                 if gen_random_i32() % 3 == 0 {
                     game_state.draw_queue.push(new_obj2);
+                }
+            }
 
-                    if game_state.score > 5 {
-                        if gen_random_i32() % 3 == 0 {
-                            game_state.draw_queue.push(new_obj3);
-                        }
-                    }
+            if game_state.score > 7 * game_state.progression_multiplier {
+                if gen_random_i32() % 4 == 0 {
+                    game_state.draw_queue.push(new_obj3);
+                }
+            }
+
+            if game_state.score > 9 * game_state.progression_multiplier {
+                if gen_random_i32() % 5 == 0 {
+                    game_state.draw_queue.push(new_obj4);
                 }
             }
 
@@ -554,7 +646,7 @@ pub fn generate_random_obj(base: &SceneObject, obj_plane_height: f32) -> SceneOb
             glm::max(0.1, glm::min(seedf1 * 0.5, 0.2)),
             glm::max(0.1, glm::min(seedf1 * 0.5, 0.2)),
         )
-        .translate(2.5 * seed1.x, obj_plane_height, 2.5 * seed1.z);
+        .translate(4.0 * seed1.x, obj_plane_height, 4.0 * seed1.z);
     new_obj
 }
 

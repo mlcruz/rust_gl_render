@@ -27,8 +27,11 @@ uniform vec3 global_lighting;
 // Parametros de origem da camera
 uniform vec4 camera_origin;
 
-// Parametros de reflexão specular
+// Parametros de refletancia specular
 uniform vec3 specular_reflectance;
+
+// Parametros de refletancia ambiente
+uniform vec3 ambient_reflectance;
 
 // Parametros de luz ambiente
 uniform vec3 ambient_lighting;
@@ -39,7 +42,7 @@ uniform vec3 color_overide;
 // Parametro de expoente q de phong
 uniform float phong_q;
 
-// Textura map type: Tipo de mapeamento da textura. 0 - ARQUIVO OBJ; 1- Planar XY;2- Planar XZ; 3- 2- Planar YZ ; 4- Esferico; 5- Cilindrico
+// Textura map type: Tipo de mapeamento da textura. 0 - ARQUIVO OBJ; 1- Planar XY;2- Planar XZ; ; 3- Esferico; 4- Cilindrico
 uniform int texture_map_type;
 
 uniform vec4 lighting_direction;
@@ -77,7 +80,7 @@ void main()
     
     // Vetor que define o sentido da reflexão especular ideal.
     vec4 r=-l+2*n*(dot(n,l));
-
+    
     // FIM INICIALIZACAO
     
     // Se não exite cor para sobreescrever textura atual, utiliza textura
@@ -110,22 +113,8 @@ void main()
             
             U=(position_model.x-minx)/(maxx-minx);
             V=(position_model.z-minz)/(maxz-minz);
-        }else if(texture_map_type==3){
-            
-            // Mapeia textura de maneira planar em yz
-            float minx=bbox_min.x;
-            float maxx=bbox_max.x;
-            
-            float miny=bbox_min.y;
-            float maxy=bbox_max.y;
-            
-            float minz=bbox_min.z;
-            float maxz=bbox_max.z;
-            
-            U=(position_model.y-miny)/(maxy-miny);
-            V=(position_model.z-minz)/(maxz-minz);
         }
-        else if(texture_map_type==4){
+        else if(texture_map_type==3){
             
             vec4 bbox_center=(bbox_min+bbox_max)/2.;
             float radius=length(bbox_max.x-bbox_center.x);
@@ -146,16 +135,24 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
+    vec3 final_ambient_reflectance=vec3(object_reflectance.x*.3+.1,object_reflectance.y*.3+.1,object_reflectance.z*.3+.1);
+    
+    // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
+    if(ambient_reflectance!=vec3(0.,0.,0.)){
+        final_ambient_reflectance=ambient_reflectance;
+    }
+    
     // Termo difuso utilizando a lei dos cossenos de Lambert
     vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
     // Termo ambiente
-    vec3 ambient_term=object_reflectance*ambient_lighting;
-
+    vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
+    
     // Termo especular utilizando o modelo de iluminação de Phong
     vec3 phong_specular_term=global_lighting*pow(max(0,dot(r,v)),phong_q);
     
     // Multiplicamos o vetor de refletancia especular pela cor da textura
+    // Utilizamos um vetor (specular_reflectance) para controlar a intensidade da refletancia especular do objeto
     color=(lambert_diffuse_term*object_reflectance)+ambient_term+((object_reflectance*specular_reflectance)*phong_specular_term);
     
     color=pow(color,vec3(1.,1.,1.)/2.2);

@@ -1,1 +1,1 @@
-generate_random_obj
+main_obj
