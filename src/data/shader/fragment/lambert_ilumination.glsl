@@ -129,6 +129,12 @@ void main()
             U=(theta+M_PI)/(2*M_PI);
             V=(phi+M_PI_2)/M_PI;
         }
+        else if(texture_map_type==4){
+            float theta=atan(position_model.x,position_model.z);
+            U=(theta+M_PI)/(2*M_PI);
+            V=(position_model.y-bbox_min.y)/(bbox_max.y-bbox_min.y);
+            
+        }
         else{
             
             // Coordenadas de textura do plano, obtidas do arquivo OBJ.
@@ -139,7 +145,7 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
-    vec3 final_ambient_reflectance=vec3((object_reflectance.x*.2)+.1,(object_reflectance.y*.2)+.1,(object_reflectance.z*.2)+.1);
+    vec3 final_ambient_reflectance=vec3((object_reflectance.x*.15)+.05,(object_reflectance.y*.15)+.05,(object_reflectance.z*.15)+.05);
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
     if(ambient_reflectance!=vec3(0.,0.,0.)){

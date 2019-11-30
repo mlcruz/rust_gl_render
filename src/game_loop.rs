@@ -105,6 +105,13 @@ pub unsafe fn game_loop(
     let (lava_texture, _) = load_texture("src/data/textures/lava.jpg");
     let (fire_texture, _) = load_texture("src/data/textures/fire.jpg");
 
+    let (glass_texture, _) = load_texture("src/data/textures/glass.jpg");
+    let (plate_diamond, _) = load_texture("src/data/textures/plate_diamond.jpg");
+    let (corn, _) = load_texture("src/data/textures/corn.jpg");
+
+    let (pattern1, _) = load_texture("src/data/textures/pattern1.jpg");
+    let (pattern2, _) = load_texture("src/data/textures/pattern2.jpg");
+
     let texture_pool = vec![
         &pearl_texture,
         &gold_texture,
@@ -118,14 +125,14 @@ pub unsafe fn game_loop(
         &earth_texture,
         &fire_texture,
         &lava_texture,
+        &glass_texture,
+        &plate_diamond,
+        &corn,
+        &sad_texture,
+        &pattern1,
+        &pattern2,
     ];
-    let plane_pool = vec![
-        &pearl_texture,
-        &ice_texture,
-        &dark_wood_texture,
-        &light_wood,
-        &old_wood_texture,
-    ];
+    let plane_pool = vec![&pearl_texture, &ice_texture, &glass_texture];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
     let mut plane = SceneObject::new("src/data/objs/plane.obj")
@@ -151,11 +158,10 @@ pub unsafe fn game_loop(
 
     let cow = SceneObject::new("src/data/objs/cow.obj")
         .scale(1.5, 1.5, 1.5)
-        .translate(0.0, 0.6, 0.0)
+        .translate(0.0, 0.9, 0.0)
         .with_texture_map_type(1);
     let bunny = SceneObject::new("src/data/objs/bunny.obj")
         .translate(0.0, 0.8, 0.0)
-        .with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3))
         .with_texture_map_type(1);
     let base_cube = SceneObject::new("src/data/objs/cube.obj").with_texture_map_type(1);
 
@@ -167,22 +173,29 @@ pub unsafe fn game_loop(
     let cylinder = SceneObject::new("src/data/objs/cylinder.obj")
         .translate(0.0, 0.4, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
-        .with_texture_map_type(3);
+        .with_texture_map_type(4);
 
     let pyramid = SceneObject::new("src/data/objs/pyramid.obj")
-        .rotate_y(1.5)
+        .rotate_z(1.5)
         .translate(0.0, 0.4, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
         .with_texture_map_type(3);
 
     let naked_dude = SceneObject::new("src/data/objs/naked_dude.obj")
-        .scale(0.2, 0.2, 0.2)
+        .scale(0.15, 0.15, 0.15)
         .translate(0.0, 0.4, 0.0)
-        .with_specular_reflectance(&glm::vec3(0.3, 0.3, 0.3))
-        .with_texture_map_type(0);
+        .with_texture_map_type(3);
+
+    let dog = SceneObject::new("src/data/objs/dog.obj")
+        .trot_z(1.5)
+        .trot_x(1.5)
+        .trot_y(1.5)
+        .scale(0.1, 0.1, 0.1)
+        .translate(0.0, 2.0, 0.0)
+        .with_texture_map_type(3);
 
     // Pool de objs aleatorios
-    let complex_obj_pool = vec![&cow, &bunny, &naked_dude];
+    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &dog];
     let simple_obj_pool = vec![&base_cube, &sphere, &cylinder, &pyramid];
 
     let mut current_shader = &default_shader;
@@ -248,7 +261,7 @@ pub unsafe fn game_loop(
             let init_z = main_obj.get_matrix().matrix.c2[2];
 
             // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
-            main_obj = main_obj.tscale(1.0 + 0.003, 1.0 + 0.003, 1.0 + 0.003);
+            main_obj = main_obj.tscale(1.0 + 0.001, 1.0 + 0.001, 1.0 + 0.001);
 
             // Calcula aumento da altura da camera com diferença entre tamanho antes e depois do escalamento
             delta_vec_x = delta_vec_x + main_obj.get_matrix().matrix.c0[0] - init_x;
@@ -321,8 +334,8 @@ pub unsafe fn game_loop(
             if game_state.score == 4 * game_state.progression_multiplier {
                 main_obj = main_obj.with_color(&gen_random_vec3());
                 let rand_plane_color = gen_random_vec3() + glm::vec3(0.2, 0.2, 0.2);
-
                 plane = plane.with_color(&rand_plane_color);
+                sad_plane = sad_plane.with_color(&rand_plane_color);
             }
             if game_state.score == 5 * game_state.progression_multiplier {
                 look_at_camera.pos.z = 0.0;
@@ -439,11 +452,11 @@ pub unsafe fn game_loop(
             }
 
             // Troca para camera livre em primeira pessoa
-            if game_state.score > 16 * game_state.progression_multiplier {
+            if game_state.score > 18 * game_state.progression_multiplier {
                 main_obj = main_obj.get_root();
                 game_state.current_camera = 1;
             }
-            if game_state.score == 16 * game_state.progression_multiplier {
+            if game_state.score == 18 * game_state.progression_multiplier {
                 println!("Primeira Pessoa!")
             }
 
@@ -495,7 +508,7 @@ pub unsafe fn game_loop(
             }
 
             if game_state.score > 5 * game_state.progression_multiplier {
-                if gen_random_i32() % 6 == 0 {
+                if gen_random_i32() % 4 == 0 {
                     game_state.draw_queue.push(new_obj2);
                 }
             }
@@ -507,7 +520,7 @@ pub unsafe fn game_loop(
             }
 
             if game_state.score > 9 * game_state.progression_multiplier {
-                if gen_random_i32() % 5 == 0 {
+                if gen_random_i32() % 4 == 0 {
                     game_state.draw_queue.push(new_obj4);
                 }
             }
@@ -604,6 +617,7 @@ pub unsafe fn game_loop(
 
 #[allow(dead_code, unused_assignments)]
 pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameState) {
+    // Gerencia colisões, movimento e desenha frame
     main.draw(shader);
 
     let mut new_items: Vec<SceneObject> = vec![];

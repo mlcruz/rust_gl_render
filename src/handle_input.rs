@@ -83,8 +83,8 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::R, glutin::ElementState::Pressed) => {
                     view.lighting = Lighting::new(
                         &glm::vec3(1.0, 1.0, 1.0),
-                        &glm::vec3(0.6, 0.5, 0.6),
-                        &glm::vec4(0.0, 0.0, 0.0, 0.0),
+                        &glm::vec3(1.0, 1.0, 1.0),
+                        &glm::vec4(1.0, 1.0, 0.0, 0.0),
                     );
 
                     let rand_intp = gen_random_usize() % texture_pool.len();
@@ -229,16 +229,16 @@ pub fn handle_input(
                 }
                 (glutin::VirtualKeyCode::Home, _) => {
                     view.lighting.global = glm::vec3(
-                        view.lighting.global.x - 0.05,
-                        view.lighting.global.y - 0.05,
-                        view.lighting.global.z - 0.05,
+                        view.lighting.global.x + 0.05,
+                        view.lighting.global.y + 0.05,
+                        view.lighting.global.z + 0.05,
                     );
                 }
                 (glutin::VirtualKeyCode::End, _) => {
                     view.lighting.global = glm::vec3(
-                        view.lighting.global.x + 0.05,
-                        view.lighting.global.y + 0.05,
-                        view.lighting.global.z + 0.05,
+                        view.lighting.global.x - 0.05,
+                        view.lighting.global.y - 0.05,
+                        view.lighting.global.z - 0.05,
                     )
                 }
                 (glutin::VirtualKeyCode::PageDown, _) => {
