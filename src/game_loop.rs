@@ -33,6 +33,7 @@ pub struct GameState {
     pub with_bezier: bool,
     pub curr_x: f64,
     pub dir: f64,
+    pub complex_objs: bool,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -79,6 +80,7 @@ pub unsafe fn game_loop(
         with_bezier: false,
         curr_x: 0.0,
         dir: 1.0,
+        complex_objs: false,
     };
 
     // Carrega texturas do jogo
@@ -110,7 +112,20 @@ pub unsafe fn game_loop(
         .scale(0.2, 0.2, 0.2)
         .translate(0.0, game_state.obj_plane_height, -0.0);
 
+    let cow = SceneObject::new("src/data/objs/cow.obj")
+        .translate(0.0, 0.6, 0.0)
+        .with_texture_map_type(1);
+    let bunny = SceneObject::new("src/data/objs/bunny.obj")
+        .translate(0.0, 0.8, 0.0)
+        .with_texture_map_type(1);
     let base_cube = SceneObject::new("src/data/objs/cube.obj");
+    let sphere = SceneObject::new("src/data/objs/sphere.obj")
+        .translate(0.0, 0.4, 0.0)
+        .with_color(&glm::vec3(0.6, 0.6, 0.2))
+        .with_texture_map_type(4);
+
+    let complex_obj_pool = vec![&cow, &bunny];
+    let simple_obj_pool = vec![&base_cube, &sphere];
 
     // Define framerate
     let framerate = 120.0;
@@ -182,10 +197,32 @@ pub unsafe fn game_loop(
             delta_vec_y = delta_vec_y + main_obj.get_matrix().matrix.c1[1] - init_y;
             delta_vec_z = delta_vec_z + main_obj.get_matrix().matrix.c2[2] - init_z;
 
+            let mut base_obj0 = &base_cube;
+            let mut base_obj1 = &base_cube;
+            let mut base_obj2 = &base_cube;
+            if game_state.complex_objs {
+                let rand_int00 = gen_random_usize() % complex_obj_pool.len();
+                let rand_int01 = gen_random_usize() % complex_obj_pool.len();
+                let rand_int02 = gen_random_usize() % complex_obj_pool.len();
+
+                base_obj0 = &complex_obj_pool.as_slice()[rand_int00];
+                base_obj1 = &complex_obj_pool.as_slice()[rand_int01];
+                base_obj2 = &complex_obj_pool.as_slice()[rand_int02];
+            } else {
+                // Objs aleatorioas
+                let rand_int00 = gen_random_usize() % simple_obj_pool.len();
+                let rand_int01 = gen_random_usize() % simple_obj_pool.len();
+                let rand_int02 = gen_random_usize() % simple_obj_pool.len();
+
+                base_obj0 = &simple_obj_pool.as_slice()[rand_int00];
+                base_obj1 = &simple_obj_pool.as_slice()[rand_int01];
+                base_obj2 = &simple_obj_pool.as_slice()[rand_int02];
+            }
+
             // Gera objs aleatorios a serem inseridos na cena
-            let mut new_obj1 = generate_random_obj(&base_cube, game_state.obj_plane_height);
-            let mut new_obj2 = generate_random_obj(&base_cube, game_state.obj_plane_height);
-            let mut new_obj3 = generate_random_obj(&base_cube, game_state.obj_plane_height);
+            let mut new_obj1 = generate_random_obj(&base_obj0, game_state.obj_plane_height);
+            let mut new_obj2 = generate_random_obj(&base_obj1, game_state.obj_plane_height);
+            let mut new_obj3 = generate_random_obj(&base_obj2, game_state.obj_plane_height);
             move_camera = false;
 
             // Posiveis alterações feitas em iterações anteriores são revertidas
@@ -286,9 +323,10 @@ pub unsafe fn game_loop(
                 new_obj1 = new_obj1
                     .with_color(&glm::vec3(0.0, 0.0, 0.0))
                     .with_texture(&texture_pool.as_slice()[rand_int3], 1);
-                new_obj2 = new_obj2
-                    .with_color(&glm::vec3(0.0, 0.0, 0.0))
-                    .with_texture(&texture_pool.as_slice()[rand_int4], rand_int7);
+                new_obj2 = new_obj2.with_color(&glm::vec3(0.0, 0.0, 0.0)).with_texture(
+                    &texture_pool.as_slice()[rand_int4],
+                    new_obj2.get_texture_map_type(),
+                );
 
                 new_obj3 = new_obj3
                     .with_color(&glm::vec3(0.0, 0.0, 0.0))
@@ -331,12 +369,20 @@ pub unsafe fn game_loop(
                 println!("Primeira Pessoa!")
             }
 
-            // Troca para camera livre em primeira pessoa
+            // Desenha objs complexos
             if game_state.score > 18 {
-                game_state.with_bezier = true;
+                game_state.complex_objs = true;
             }
             if game_state.score == 18 {
-                println!("Mov utilizando curvas de bezier")
+                println!("Objs complexos!")
+            }
+
+            // Troca para camera livre em primeira pessoa
+            if game_state.score > 30 {
+                game_state.with_bezier = true;
+            }
+            if game_state.score == 30 {
+                println!("Curvas de bezier!")
             }
 
             // Adiciona um obj novo na fila de desenho
@@ -462,7 +508,7 @@ pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameSta
         let b13 = 3.0 * game_state.curr_x as f32 * pow(1.10 - game_state.curr_x, 2.0) as f32;
         let b33 = pow(game_state.curr_x, 3.0) as f32;
 
-        let p1 = glm::vec4(-2.5, 0.0, 0.0, 0.0);
+        let p1 = glm::vec4(-2.5, 0.4, 0.0, 0.0);
         let p2 = glm::vec4(-2.00, 1.8, 1.25, 0.0);
         let p3 = glm::vec4(2.0, 1.8, 0.5, 0.0);
         let p4 = glm::vec4(4.5, 0.0, 1.25, 0.0);
