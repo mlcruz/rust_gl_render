@@ -49,7 +49,7 @@ uniform int texture_map_type;
 uniform vec4 lighting_direction;
 
 // Possivel vetor de sobrescrita da iluminaçção global
-uniform vec4 lighting_direction_override;
+uniform vec4 lighting_source_override;
 
 out vec3 color;
 

@@ -37,18 +37,45 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Up, _) => {
                     look_at_camera.pos.z =
                         look_at_camera.pos.z + (*speed * game_state.camera_speed_mult);
+
+                    if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                        game_state.lighting_source.z = game_state.lighting_source.z + 0.05;
+                    }
+                    println!("{:?}", game_state.lighting_source);
                 }
                 (glutin::VirtualKeyCode::Down, _) => {
                     look_at_camera.pos.z =
                         look_at_camera.pos.z - (*speed * game_state.camera_speed_mult);
+
+                    if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                        game_state.lighting_source.z = game_state.lighting_source.z - 0.05;
+                    }
                 }
                 (glutin::VirtualKeyCode::Left, _) => {
                     look_at_camera.pos.x =
                         look_at_camera.pos.x + (*speed * game_state.camera_speed_mult);
+
+                    if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                        game_state.lighting_source.x = game_state.lighting_source.x + 0.05;
+                    }
                 }
                 (glutin::VirtualKeyCode::Right, _) => {
                     look_at_camera.pos.x =
                         look_at_camera.pos.x - (*speed * game_state.camera_speed_mult);
+
+                    if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                        game_state.lighting_source.x = game_state.lighting_source.x - 0.05;
+                    }
+                }
+                (glutin::VirtualKeyCode::Insert, _) => {
+                    if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                        game_state.lighting_source.y = game_state.lighting_source.y + 0.05;
+                    }
+                }
+                (glutin::VirtualKeyCode::Delete, _) => {
+                    if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                        game_state.lighting_source.y = game_state.lighting_source.y - 0.05;
+                    }
                 }
                 (glutin::VirtualKeyCode::R, _) => {
                     view.lighting = Lighting::new(

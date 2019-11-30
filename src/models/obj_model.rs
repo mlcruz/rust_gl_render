@@ -35,7 +35,7 @@ pub struct ObjModel {
     pub ambient_reflectance_overide: glm::Vec3,
     pub color_overide: glm::Vec3,
     pub texture_map_type: i32,
-    pub lighting_direction_override: glm::Vec4,
+    pub lighting_source_override: glm::Vec4,
 }
 
 static ID_MATRIX: GLMatrix = identity_matrix();
@@ -72,7 +72,7 @@ impl ObjModel {
             ambient_reflectance_overide: glm::vec3(0.0, 0.0, 0.0),
             phong_q_overide: 1.0,
             color_overide: glm::vec3(0.0, 0.0, 0.0),
-            lighting_direction_override: glm::vec4(0.0, 0.0, 0.0, 0.0),
+            lighting_source_override: glm::vec4(0.0, 0.0, 0.0, 0.0),
         };
 
         let mut position_array = Vec::new();
@@ -320,12 +320,9 @@ impl ObjModel {
         }
     }
 
-    pub fn with_lighting_direction_override(
-        &self,
-        lighting_direction_override: &glm::Vec4,
-    ) -> Self {
+    pub fn with_lighting_source_override(&self, lighting_source_override: &glm::Vec4) -> Self {
         Self {
-            lighting_direction_override: *lighting_direction_override,
+            lighting_source_override: *lighting_source_override,
             ..*self
         }
     }
@@ -442,9 +439,7 @@ impl Draw for ObjModel {
             );
             let lighting_direction_uniform = gl::GetUniformLocation(
                 *program,
-                CString::new("lighting_direction_override")
-                    .unwrap()
-                    .as_ptr(),
+                CString::new("lighting_source_override").unwrap().as_ptr(),
             );
 
             let ambient_reflectance_uniform = gl::GetUniformLocation(
@@ -476,9 +471,9 @@ impl Draw for ObjModel {
             );
             gl::Uniform4f(
                 lighting_direction_uniform,
-                self.lighting_direction_override.x,
-                self.lighting_direction_override.y,
-                self.lighting_direction_override.z,
+                self.lighting_source_override.x,
+                self.lighting_source_override.y,
+                self.lighting_source_override.z,
                 1.0,
             );
 

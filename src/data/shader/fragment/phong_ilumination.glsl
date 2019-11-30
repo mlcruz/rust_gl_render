@@ -1,5 +1,6 @@
 #version 330 core
 
+// Interpolação da posição normal e normal de cada vertice
 in vec4 position_world;
 in vec4 normal;
 
@@ -49,7 +50,7 @@ uniform int texture_map_type;
 uniform vec4 lighting_direction;
 
 // Possivel vetor de sobrescrita da iluminaçção global
-uniform vec4 lighting_direction_override;.
+uniform vec4 lighting_source_override;
 
 out vec3 color;
 
@@ -71,11 +72,15 @@ void main()
     vec4 n=normalize(normal);
     
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l=normalize(lighting_direction);
-    
-    // Sobreescreve iluminação global, se existir parametro
-    if(lighting_direction_override!=vec4(0.,0.,0.,0.)){
-        l=normalize(lighting_direction_override);
+    vec4 l=vec4(0.,0.,0.,0.);
+    // Sobreescreve iluminação global com direção relatica a alguma fonte de luz, se existir parametro
+    if(lighting_source_override.y==0.){
+        l=normalize(lighting_direction);
+        
+    }
+    else{
+        vec4 source_point=lighting_source_override-position_world;
+        l=normalize(source_point);
     }
     
     // Vetor que define o sentido da câmera em relação ao ponto atual.
@@ -147,7 +152,7 @@ void main()
     // Termo difuso utilizando a lei dos cossenos de Lambert
     vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
-    vec3 final_ambient_reflectance=lambert_diffuse_term/2;
+    vec3 final_ambient_reflectance=vec3((object_reflectance.x*.15)+.1,(object_reflectance.y*.15)+.1,(object_reflectance.z*.15)+.1);
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
     if(ambient_reflectance!=vec3(0.,0.,0.)){

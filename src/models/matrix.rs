@@ -99,7 +99,7 @@ pub fn rotation_matrix_z(angle: f32) -> GLMatrix {
     GLMatrix::new([
         c, -s, 0.0, 0.0, // LINHA 1
         s, c, 0.0, 0.0, // LINHA 2
-        0.0, 0.0, 0.0, 0.0, // LINHA 3
+        0.0, 0.0, 1.0, 0.0, // LINHA 3
         0.0, 0.0, 0.0, 1.0,
     ])
 }
@@ -408,6 +408,48 @@ pub trait MatrixTransform: Sized {
             self.translate(-translation_vec.x, -translation_vec.y, -translation_vec.z);
 
         new_self = new_self.scale(x, y, z);
+        new_self = new_self.translate(translation_vec.x, translation_vec.y, translation_vec.z);
+        new_self
+    }
+
+    // Translate para 0, rotaciona e translate de volta
+    fn trot_y(&self, angle: f32) -> Self {
+        let translation_vec = self.get_matrix().matrix.c3;
+        let mut new_self =
+            self.translate(-translation_vec.x, -translation_vec.y, -translation_vec.z);
+
+        new_self = new_self.rotate_y(angle);
+        new_self = new_self.translate(translation_vec.x, translation_vec.y, translation_vec.z);
+        new_self
+    }
+
+    fn trot_x(&self, angle: f32) -> Self {
+        let translation_vec = self.get_matrix().matrix.c3;
+        let mut new_self =
+            self.translate(-translation_vec.x, -translation_vec.y, -translation_vec.z);
+
+        new_self = new_self.rotate_z(angle);
+        new_self = new_self.translate(translation_vec.x, translation_vec.y, translation_vec.z);
+        new_self
+    }
+
+    fn trot_z(&self, angle: f32) -> Self {
+        let translation_vec = self.get_matrix().matrix.c3;
+        let mut new_self =
+            self.translate(-translation_vec.x, -translation_vec.y, -translation_vec.z);
+
+        new_self = new_self.rotate_z(angle);
+        new_self = new_self.translate(translation_vec.x, translation_vec.y, translation_vec.z);
+        new_self
+    }
+
+    // Translate para 0, rotaciona e translate de volta
+    fn t_rot(&self, angle: f32, axis: glm::Vec4) -> Self {
+        let translation_vec = self.get_matrix().matrix.c3;
+        let mut new_self =
+            self.translate(-translation_vec.x, -translation_vec.y, -translation_vec.z);
+
+        new_self = new_self.rotate(angle, axis);
         new_self = new_self.translate(translation_vec.x, translation_vec.y, translation_vec.z);
         new_self
     }

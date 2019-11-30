@@ -224,24 +224,24 @@ impl SceneObject {
     }
 
     // Atribui um overide de cor para o obj
-    pub fn with_lighting_direction_override(
+    pub fn with_lighting_source_override(
         &self,
-        lighting_direction_override: &glm::Vec4,
+        lighting_source_override: &glm::Vec4,
     ) -> Self {
         match self {
             SceneObject::ObjModel(obj) => SceneObject::ObjModel(
-                obj.with_lighting_direction_override(lighting_direction_override),
+                obj.with_lighting_source_override(lighting_source_override),
             ),
             SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
                 root: obj
                     .root
-                    .with_lighting_direction_override(lighting_direction_override),
+                    .with_lighting_source_override(lighting_source_override),
                 children: obj.children.clone(),
             }),
             SceneObject::ComplexObj(obj) => SceneObject::ComplexObj(ComplexObj {
                 root: obj
                     .root
-                    .with_lighting_direction_override(lighting_direction_override),
+                    .with_lighting_source_override(lighting_source_override),
                 children: obj.children.clone(),
             }),
         }

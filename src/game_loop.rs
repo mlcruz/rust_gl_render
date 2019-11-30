@@ -35,6 +35,7 @@ pub struct GameState {
     pub complex_objs: bool,
     pub max_framerate: f64,
     pub progression_multiplier: i32,
+    pub lighting_source: glm::Vec4,
 }
 
 #[allow(dead_code, unused_assignments)]
@@ -83,6 +84,7 @@ pub unsafe fn game_loop(
         complex_objs: false,
         max_framerate: 120.0,
         progression_multiplier: 1,
+        lighting_source: glm::vec4(0.0, 0.0, 0.0, 0.0),
     };
 
     ////////////////////// Carrega texturas do jogo /////////////////////////
@@ -129,7 +131,9 @@ pub unsafe fn game_loop(
         .scale(1.0, 1.0, 1.0)
         .translate(0.0, game_state.obj_plane_height + 0.001, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.6))
-        .with_ambient_reflectance(&glm::vec3(1.0, 1.0, 1.0));
+        .with_ambient_reflectance(&glm::vec3(0.0, 0.0, 0.0))
+        .with_specular_reflectance(&glm::vec3(0.8, 0.8, 0.8))
+        .with_specular_phong_q(&8.0);
 
     let sad_head =
         SceneObject::new("src/data/objs/sphere.obj").with_color(&glm::vec3(0.0, 0.0, 0.0));
@@ -158,10 +162,11 @@ pub unsafe fn game_loop(
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
         .with_texture_map_type(3);
 
-    let pyramid = SceneObject::new("src/data/objs/cylinder.obj")
+    let pyramid = SceneObject::new("src/data/objs/pyramid.obj")
+        .rotate_y(1.5)
         .translate(0.0, 0.4, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
-        .with_texture_map_type(1);
+        .with_texture_map_type(3);
 
     // Pool de objs aleatorios
     let complex_obj_pool = vec![&cow, &bunny];
@@ -406,19 +411,36 @@ pub unsafe fn game_loop(
                 println!("Texturas!");
             }
 
-            // Ilum de phong
-            if game_state.score >= 12 * game_state.progression_multiplier {
-                current_shader = &phong_illumination;
-                plane = plane
-                    .with_specular_reflectance(&glm::vec3(0.6, 0.2, 0.4))
-                    .with_specular_phong_q(&8.0);
+            // Camera junto com obj principal
+            if game_state.score > 14 * game_state.progression_multiplier {
+                move_camera = true;
+            }
 
-                main_obj = main_obj.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
+            // Troca para camera livre em primeira pessoa
+            if game_state.score > 16 * game_state.progression_multiplier {
+                main_obj = main_obj.get_root();
+                game_state.current_camera = 1;
+            }
+            if game_state.score == 16 * game_state.progression_multiplier {
+                println!("Primeira Pessoa!")
+            }
+
+            // Desenha objs complexos
+            if game_state.score > 18 * game_state.progression_multiplier {
+                game_state.complex_objs = true;
+            }
+            if game_state.score == 18 * game_state.progression_multiplier {
+                println!("Objs complexos!");
+            }
+
+            // Ilum de phong
+            if game_state.score >= 21 * game_state.progression_multiplier {
+                current_shader = &phong_illumination;
+                plane = plane;
 
                 let rand3 = gen_random();
                 let rand4 = gen_random();
 
-                new_obj0 = new_obj0.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
                 new_obj1 = new_obj1.with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
 
                 // especular e ambiente aleatorio e q de phong
@@ -439,31 +461,14 @@ pub unsafe fn game_loop(
                     .with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
             }
 
-            if game_state.score == 12 * game_state.progression_multiplier {
+            if game_state.score == 21 * game_state.progression_multiplier {
                 println!("Phong Ilumination!");
             }
 
-            // Camera junto com obj principal
-            if game_state.score > 14 * game_state.progression_multiplier {
-                move_camera = true;
-            }
-
-            // Troca para camera livre em primeira pessoa
-            if game_state.score > 16 * game_state.progression_multiplier {
-                main_obj = main_obj.get_root();
-                game_state.current_camera = 1;
-            }
-            if game_state.score == 16 * game_state.progression_multiplier {
-                println!("Primeira Pessoa!")
-            }
-
-            // Desenha objs complexos
-            if game_state.score > 18 * game_state.progression_multiplier {
-                game_state.complex_objs = true;
-            }
-            if game_state.score == 18 * game_state.progression_multiplier {
-                println!("Objs complexos!")
-            }
+            if game_state.score == 24 * game_state.progression_multiplier {
+                println!(" Iluminação relativa a fonte de luz!");
+                game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
+            };
 
             // Adiciona um obj novo na fila de desenho
             game_state.draw_queue.push(new_obj0);
@@ -492,7 +497,6 @@ pub unsafe fn game_loop(
                     game_state.draw_queue.push(new_obj4);
                 }
             }
-
             game_state.should_add_obj = false;
         }
 
@@ -621,11 +625,16 @@ pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameSta
         } else {
             // Desenha alguns objs com mov em curva de bezier
             if game_state.with_bezier {
-                item.translate(curve.x, curve.y, curve.z).draw(shader);
+                item.with_lighting_source_override(&game_state.lighting_source)
+                    .trot_y(2.0 * 3.14 * game_state.curr_x as f32)
+                    .trot_x(2.0 * 3.14 * game_state.curr_x as f32)
+                    .translate(curve.x, curve.y, curve.z)
+                    .draw(shader);
 
                 new_items.push(item.clone());
             } else {
-                item.draw(shader);
+                item.with_lighting_source_override(&game_state.lighting_source)
+                    .draw(shader);
                 new_items.push(item.clone());
             }
         }

@@ -1,1 +1,1 @@
-simple_obj_pool
+lighting_source
