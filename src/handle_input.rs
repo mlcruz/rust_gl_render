@@ -14,7 +14,7 @@ pub fn handle_input(
     game_state: &mut GameState,
     look_at_camera: &mut FreeCamera,
     free_camera: &mut FreeCamera,
-    _view: &mut View,
+    view: &mut View,
     speed: &mut f32,
     main_obj: &mut SceneObject,
 ) {
@@ -38,22 +38,129 @@ pub fn handle_input(
                         look_at_camera.pos.z + (*speed * game_state.camera_speed_mult);
                 }
                 (glutin::VirtualKeyCode::Down, _) => {
-                    // camera.update_angle(camera.theta, camera.phi - 0.025);
                     look_at_camera.pos.z =
                         look_at_camera.pos.z - (*speed * game_state.camera_speed_mult);
                 }
                 (glutin::VirtualKeyCode::Left, _) => {
                     look_at_camera.pos.x =
                         look_at_camera.pos.x + (*speed * game_state.camera_speed_mult);
-                    // camera.update_angle(camera.theta + 0.025, camera.phi);
                 }
                 (glutin::VirtualKeyCode::Right, _) => {
                     look_at_camera.pos.x =
                         look_at_camera.pos.x - (*speed * game_state.camera_speed_mult);
-                    // camera.update_angle(camera.theta - 0.025, camera.phi);
                 }
-                (glutin::VirtualKeyCode::End, _) => {}
-                (glutin::VirtualKeyCode::Home, _) => {}
+                (glutin::VirtualKeyCode::Numpad7, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x + 0.1,
+                        view.lighting.global.y,
+                        view.lighting.global.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Numpad8, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x,
+                        view.lighting.global.y + 0.1,
+                        view.lighting.global.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Numpad9, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x,
+                        view.lighting.global.y,
+                        view.lighting.global.z + 0.1,
+                    );
+                }
+                (glutin::VirtualKeyCode::Numpad1, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x - 0.1,
+                        view.lighting.global.y,
+                        view.lighting.global.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Numpad2, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x,
+                        view.lighting.global.y - 0.1,
+                        view.lighting.global.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Numpad3, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x,
+                        view.lighting.global.y,
+                        view.lighting.global.z - 0.1,
+                    );
+                }
+                (glutin::VirtualKeyCode::Key1, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x - 0.1,
+                        view.lighting.ambient.y,
+                        view.lighting.ambient.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Key2, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x,
+                        view.lighting.ambient.y - 0.1,
+                        view.lighting.ambient.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Key3, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x,
+                        view.lighting.ambient.y,
+                        view.lighting.ambient.z - 0.1,
+                    );
+                }
+                (glutin::VirtualKeyCode::Key7, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x + 0.1,
+                        view.lighting.ambient.y,
+                        view.lighting.ambient.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Key8, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x,
+                        view.lighting.ambient.y + 0.1,
+                        view.lighting.ambient.z,
+                    );
+                }
+                (glutin::VirtualKeyCode::Key9, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x,
+                        view.lighting.ambient.y,
+                        view.lighting.ambient.z + 0.1,
+                    );
+                }
+                (glutin::VirtualKeyCode::Home, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x - 0.1,
+                        view.lighting.global.y - 0.1,
+                        view.lighting.global.z - 0.1,
+                    );
+                }
+                (glutin::VirtualKeyCode::End, _) => {
+                    view.lighting.global = glm::vec3(
+                        view.lighting.global.x + 0.1,
+                        view.lighting.global.y + 0.1,
+                        view.lighting.global.z + 0.1,
+                    )
+                }
+                (glutin::VirtualKeyCode::PageDown, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x - 0.1,
+                        view.lighting.ambient.y - 0.1,
+                        view.lighting.ambient.z - 0.1,
+                    )
+                }
+                (glutin::VirtualKeyCode::PageUp, _) => {
+                    view.lighting.ambient = glm::vec3(
+                        view.lighting.ambient.x + 0.1,
+                        view.lighting.ambient.y + 0.1,
+                        view.lighting.ambient.z + 0.1,
+                    )
+                }
                 (glutin::VirtualKeyCode::O, _) => game_state.is_view_orto = true,
                 (glutin::VirtualKeyCode::P, _) => game_state.is_view_orto = false,
                 (glutin::VirtualKeyCode::W, _) => {

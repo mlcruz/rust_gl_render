@@ -306,7 +306,7 @@ pub unsafe fn game_loop(
                 let rand_int2 = gen_random_usize() % plane_pool.len();
 
                 // Tipos Mapeamentos de textura aleatorios
-                let rand_int7 = (gen_random_i32() % 5) + 1;
+                let _rand_int7 = (gen_random_i32() % 5) + 1;
                 let rand_int8 = (gen_random_i32() % 5) + 1;
 
                 if main_obj.get_texture_override() == 0 {
