@@ -118,7 +118,7 @@ pub unsafe fn game_loop(
 
     //   let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
     //  let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
-    let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
+    // let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
     //  let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
 
     //   let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
@@ -140,7 +140,7 @@ pub unsafe fn game_loop(
         &sea_water_texture,
         // &copper_texture,
         &steel_texture,
-        &ice_texture,
+        //   &ice_texture,
         // &light_wood,
         // &old_wood_texture,
         &earth_texture,
@@ -729,7 +729,7 @@ pub fn draw_frame(
 ) {
     // Gerencia colisões, movimento e desenha frame
     main.draw(shader);
-
+    println!("{:?}", main.check_is_intersecting_fence(5.0, 5.0));
     let mut new_items: Vec<SceneObject> = vec![];
     let mut should_add_obj = false;
     let mut score = 0;
@@ -759,10 +759,6 @@ pub fn draw_frame(
                 is_intersecting = main
                     .check_bbox_intersection(&item.translate(curve.x, curve.y, curve.z))
                     || item.check_point_intersection(&camera.pos)
-                    || main.check_plane_intersection(
-                        &glm::vec4(5.0, 0.0, 0.0, 0.0),
-                        &glm::vec4(0.0, 0.0, 1.0, 0.0),
-                    )
             } else {
                 is_intersecting = main.check_bbox_intersection(&item)
                     || item.check_point_intersection(&camera.pos)

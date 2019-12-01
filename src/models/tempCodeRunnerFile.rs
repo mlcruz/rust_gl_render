@@ -1,1 +1,1 @@
-texture_override
+neg_vec

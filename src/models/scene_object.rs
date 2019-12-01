@@ -290,6 +290,21 @@ impl SceneObject {
         check_plane_bbox_intersection(&obj1_bbox_min_pos, &obj1_bbox_max_pos, point, normal)
     }
 
+    pub fn check_is_intersecting_fence(&self, fence_x: f32, fence_z: f32) -> bool {
+        self.check_plane_intersection(
+            &glm::vec4(fence_x, 0.0, 0.0, 0.0),
+            &glm::vec4(1.0, 0.0, 0.0, 0.0),
+        ) || self.check_plane_intersection(
+            &glm::vec4(0.0, 0.0, fence_z, 0.0),
+            &glm::vec4(0.0, 0.0, 1.0, 0.0),
+        ) || self.check_plane_intersection(
+            &glm::vec4(-fence_x, 0.0, 0.0, 0.0),
+            &glm::vec4(1.0, 0.0, 0.0, 0.0),
+        ) || self.check_plane_intersection(
+            &glm::vec4(0.0, 0.0, -fence_z, 0.0),
+            &glm::vec4(0.0, 0.0, 1.0, 0.0),
+        )
+    }
     // Checa a interseção entra a bbox de 2 objs
     pub fn check_point_intersection(&self, point: &glm::Vec4) -> bool {
         //let model_translation = obj1.model.matrix.c3;
@@ -467,35 +482,40 @@ pub fn check_plane_bbox_intersection(
     point: &glm::Vec4,
     normal: &glm::Vec4,
 ) -> bool {
-    let mut neg_vec = glm::vec4(0.0, 0.0, 0.0, 0.0);
-    let mut pos_vec = glm::vec4(0.0, 0.0, 0.0, 0.0);
+    let mut v1 = glm::vec4(0.0, 0.0, 0.0, 0.0);
+    let mut v2 = glm::vec4(0.0, 0.0, 0.0, 0.0);
 
     if normal.x >= 0.0 {
-        neg_vec.x = bbox_min.x;
-        pos_vec.x = bbox_max.x;
+        v1.x = bbox_min.x;
+        v2.x = bbox_max.x;
     } else {
-        neg_vec.x = bbox_max.x;
-        pos_vec.x = bbox_min.x;
+        v1.x = bbox_max.x;
+        v2.x = bbox_min.x;
     }
     if normal.y >= 0.0 {
-        neg_vec.y = bbox_min.y;
-        pos_vec.y = bbox_max.y;
+        v1.y = bbox_min.y;
+        v2.y = bbox_max.y;
     } else {
-        neg_vec.y = bbox_max.y;
-        pos_vec.y = bbox_min.y;
+        v1.y = bbox_max.y;
+        v2.y = bbox_min.y;
     }
     if normal.z >= 0.0 {
-        neg_vec.z = bbox_min.z;
-        pos_vec.z = bbox_max.z;
+        v1.z = bbox_min.z;
+        v2.z = bbox_max.z;
     } else {
-        neg_vec.z = bbox_max.z;
-        pos_vec.z = bbox_min.z;
+        v1.z = bbox_max.z;
+        v2.z = bbox_min.z;
     }
 
     // Se normal maior que 0 Vertice no lado positivo do plano
-    let pos_side = (*normal * pos_vec) + *point;
-    //  Se normal menor que 0 Vertice no lado negativo do plano
-    let neg_side = (*normal * neg_vec) + *point;
+    let pos_side = (*normal * v2) + *point;
 
-    !(norm(pos_side) > 0.0 || norm(neg_side) < 0.0)
+    //  Se normal menor que 0 Vertice no lado negativo do plano
+    let neg_side = (*normal * v1) + *point;
+
+    let pos_sum = pos_side.x + pos_side.y + pos_side.z;
+    let neg_sum = neg_side.x + neg_side.y + neg_side.z;
+
+    // Detecta se a bbox está ao mesmo tempo dos dois lados do plano
+    (pos_sum > 0.0 && neg_sum < 0.0) || (pos_sum < 0.0 && neg_sum > 0.0)
 }
