@@ -224,14 +224,11 @@ impl SceneObject {
     }
 
     // Atribui um overide de cor para o obj
-    pub fn with_lighting_source_override(
-        &self,
-        lighting_source_override: &glm::Vec4,
-    ) -> Self {
+    pub fn with_lighting_source_override(&self, lighting_source_override: &glm::Vec4) -> Self {
         match self {
-            SceneObject::ObjModel(obj) => SceneObject::ObjModel(
-                obj.with_lighting_source_override(lighting_source_override),
-            ),
+            SceneObject::ObjModel(obj) => {
+                SceneObject::ObjModel(obj.with_lighting_source_override(lighting_source_override))
+            }
             SceneObject::CompositeObj(obj) => SceneObject::CompositeObj(CompositeObj {
                 root: obj
                     .root
@@ -271,7 +268,29 @@ impl SceneObject {
     }
 
     // Checa a interseção entra a bbox de 2 objs
-    pub fn check_intersection(&self, obj2: &SceneObject) -> bool {
+    pub fn check_point_intersection(&self, point: &glm::Vec4) -> bool {
+        //let model_translation = obj1.model.matrix.c3;
+        let obj1 = self;
+
+        // Utiliza transação do obj para calcular pos global
+        let obj1_t = obj1.get_matrix().matrix.c3;
+
+        let obj1_bbox_min = obj1.get_bbox_min();
+        let obj1_bbox_max = obj1.get_bbox_max();
+
+        // Pos global da bbox  do obj1
+        let obj1_bbox_min_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_min.x, obj1_bbox_min.y, obj1_bbox_min.z, 0.0)
+            + obj1_t;
+        let obj1_bbox_max_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_max.x, obj1_bbox_max.y, obj1_bbox_max.z, 0.0)
+            + obj1_t;
+
+        check_point_bbox_intersection(&obj1_bbox_min_pos, &obj1_bbox_max_pos, point)
+    }
+
+    // Checa a interseção entra a bbox de 2 objs
+    pub fn check_bbox_intersection(&self, obj2: &SceneObject) -> bool {
         //let model_translation = obj1.model.matrix.c3;
         let obj1 = self;
 
@@ -308,7 +327,6 @@ impl SceneObject {
         )
     }
     #[allow(dead_code, unused_assignments)]
-
     // Detecta se um objeto colidiu com outro, buscando recursivamente nos filhos em caso de objs complexos
     pub fn detect_colision(&self, obj2: &SceneObject) -> bool {
         let mut is_coliding = false;

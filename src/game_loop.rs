@@ -205,10 +205,15 @@ pub unsafe fn game_loop(
         .translate(0.0, 0.4, 0.0)
         .with_texture_map_type(3);
 
-    let the_horror = SceneObject::new("src/data/objs/bunny.obj")
+    let pyramid_head = SceneObject::new("src/data/objs/cylinder.obj")
         .translate(0.0, 0.8, 0.0)
         .with_texture_map_type(1)
-        .add_children(&cow.with_texture(&corn, 1).translate(0.0, 0.5, 0.0))
+        .add_children(
+            &pyramid
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 1.0, 0.0),
+        )
+        .add_children(&pyramid.with_texture(&lava_texture, 1).scale(1.5, 1.0, 2.0))
         .add_children(
             &naked_dude
                 .with_texture(&lava_texture, 1)
@@ -216,7 +221,7 @@ pub unsafe fn game_loop(
         )
         .add_children(
             &naked_dude
-                .with_texture(&lava_texture, 1)
+                .with_texture(&sea_water_texture, 1)
                 .translate(0.0, 0.2, 0.0),
         )
         .add_children(
@@ -226,7 +231,7 @@ pub unsafe fn game_loop(
         )
         .add_children(
             &naked_dude
-                .with_texture(&lava_texture, 1)
+                .with_texture(&earth_texture, 1)
                 .translate(0.0, 0.8, 0.0),
         )
         .add_children(
@@ -247,7 +252,7 @@ pub unsafe fn game_loop(
         .scale(0.5, 0.5, 0.5);
 
     // Pool de objs aleatorios
-    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &the_horror];
+    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &pyramid_head];
     let simple_obj_pool = vec![&base_cube, &sphere, &cylinder, &pyramid];
 
     let mut current_shader = &default_shader;
@@ -572,7 +577,6 @@ pub unsafe fn game_loop(
             }
 
             if game_state.score >= 24 * game_state.progression_multiplier {
-                println!(" Iluminação relativa a fonte de luz!");
                 if game_state.lighting_source == glm::vec4(0.0, 0.0, 0.0, 0.0) {
                     game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
                 }
@@ -733,9 +737,10 @@ pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameSta
         let curve = (p1 * b03 + p2 * b13 + p3 * b23 + p4 * b33) / 4.0;
 
         if game_state.with_bezier {
-            is_intersecting = main.check_intersection(&item.translate(curve.x, curve.y, curve.z))
+            is_intersecting =
+                main.check_bbox_intersection(&item.translate(curve.x, curve.y, curve.z))
         } else {
-            is_intersecting = main.check_intersection(&item)
+            is_intersecting = main.check_bbox_intersection(&item)
         }
 
         if is_intersecting {
