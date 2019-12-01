@@ -5,14 +5,28 @@ use std::path::Path;
 
 use gl;
 use image;
+use image::DynamicImage;
 use image::GenericImage;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
+
+// A função de carregamento de imagems da implementação original da biblioteca images é muito lenta,
+unsafe fn image_to_bytes(image: &DynamicImage) -> Vec<u8> {
+    match *image {
+        DynamicImage::ImageLuma8(ref a) => a.par_iter().map(|item| *item).collect(),
+        DynamicImage::ImageLumaA8(ref a) => a.par_iter().map(|item| *item).collect(),
+        DynamicImage::ImageRgb8(ref a) => a.par_iter().map(|item| *item).collect(),
+        DynamicImage::ImageRgba8(ref a) => a.par_iter().map(|item| *item).collect(),
+    }
+}
 
 pub unsafe fn load_texture(path: &str) -> (u32, u32) {
     // Le arquivo de imagem
     let img = image::open(&Path::new(&path)).expect("Falha ao carregar textura");
 
-    let data = img.raw_pixels();
+    let data = image_to_bytes(&img);
 
+    // let data2 = img.flipv().pixels().map(|pixel|pixel)
     let mut texture_id = 0;
     let mut sampler_id = 0;
 

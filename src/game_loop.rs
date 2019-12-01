@@ -658,6 +658,7 @@ pub unsafe fn game_loop(
             main_obj.get_matrix().matrix.c3.z + 0.2,
             free_camera.pos.w,
         );
+
         // Recarrega camera utilizando angulos para calcular vetor de direção da camera
         free_camera.refresh_as_free_camera();
         if game_state.current_camera == 0 {
