@@ -5,6 +5,7 @@ use super::matrix::GLMatrix;
 use super::matrix::MatrixTransform;
 use super::obj_model::ObjModel;
 use models::load_texture::load_texture;
+use models::matrix::norm;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
@@ -268,6 +269,28 @@ impl SceneObject {
     }
 
     // Checa a interseção entra a bbox de 2 objs
+    pub fn check_plane_intersection(&self, point: &glm::Vec4, normal: &glm::Vec4) -> bool {
+        //let model_translation = obj1.model.matrix.c3;
+        let obj1 = self;
+
+        // Utiliza transação do obj para calcular pos global
+        let obj1_t = obj1.get_matrix().matrix.c3;
+
+        let obj1_bbox_min = obj1.get_bbox_min();
+        let obj1_bbox_max = obj1.get_bbox_max();
+
+        // Pos global da bbox  do obj1
+        let obj1_bbox_min_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_min.x, obj1_bbox_min.y, obj1_bbox_min.z, 0.0)
+            + obj1_t;
+        let obj1_bbox_max_pos = obj1.get_matrix().matrix
+            * glm::vec4(obj1_bbox_max.x, obj1_bbox_max.y, obj1_bbox_max.z, 0.0)
+            + obj1_t;
+
+        check_plane_bbox_intersection(&obj1_bbox_min_pos, &obj1_bbox_max_pos, point, normal)
+    }
+
+    // Checa a interseção entra a bbox de 2 objs
     pub fn check_point_intersection(&self, point: &glm::Vec4) -> bool {
         //let model_translation = obj1.model.matrix.c3;
         let obj1 = self;
@@ -435,4 +458,44 @@ pub fn check_bbox_bbox_intersection(
     return (bbox1_min.x <= bbox2_max.x && bbox1_max.x >= bbox2_min.x)
         && (bbox1_min.y <= bbox2_max.y && bbox1_max.y >= bbox2_min.y)
         && (bbox1_min.z <= bbox2_max.z && bbox1_max.z >= bbox2_min.z);
+}
+
+#[allow(dead_code)]
+pub fn check_plane_bbox_intersection(
+    bbox_min: &glm::Vec4,
+    bbox_max: &glm::Vec4,
+    point: &glm::Vec4,
+    normal: &glm::Vec4,
+) -> bool {
+    let mut neg_vec = glm::vec4(0.0, 0.0, 0.0, 0.0);
+    let mut pos_vec = glm::vec4(0.0, 0.0, 0.0, 0.0);
+
+    if normal.x >= 0.0 {
+        neg_vec.x = bbox_min.x;
+        pos_vec.x = bbox_max.x;
+    } else {
+        neg_vec.x = bbox_max.x;
+        pos_vec.x = bbox_min.x;
+    }
+    if normal.y >= 0.0 {
+        neg_vec.y = bbox_min.y;
+        pos_vec.y = bbox_max.y;
+    } else {
+        neg_vec.y = bbox_max.y;
+        pos_vec.y = bbox_min.y;
+    }
+    if normal.z >= 0.0 {
+        neg_vec.z = bbox_min.z;
+        pos_vec.z = bbox_max.z;
+    } else {
+        neg_vec.z = bbox_max.z;
+        pos_vec.z = bbox_min.z;
+    }
+
+    // Se normal maior que 0 Vertice no lado positivo do plano
+    let pos_side = (*normal * pos_vec) + *point;
+    //  Se normal menor que 0 Vertice no lado negativo do plano
+    let neg_side = (*normal * neg_vec) + *point;
+
+    !(norm(pos_side) > 0.0 || norm(neg_side) < 0.0)
 }
