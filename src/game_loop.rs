@@ -214,9 +214,8 @@ pub unsafe fn game_loop(
         .add_children(
             &pyramid
                 .with_texture(&lava_texture, 1)
-                .translate(0.0, 6.0, 0.0),
+                .translate(0.0, 3.0, 0.0),
         )
-        .add_children(&pyramid.with_texture(&lava_texture, 1).scale(1.5, 1.0, 2.0))
         .add_children(
             &naked_dude
                 .with_texture(&lava_texture, 1)
@@ -728,8 +727,24 @@ pub fn draw_frame(
     camera: &FreeCamera,
 ) {
     // Gerencia colisões, movimento e desenha frame
+    if main.check_is_intersecting_fence(5.0, 5.0) {
+        let last_x = main.get_matrix().matrix.c3.x;
+        let last_z = main.get_matrix().matrix.c3.z;
+        let mut zoffset = 0.1;
+        let mut xoffset = 0.1;
+
+        // Se ultima posição for positiva em z, move no sentido contrario para volta a abs(z) < 5
+        if last_z > 0.0 {
+            zoffset = -zoffset;
+        }
+
+        if last_x > 0.0 {
+            xoffset = -xoffset
+        }
+
+        *main = main.translate(xoffset, 0.0, zoffset)
+    }
     main.draw(shader);
-    println!("{:?}", main.check_is_intersecting_fence(5.0, 5.0));
     let mut new_items: Vec<SceneObject> = vec![];
     let mut should_add_obj = false;
     let mut score = 0;

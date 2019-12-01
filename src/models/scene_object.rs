@@ -5,7 +5,6 @@ use super::matrix::GLMatrix;
 use super::matrix::MatrixTransform;
 use super::obj_model::ObjModel;
 use models::load_texture::load_texture;
-use models::matrix::norm;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
