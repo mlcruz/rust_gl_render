@@ -177,9 +177,11 @@ pub unsafe fn game_loop(
         .scale(1.5, 1.5, 1.5)
         .translate(0.0, 0.9, 0.0)
         .with_texture_map_type(1);
+
     let bunny = SceneObject::new("src/data/objs/bunny.obj")
         .translate(0.0, 0.8, 0.0)
         .with_texture_map_type(1);
+
     let base_cube = SceneObject::new("src/data/objs/cube.obj").with_texture_map_type(1);
 
     let sphere = SceneObject::new("src/data/objs/sphere.obj")
@@ -203,17 +205,49 @@ pub unsafe fn game_loop(
         .translate(0.0, 0.4, 0.0)
         .with_texture_map_type(3);
 
-    let boat = SceneObject::new("src/data/objs/boat.obj")
-        .translate(0.0, 0.6, 0.0)
-        .with_texture_map_type(3);
-
-    let house = SceneObject::new("src/data/objs/house.obj")
-        .scale(0.25, 0.25, 0.25)
-        .translate(0.0, 0.4, 0.0)
-        .with_texture_map_type(3);
+    let the_horror = SceneObject::new("src/data/objs/bunny.obj")
+        .translate(0.0, 0.8, 0.0)
+        .with_texture_map_type(1)
+        .add_children(&cow.with_texture(&corn, 1).translate(0.0, 0.5, 0.0))
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 0.0, 0.0),
+        )
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 0.2, 0.0),
+        )
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 0.5, 0.0),
+        )
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 0.8, 0.0),
+        )
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 1.2, 0.0),
+        )
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 1.5, 0.0),
+        )
+        .add_children(
+            &naked_dude
+                .with_texture(&lava_texture, 1)
+                .translate(0.0, 1.8, 0.0),
+        )
+        .scale(0.5, 0.5, 0.5);
 
     // Pool de objs aleatorios
-    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &boat, &house];
+    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &the_horror];
     let simple_obj_pool = vec![&base_cube, &sphere, &cylinder, &pyramid];
 
     let mut current_shader = &default_shader;
