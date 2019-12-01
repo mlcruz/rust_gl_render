@@ -53,14 +53,14 @@ pub unsafe fn game_loop(
     // Compila e linka shaders
     let gourad_lambert_illumination = Shader::new(
         "src/data/shader/vertex/goraud_shading_lambert.glsl",
-        "src/data/shader/fragment/gourad_fragment.glsl",
+        "src/data/shader/fragment/gourad_fragment_lambert.glsl",
     )
     .program;
 
     // Compila e linka shaders
     let gourad_phong_illumination = Shader::new(
         "src/data/shader/vertex/goraud_shading_phong.glsl",
-        "src/data/shader/fragment/gourad_fragment.glsl",
+        "src/data/shader/fragment/gourad_fragment_phong.glsl",
     )
     .program;
 
@@ -103,7 +103,7 @@ pub unsafe fn game_loop(
         curr_x: 0.0,
         dir: 1.0,
         complex_objs: false,
-        max_framerate: 60.0,
+        max_framerate: 90.0,
         progression_multiplier: 1,
         lighting_source: glm::vec4(0.0, 0.0, 0.0, 0.0),
     };
@@ -149,7 +149,7 @@ pub unsafe fn game_loop(
         &pattern1,
         &pattern2,
     ];
-    let plane_pool = vec![&pearl_texture, &ice_texture, &glass_texture, &pattern1];
+    let plane_pool = vec![&glass_texture, &pattern1];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
     let mut plane = SceneObject::new("src/data/objs/plane.obj")
@@ -227,6 +227,8 @@ pub unsafe fn game_loop(
     look_at_camera.front = game_state.look_at;
     free_camera.front = game_state.look_at;
 
+    let mut last_score = 0;
+
     // Inicializa camera
     // Inicializa matriz de projeção com a camera criada
     let mut view = View::new(-0.01, -20.0, &look_at_camera);
@@ -269,15 +271,24 @@ pub unsafe fn game_loop(
         });
         // Gera uma alteração de estado do loop do jogo
         if game_state.should_add_obj {
-            // Aumenta obj apos cada ponto
+            println!("{:?}", game_state.score);
 
+            // Aumenta obj apos cada ponto
             // Calcula escalamento original do obj antes de ser escalamento
             let init_x = main_obj.get_matrix().matrix.c0[0];
             let init_y = main_obj.get_matrix().matrix.c1[1];
             let init_z = main_obj.get_matrix().matrix.c2[2];
-
-            // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
-            main_obj = main_obj.tscale(1.0 + 0.0020, 1.0 + 0.0020, 1.0 + 0.0020);
+            // Se pontuação aumentou
+            if last_score < game_state.score {
+                // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
+                main_obj = main_obj.tscale(1.0 + 0.0020, 1.0 + 0.0020, 1.0 + 0.0020);
+                last_score = game_state.score;
+            }
+            // Pontuação diminuiu
+            else if last_score > game_state.score {
+                main_obj = main_obj.tscale(1.0 - 0.0020, 1.0 - 0.0020, 1.0 - 0.0020);
+                last_score = game_state.score;
+            }
 
             // Calcula aumento da altura da camera com diferença entre tamanho antes e depois do escalamento
             delta_vec_x = delta_vec_x + main_obj.get_matrix().matrix.c0[0] - init_x;
@@ -455,7 +466,7 @@ pub unsafe fn game_loop(
             }
 
             // Desenha objs complexos
-            if game_state.score > 12 * game_state.progression_multiplier {
+            if game_state.score >= 12 * game_state.progression_multiplier {
                 game_state.complex_objs = true;
             }
             if game_state.score == 12 * game_state.progression_multiplier {
@@ -463,12 +474,12 @@ pub unsafe fn game_loop(
             }
 
             // Camera junto com obj principal
-            if game_state.score > 14 * game_state.progression_multiplier {
+            if game_state.score >= 14 * game_state.progression_multiplier {
                 move_camera = true;
             }
 
             // Iluminação de lambert, phong shading
-            if game_state.score > 16 * game_state.progression_multiplier {
+            if game_state.score >= 16 * game_state.progression_multiplier {
                 current_shader = &lambert_illumination;
             }
             if game_state.score == 16 * game_state.progression_multiplier {
@@ -476,7 +487,7 @@ pub unsafe fn game_loop(
             }
 
             // Troca para camera livre em primeira pessoa
-            if game_state.score > 18 * game_state.progression_multiplier {
+            if game_state.score >= 18 * game_state.progression_multiplier {
                 main_obj = main_obj.get_root();
                 game_state.current_camera = 1;
             }
@@ -485,7 +496,7 @@ pub unsafe fn game_loop(
             }
 
             // Iluminação de phong, gourad shading
-            if game_state.score > 20 * game_state.progression_multiplier {
+            if game_state.score >= 20 * game_state.progression_multiplier {
                 current_shader = &gourad_phong_illumination;
             }
             if game_state.score == 20 * game_state.progression_multiplier {
@@ -524,12 +535,14 @@ pub unsafe fn game_loop(
                 println!("Iluminação de phong, phong shading");
             }
 
-            if game_state.score == 24 * game_state.progression_multiplier {
+            if game_state.score >= 24 * game_state.progression_multiplier {
                 println!(" Iluminação relativa a fonte de luz!");
-                game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
+                if game_state.lighting_source == glm::vec4(0.0, 0.0, 0.0, 0.0) {
+                    game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
+                }
             };
 
-            if game_state.score == 28 * game_state.progression_multiplier {
+            if game_state.score >= 28 * game_state.progression_multiplier {
                 println!(" Iluminação de blinn phong !");
                 new_obj2 = new_obj2.with_specular_phong_q(&16.0);
                 current_shader = &blinn_phong_illumination;

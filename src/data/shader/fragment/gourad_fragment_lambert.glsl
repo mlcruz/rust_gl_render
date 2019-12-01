@@ -10,13 +10,7 @@ in vec4 position_model;
 // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
 in vec2 texcoords;
 
-in vec3 phong_specular_term;
 in vec3 lambert_diffuse_term;
-
-// Matrizes computadas no código C++ e enviadas para a GPU
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
 
 // Variáveis para acesso das imagens de textura
 uniform sampler2D texture_overide;
@@ -55,28 +49,19 @@ uniform vec4 lighting_direction;
 // Possivel vetor de sobrescrita da iluminaçção global
 uniform vec4 lighting_source_override;
 
-out vec3 color;
-
 // Constantes
 #define M_PI 3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
 
+out vec3 color;
+
 void main()
 {
-    // INICIALIZAÇÂO:
-    
-    // sistema de coordenadas da câmera.
-    vec4 camera_position=inverse(view)*camera_origin;
-    
-    vec4 p=position_world;
+    vec3 object_reflectance=color_overide;
     
     // Coordenadas de textura U e V
     float U=0.;
     float V=0.;
-    
-    vec3 object_reflectance=color_overide;
-    
-    // FIM INICIALIZACAO
     
     // Se não exite cor para sobreescrever textura atual, utiliza textura
     if(color_overide==vec3(0.,0.,0.)){
@@ -137,7 +122,6 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
-    // Termo de refletancia ambiente calculado a partir da cor das texturas
     vec3 final_ambient_reflectance=vec3((object_reflectance.x*.15)+.05,(object_reflectance.y*.15)+.05,(object_reflectance.z*.15)+.05);
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
@@ -148,9 +132,7 @@ void main()
     // Termo ambiente
     vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
     
-    // Multiplicamos o vetor de refletancia especular pela cor da textura
-    // Utilizamos um vetor (specular_reflectance) para controlar a intensidade da refletancia especular do objeto
-    color=(lambert_diffuse_term*object_reflectance)+ambient_term+(specular_reflectance*phong_specular_term);
+    color=(lambert_diffuse_term*object_reflectance)+ambient_term;
     
     color=pow(color,vec3(1.,1.,1.)/2.2);
 }

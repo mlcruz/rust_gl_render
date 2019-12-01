@@ -44,7 +44,6 @@ pub fn handle_input(
                     if game_state.lighting_source != glm::vec4(0.0, 0.0, 0.0, 0.0) {
                         game_state.lighting_source.z = game_state.lighting_source.z + 0.05;
                     }
-                    println!("{:?}", game_state.lighting_source);
                 }
                 (glutin::VirtualKeyCode::Down, _) => {
                     look_at_camera.pos.z =
@@ -312,24 +311,20 @@ pub fn handle_input(
                 (glutin::VirtualKeyCode::Add, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score + 1;
                     game_state.should_add_obj = true;
-                    println!("{:?}", game_state.score);
                 }
                 (glutin::VirtualKeyCode::Equals, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score + 1;
                     game_state.should_add_obj = true;
-                    println!("{:?}", game_state.score);
                 }
                 (glutin::VirtualKeyCode::Subtract, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score - 1;
                     game_state.should_add_obj = true;
                     game_state.draw_queue = Vec::new();
-                    println!("{:?}", game_state.score);
                 }
                 (glutin::VirtualKeyCode::Minus, glutin::ElementState::Pressed) => {
                     game_state.score = game_state.score - 1;
                     game_state.should_add_obj = true;
                     game_state.draw_queue = Vec::new();
-                    println!("{:?}", game_state.score);
                 }
                 _ => (), // _ => println!("{:?} {:?}", virtual_code, state),
             },
