@@ -51,15 +51,36 @@ pub unsafe fn game_loop(
     .program;
 
     // Compila e linka shaders
+    let gourad_lambert_illumination = Shader::new(
+        "src/data/shader/vertex/goraud_shading_lambert.glsl",
+        "src/data/shader/fragment/gourad_fragment.glsl",
+    )
+    .program;
+
+    // Compila e linka shaders
+    let gourad_phong_illumination = Shader::new(
+        "src/data/shader/vertex/goraud_shading_phong.glsl",
+        "src/data/shader/fragment/gourad_fragment.glsl",
+    )
+    .program;
+
+    // Compila e linka shaders
     let lambert_illumination = Shader::new(
-        "src/data/shader/vertex/default.glsl",
+        "src/data/shader/vertex/phong_shading.glsl",
         "src/data/shader/fragment/lambert_ilumination.glsl",
     )
     .program;
 
     let phong_illumination = Shader::new(
-        "src/data/shader/vertex/default.glsl",
+        "src/data/shader/vertex/phong_shading.glsl",
         "src/data/shader/fragment/phong_ilumination.glsl",
+    )
+    .program;
+    gl::Enable(gl::DEPTH_TEST);
+
+    let blinn_phong_illumination = Shader::new(
+        "src/data/shader/vertex/phong_shading.glsl",
+        "src/data/shader/fragment/blinn_phong_ilumination.glsl",
     )
     .program;
     gl::Enable(gl::DEPTH_TEST);
@@ -82,7 +103,7 @@ pub unsafe fn game_loop(
         curr_x: 0.0,
         dir: 1.0,
         complex_objs: false,
-        max_framerate: 120.0,
+        max_framerate: 60.0,
         progression_multiplier: 1,
         lighting_source: glm::vec4(0.0, 0.0, 0.0, 0.0),
     };
@@ -93,7 +114,6 @@ pub unsafe fn game_loop(
     let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
 
     let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
-    let (dark_wood_texture, _) = load_texture("src/data/textures/dark_wood.jpg");
     let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
     let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
     let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
@@ -106,7 +126,6 @@ pub unsafe fn game_loop(
     let (fire_texture, _) = load_texture("src/data/textures/fire.jpg");
 
     let (glass_texture, _) = load_texture("src/data/textures/glass.jpg");
-    let (plate_diamond, _) = load_texture("src/data/textures/plate_diamond.jpg");
     let (corn, _) = load_texture("src/data/textures/corn.jpg");
 
     let (pattern1, _) = load_texture("src/data/textures/pattern1.jpg");
@@ -118,7 +137,6 @@ pub unsafe fn game_loop(
         &sea_water_texture,
         &copper_texture,
         &steel_texture,
-        &dark_wood_texture,
         &ice_texture,
         &light_wood,
         &old_wood_texture,
@@ -126,13 +144,12 @@ pub unsafe fn game_loop(
         &fire_texture,
         &lava_texture,
         &glass_texture,
-        &plate_diamond,
         &corn,
         &sad_texture,
         &pattern1,
         &pattern2,
     ];
-    let plane_pool = vec![&pearl_texture, &ice_texture, &glass_texture];
+    let plane_pool = vec![&pearl_texture, &ice_texture, &glass_texture, &pattern1];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
     let mut plane = SceneObject::new("src/data/objs/plane.obj")
@@ -179,7 +196,7 @@ pub unsafe fn game_loop(
         .rotate_z(1.5)
         .translate(0.0, 0.4, 0.0)
         .with_color(&glm::vec3(0.6, 0.6, 0.2))
-        .with_texture_map_type(3);
+        .with_texture_map_type(4);
 
     let naked_dude = SceneObject::new("src/data/objs/naked_dude.obj")
         .scale(0.15, 0.15, 0.15)
@@ -187,12 +204,11 @@ pub unsafe fn game_loop(
         .with_texture_map_type(3);
 
     let dog = SceneObject::new("src/data/objs/dog.obj")
-        .trot_z(1.5)
-        .trot_x(1.5)
-        .trot_y(1.5)
+        .trot_z(3.14)
+        .trot_y(1.6)
         .scale(0.1, 0.1, 0.1)
         .translate(0.0, 2.0, 0.0)
-        .with_texture_map_type(3);
+        .with_texture_map_type(1);
 
     // Pool de objs aleatorios
     let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &dog];
@@ -261,7 +277,7 @@ pub unsafe fn game_loop(
             let init_z = main_obj.get_matrix().matrix.c2[2];
 
             // Utiliza vetor de translação do obj para realizar uma translação - escalamento - translação
-            main_obj = main_obj.tscale(1.0 + 0.001, 1.0 + 0.001, 1.0 + 0.001);
+            main_obj = main_obj.tscale(1.0 + 0.0020, 1.0 + 0.0020, 1.0 + 0.0020);
 
             // Calcula aumento da altura da camera com diferença entre tamanho antes e depois do escalamento
             delta_vec_x = delta_vec_x + main_obj.get_matrix().matrix.c0[0] - init_x;
@@ -361,9 +377,9 @@ pub unsafe fn game_loop(
                 println!("Proj. Perpesctiva e camera movel!");
             }
 
-            // Ilum de lambert
+            // Ilum de lambert, shading gourdad
             if game_state.score >= 8 * game_state.progression_multiplier {
-                current_shader = &lambert_illumination;
+                current_shader = &gourad_lambert_illumination;
                 let rand_int = gen_random_usize() % texture_pool.len();
 
                 // Adiciona esfera no topo do obj
@@ -375,7 +391,7 @@ pub unsafe fn game_loop(
                 );
             }
             if game_state.score == 8 * game_state.progression_multiplier {
-                println!("Iluminação de lambert!")
+                println!("Iluminação de lambert, shading gourad!")
             }
 
             // Texturas
@@ -395,8 +411,8 @@ pub unsafe fn game_loop(
                 let rand_intp = gen_random_usize() % plane_pool.len();
 
                 // Tipos de mapeamentos de textura aleatorios
-                let rand_int_type0 = (gen_random_i32() % 4) + 1;
-                let rand_int_type1 = (gen_random_i32() % 4) + 1;
+                let rand_int_type0 = (gen_random_i32() % 5) + 1;
+                let rand_int_type1 = (gen_random_i32() % 5) + 1;
 
                 if main_obj.get_texture_override() == 0 {
                     main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_int_main], 1);
@@ -451,6 +467,14 @@ pub unsafe fn game_loop(
                 move_camera = true;
             }
 
+            // Iluminação de lambert, phong shading
+            if game_state.score > 16 * game_state.progression_multiplier {
+                current_shader = &lambert_illumination;
+            }
+            if game_state.score == 16 * game_state.progression_multiplier {
+                println!("Iluminação de lambert, phong shading!")
+            }
+
             // Troca para camera livre em primeira pessoa
             if game_state.score > 18 * game_state.progression_multiplier {
                 main_obj = main_obj.get_root();
@@ -460,8 +484,16 @@ pub unsafe fn game_loop(
                 println!("Primeira Pessoa!")
             }
 
-            // Ilum de phong
-            if game_state.score >= 21 * game_state.progression_multiplier {
+            // Iluminação de phong, gourad shading
+            if game_state.score > 20 * game_state.progression_multiplier {
+                current_shader = &gourad_phong_illumination;
+            }
+            if game_state.score == 20 * game_state.progression_multiplier {
+                println!("Iluminação de phong, gourad shading!")
+            }
+
+            // Ilum de phong, phong shading
+            if game_state.score >= 22 * game_state.progression_multiplier {
                 current_shader = &phong_illumination;
                 plane = plane;
 
@@ -488,8 +520,8 @@ pub unsafe fn game_loop(
                     .with_specular_reflectance(&glm::vec3(1.0, 1.0, 1.0));
             }
 
-            if game_state.score == 21 * game_state.progression_multiplier {
-                println!("Phong Ilumination!");
+            if game_state.score == 22 * game_state.progression_multiplier {
+                println!("Iluminação de phong, phong shading");
             }
 
             if game_state.score == 24 * game_state.progression_multiplier {
@@ -497,30 +529,36 @@ pub unsafe fn game_loop(
                 game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
             };
 
+            if game_state.score == 28 * game_state.progression_multiplier {
+                println!(" Iluminação de blinn phong !");
+                new_obj2 = new_obj2.with_specular_phong_q(&16.0);
+                current_shader = &blinn_phong_illumination;
+            };
+
             // Adiciona um obj novo na fila de desenho
             game_state.draw_queue.push(new_obj0);
 
             // Adiciona entre 0 a 4 objetos extras na cena
             if game_state.score > 2 * game_state.progression_multiplier {
-                if gen_random_i32() % 3 < 2 {
+                if gen_random_i32() % 5 < 2 {
                     game_state.draw_queue.push(new_obj1);
                 }
             }
 
             if game_state.score > 5 * game_state.progression_multiplier {
-                if gen_random_i32() % 4 == 0 {
+                if gen_random_i32() % 5 == 0 {
                     game_state.draw_queue.push(new_obj2);
                 }
             }
 
             if game_state.score > 7 * game_state.progression_multiplier {
-                if gen_random_i32() % 4 == 0 {
+                if gen_random_i32() % 5 == 0 {
                     game_state.draw_queue.push(new_obj3);
                 }
             }
 
             if game_state.score > 9 * game_state.progression_multiplier {
-                if gen_random_i32() % 4 == 0 {
+                if gen_random_i32() % 5 == 0 {
                     game_state.draw_queue.push(new_obj4);
                 }
             }

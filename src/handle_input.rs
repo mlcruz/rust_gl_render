@@ -90,6 +90,7 @@ pub fn handle_input(
                     let rand_intp = gen_random_usize() % texture_pool.len();
                     *plane = plane.with_texture(&texture_pool.as_slice()[rand_intp], 2);
                     *main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_intp], 1);
+                    game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
                 }
                 (glutin::VirtualKeyCode::B, glutin::ElementState::Pressed) => {
                     game_state.with_bezier = !game_state.with_bezier;

@@ -1,4 +1,6 @@
 #[derive(Debug, Copy, Clone)]
+
+// Representa informações de iluminação de uma view
 pub struct Lighting {
     pub global: glm::Vec3,
     pub ambient: glm::Vec3,

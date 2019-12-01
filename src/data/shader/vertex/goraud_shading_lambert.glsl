@@ -1,19 +1,21 @@
 #version 330 core
 
-// Interpolação da posição normal e normal de cada vertice
-in vec4 position_world;
-in vec4 normal;
+layout(location=0)in vec4 model_coefficients;
+layout(location=1)in vec4 normal_coefficients;
+layout(location=2)in vec2 texture_coefficients;
 
-// Posição do vértice atual no sistema de coordenadas local do modelo.
-in vec4 position_model;
-
-// Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
-in vec2 texcoords;
-
-// Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+
+out vec4 position_world;
+out vec4 position_model;
+
+out vec4 normal;
+out vec2 texcoords;
+
+out vec3 phong_specular_term;
+out vec3 lambert_diffuse_term;
 
 // Variáveis para acesso das imagens de textura
 uniform sampler2D texture_overide;
@@ -52,7 +54,7 @@ uniform vec4 lighting_direction;
 // Possivel vetor de sobrescrita da iluminaçção global
 uniform vec4 lighting_source_override;
 
-out vec3 color;
+out vec3 color_v;
 
 // Constantes
 #define M_PI 3.14159265358979323846
@@ -60,15 +62,18 @@ out vec3 color;
 
 void main()
 {
-    // INICIALIZAÇÂO:
     
-    // sistema de coordenadas da câmera.
-    vec4 camera_position=inverse(view)*camera_origin;
+    gl_Position=projection*view*model*model_coefficients;
     
-    vec4 p=position_world;
+    position_world=model*model_coefficients;
     
-    // Normal do fragmento atual, interpolada pelo rasterizador a partir das
-    // normais de cada vértice.
+    position_model=model_coefficients;
+    
+    normal=inverse(transpose(model))*normal_coefficients;
+    normal.w=0.;
+    texcoords=texture_coefficients;
+    
+    // Normal do vertice atual, interpolada pelo rasterizador a partir das
     vec4 n=normalize(normal);
     
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
@@ -84,19 +89,14 @@ void main()
         l=normalize(source_point);
     }
     
-    // Vetor que define o sentido da câmera em relação ao ponto atual.
-    vec4 v=normalize(camera_position-p);
+    // Termo difuso utilizando a lei dos cossenos de Lambert
+    vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
     
     // Coordenadas de textura U e V
     float U=0.;
     float V=0.;
     
     vec3 object_reflectance=color_overide;
-    
-    // Vetor que define o sentido da reflexão especular ideal.
-    vec4 r=-l+2*n*(dot(n,l));
-    
-    // FIM INICIALIZACAO
     
     // Se não exite cor para sobreescrever textura atual, utiliza textura
     if(color_overide==vec3(0.,0.,0.)){
@@ -157,9 +157,7 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
-    // Termo difuso utilizando a lei dos cossenos de Lambert
-    vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
-    
+    // Termo de refletancia ambiente calculado a partir da cor das texturas
     vec3 final_ambient_reflectance=vec3((object_reflectance.x*.15)+.05,(object_reflectance.y*.15)+.05,(object_reflectance.z*.15)+.05);
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
@@ -170,13 +168,9 @@ void main()
     // Termo ambiente
     vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
     
-    // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=global_lighting*pow(max(0,dot(r,v)),phong_q);
-    
     // Multiplicamos o vetor de refletancia especular pela cor da textura
     // Utilizamos um vetor (specular_reflectance) para controlar a intensidade da refletancia especular do objeto
-    color=(lambert_diffuse_term*object_reflectance)+ambient_term+(specular_reflectance*phong_specular_term);
+    color_v=(lambert_diffuse_term*object_reflectance)+ambient_term;
     
-    color=pow(color,vec3(1.,1.,1.)/2.2);
 }
 

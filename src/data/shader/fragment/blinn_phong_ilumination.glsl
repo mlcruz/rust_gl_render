@@ -73,7 +73,6 @@ void main()
     
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
     vec4 l=vec4(0.,0.,0.,0.);
-    
     // Sobreescreve iluminação global com direção relatica a alguma fonte de luz, se existir parametro
     if(lighting_source_override.y==0.){
         l=normalize(lighting_direction);
@@ -93,8 +92,7 @@ void main()
     
     vec3 object_reflectance=color_overide;
     
-    // Vetor que define o sentido da reflexão especular ideal.
-    vec4 r=-l+2*n*(dot(n,l));
+    vec4 h=normalize(v+l);
     
     // FIM INICIALIZACAO
     
@@ -171,11 +169,11 @@ void main()
     vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
     
     // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=global_lighting*pow(max(0,dot(r,v)),phong_q);
+    vec3 blinn_phong_specular_term=global_lighting*pow(max(0,dot(n,h)),phong_q*4.);
     
     // Multiplicamos o vetor de refletancia especular pela cor da textura
     // Utilizamos um vetor (specular_reflectance) para controlar a intensidade da refletancia especular do objeto
-    color=(lambert_diffuse_term*object_reflectance)+ambient_term+(specular_reflectance*phong_specular_term);
+    color=(lambert_diffuse_term*object_reflectance)+ambient_term+(specular_reflectance*blinn_phong_specular_term);
     
     color=pow(color,vec3(1.,1.,1.)/2.2);
 }

@@ -10,6 +10,9 @@ in vec4 position_model;
 // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
 in vec2 texcoords;
 
+in vec3 phong_specular_term;
+in vec3 lambert_diffuse_term;
+
 // Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
@@ -67,34 +70,11 @@ void main()
     
     vec4 p=position_world;
     
-    // Normal do fragmento atual, interpolada pelo rasterizador a partir das
-    // normais de cada vértice.
-    vec4 n=normalize(normal);
-    
-    // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l=vec4(0.,0.,0.,0.);
-    
-    // Sobreescreve iluminação global com direção relatica a alguma fonte de luz, se existir parametro
-    if(lighting_source_override.y==0.){
-        l=normalize(lighting_direction);
-        
-    }
-    else{
-        vec4 source_point=lighting_source_override-position_world;
-        l=normalize(source_point);
-    }
-    
-    // Vetor que define o sentido da câmera em relação ao ponto atual.
-    vec4 v=normalize(camera_position-p);
-    
     // Coordenadas de textura U e V
     float U=0.;
     float V=0.;
     
     vec3 object_reflectance=color_overide;
-    
-    // Vetor que define o sentido da reflexão especular ideal.
-    vec4 r=-l+2*n*(dot(n,l));
     
     // FIM INICIALIZACAO
     
@@ -157,9 +137,7 @@ void main()
         object_reflectance=texture(texture_overide,vec2(U,V)).rgb;
     }
     
-    // Termo difuso utilizando a lei dos cossenos de Lambert
-    vec3 lambert_diffuse_term=global_lighting*max(0,dot(n,l));
-    
+    // Termo de refletancia ambiente calculado a partir da cor das texturas
     vec3 final_ambient_reflectance=vec3((object_reflectance.x*.15)+.05,(object_reflectance.y*.15)+.05,(object_reflectance.z*.15)+.05);
     
     // Sobreescreve refletancia ambiente se existe alguma definida, se não utiliza cor do ponto para calcular
@@ -169,9 +147,6 @@ void main()
     
     // Termo ambiente
     vec3 ambient_term=final_ambient_reflectance*ambient_lighting;
-    
-    // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term=global_lighting*pow(max(0,dot(r,v)),phong_q);
     
     // Multiplicamos o vetor de refletancia especular pela cor da textura
     // Utilizamos um vetor (specular_reflectance) para controlar a intensidade da refletancia especular do objeto

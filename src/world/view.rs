@@ -8,6 +8,7 @@ static FIELD_OF_VIEW: f32 = 3.141592 / 3.0;
 static G_SCREEN_RATIO: f32 = 1.0;
 use std::ffi::CString;
 
+// Representa um campo de visão, com sua propria camera e iluminação
 #[derive(Debug, Copy)]
 pub struct View {
     nearplane: f32, // Ângulo no plano ZX em relação ao eixo Z
@@ -39,6 +40,7 @@ impl View {
         }
     }
 
+    // Prepara para desenhar, sempre chamado antes do draw dos objs
     pub fn render(&self, program: &u32) -> Self {
         let camera_origin = glm::vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -109,7 +111,6 @@ impl View {
         }
         *self
     }
-
     pub fn update_camera(&mut self, camera: &FreeCamera) -> Self {
         self.camera = camera.clone();
         *self

@@ -299,6 +299,7 @@ pub fn camera_view_matrix(
     ])
 }
 
+// Funcões de transformação de matrix da estrutura acima
 #[allow(dead_code)]
 impl GLMatrix {
     pub const fn new(points: [f32; 16]) -> Self {
@@ -370,7 +371,7 @@ impl From<[f32; 16]> for GLMatrix {
     }
 }
 
-// Define operações com matrix
+// Define operações com matrix, implementadas por todos os objs do cenario
 pub trait MatrixTransform: Sized {
     fn get_matrix(&self) -> &GLMatrix;
     fn update_matrix(&mut self, matrix: &GLMatrix) -> &mut Self;
