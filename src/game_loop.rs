@@ -203,15 +203,17 @@ pub unsafe fn game_loop(
         .translate(0.0, 0.4, 0.0)
         .with_texture_map_type(3);
 
-    let dog = SceneObject::new("src/data/objs/dog.obj")
-        .trot_z(3.14)
-        .trot_y(1.6)
-        .scale(0.1, 0.1, 0.1)
-        .translate(0.0, 2.0, 0.0)
-        .with_texture_map_type(1);
+    let boat = SceneObject::new("src/data/objs/boat.obj")
+        .translate(0.0, 0.6, 0.0)
+        .with_texture_map_type(3);
+
+    let house = SceneObject::new("src/data/objs/house.obj")
+        .scale(0.25, 0.25, 0.25)
+        .translate(0.0, 0.4, 0.0)
+        .with_texture_map_type(3);
 
     // Pool de objs aleatorios
-    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &dog];
+    let complex_obj_pool = vec![&cow, &bunny, &naked_dude, &boat, &house];
     let simple_obj_pool = vec![&base_cube, &sphere, &cylinder, &pyramid];
 
     let mut current_shader = &default_shader;
