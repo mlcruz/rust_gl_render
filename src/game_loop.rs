@@ -541,12 +541,17 @@ pub unsafe fn game_loop(
                     game_state.lighting_source = glm::vec4(0.0, -18.0, 0.0, 1.0);
                 }
             };
-
+            if game_state.score == 24 * game_state.progression_multiplier {
+                println!(" Iluminação relativa a fonte de luz!");
+            }
             if game_state.score >= 28 * game_state.progression_multiplier {
-                println!(" Iluminação de blinn phong !");
                 new_obj2 = new_obj2.with_specular_phong_q(&16.0);
                 current_shader = &blinn_phong_illumination;
             };
+
+            if game_state.score == 28 * game_state.progression_multiplier {
+                println!(" Iluminação de blinn phong !");
+            }
 
             // Adiciona um obj novo na fila de desenho
             game_state.draw_queue.push(new_obj0);

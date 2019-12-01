@@ -1,11 +1,8 @@
 [package]
 name = "rust_gl_render" 
 version = "0.1.0"   
-authors = ["Matheus <mlcruz@inf.ufrgs.br>"]
+authors = ["Matheus Cruz <mlcruz@inf.ufrgs.br>"]
 
-# [dependencies.glfw]
-# git = "https://github.com/bjz/glfw-rs.git"
-# default-features = false
 
 [dependencies]
 gl = "0.6.0"
