@@ -5,13 +5,16 @@ use models::load_texture::load_texture;
 use models::matrix::normalize_vector;
 use models::matrix::MatrixTransform;
 use models::scene_object::SceneObject;
+use rayon::iter::IndexedParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 use shader::shader_program::Shader;
+use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
 use world::free_camera::FreeCamera;
 use world::view::View;
-
 // Controle do loop principal do jogo
 
 // Controle de estado do jogo
@@ -211,7 +214,7 @@ pub unsafe fn game_loop(
         .add_children(
             &pyramid
                 .with_texture(&lava_texture, 1)
-                .translate(0.0, 1.0, 0.0),
+                .translate(0.0, 6.0, 0.0),
         )
         .add_children(&pyramid.with_texture(&lava_texture, 1).scale(1.5, 1.0, 2.0))
         .add_children(
@@ -679,7 +682,12 @@ pub unsafe fn game_loop(
         sad_plane.draw(&current_shader);
 
         // Desenha objetos
-        draw_frame(&mut main_obj, &current_shader, &mut game_state);
+        draw_frame(
+            &mut main_obj,
+            &current_shader,
+            &mut game_state,
+            &free_camera,
+        );
 
         // Tempo de renderização de uma frame
         delta_time = timer.elapsed().as_secs_f64();
@@ -713,58 +721,83 @@ pub unsafe fn game_loop(
 }
 
 #[allow(dead_code, unused_assignments)]
-pub fn draw_frame(main: &mut SceneObject, shader: &u32, game_state: &mut GameState) {
+pub fn draw_frame(
+    main: &mut SceneObject,
+    shader: &u32,
+    game_state: &mut GameState,
+    camera: &FreeCamera,
+) {
     // Gerencia colisões, movimento e desenha frame
     main.draw(shader);
 
     let mut new_items: Vec<SceneObject> = vec![];
     let mut should_add_obj = false;
     let mut score = 0;
+    let intersecting_item_vec = Arc::new(Mutex::new(Vec::new()));
+
+    let b03 = pow(1.0 - game_state.curr_x, 3.0) as f32;
+    let b23 = 3.0 * pow(game_state.curr_x, 2.0) as f32 * (1.0 - game_state.curr_x) as f32;
+    let b13 = 3.0 * game_state.curr_x as f32 * pow(1.10 - game_state.curr_x, 2.0) as f32;
+    let b33 = pow(game_state.curr_x, 3.0) as f32;
+
+    let p1 = glm::vec4(-2.5, 0.4, 0.0, 0.0);
+    let p2 = glm::vec4(-2.00, 1.8, 1.25, 0.0);
+    let p3 = glm::vec4(2.0, 1.8, 0.5, 0.0);
+    let p4 = glm::vec4(4.5, 0.0, 1.25, 0.0);
+    let curve = (p1 * b03 + p2 * b13 + p3 * b23 + p4 * b33) / 4.0;
+
+    // Detecta intersecções de maneira paralela
+    game_state
+        .draw_queue
+        .as_slice()
+        .par_iter()
+        .enumerate()
+        .for_each(|(idx, item)| {
+            let mut is_intersecting = false;
+
+            if game_state.with_bezier {
+                is_intersecting = main
+                    .check_bbox_intersection(&item.translate(curve.x, curve.y, curve.z))
+                    || item.check_point_intersection(&camera.pos)
+            } else {
+                is_intersecting = main.check_bbox_intersection(&item)
+                    || item.check_point_intersection(&camera.pos)
+            }
+            if is_intersecting {
+                intersecting_item_vec.lock().unwrap().push(idx);
+            }
+        });
 
     // Desenha cada objeto da fila de desenho e checa interseções
-    game_state.draw_queue.as_slice().iter().for_each(|item| {
-        // Verifica intersecções entre objetos, destroi aqueles que intersectam e pede um objeto novo
-        let mut is_intersecting = false;
+    game_state
+        .draw_queue
+        .as_slice()
+        .iter()
+        .enumerate()
+        .for_each(|(idx, item)| {
+            // Verifica intersecções entre objetos, destroi aqueles que intersectam e pede um objeto novo
 
-        let b03 = pow(1.0 - game_state.curr_x, 3.0) as f32;
-        let b23 = 3.0 * pow(game_state.curr_x, 2.0) as f32 * (1.0 - game_state.curr_x) as f32;
-        let b13 = 3.0 * game_state.curr_x as f32 * pow(1.10 - game_state.curr_x, 2.0) as f32;
-        let b33 = pow(game_state.curr_x, 3.0) as f32;
-
-        let p1 = glm::vec4(-2.5, 0.4, 0.0, 0.0);
-        let p2 = glm::vec4(-2.00, 1.8, 1.25, 0.0);
-        let p3 = glm::vec4(2.0, 1.8, 0.5, 0.0);
-        let p4 = glm::vec4(4.5, 0.0, 1.25, 0.0);
-        let curve = (p1 * b03 + p2 * b13 + p3 * b23 + p4 * b33) / 4.0;
-
-        if game_state.with_bezier {
-            is_intersecting =
-                main.check_bbox_intersection(&item.translate(curve.x, curve.y, curve.z))
-        } else {
-            is_intersecting = main.check_bbox_intersection(&item)
-        }
-
-        if is_intersecting {
-            // Remove obj da cena e indica criação de novo obj
-            should_add_obj = true;
-            score = score + 1;
-        } else {
-            // Desenha alguns objs com mov em curva de bezier
-            if game_state.with_bezier {
-                item.with_lighting_source_override(&game_state.lighting_source)
-                    .trot_y(2.0 * 3.14 * game_state.curr_x as f32)
-                    .trot_x(2.0 * 3.14 * game_state.curr_x as f32)
-                    .translate(curve.x, curve.y, curve.z)
-                    .draw(shader);
-
-                new_items.push(item.clone());
+            if intersecting_item_vec.lock().unwrap().contains(&idx) {
+                // Remove obj da cena e indica criação de novo obj
+                should_add_obj = true;
+                score = score + 1;
             } else {
-                item.with_lighting_source_override(&game_state.lighting_source)
-                    .draw(shader);
-                new_items.push(item.clone());
+                // Desenha alguns objs com mov em curva de bezier
+                if game_state.with_bezier {
+                    item.with_lighting_source_override(&game_state.lighting_source)
+                        .trot_y(2.0 * 3.14 * game_state.curr_x as f32)
+                        .trot_x(2.0 * 3.14 * game_state.curr_x as f32)
+                        .translate(curve.x, curve.y, curve.z)
+                        .draw(shader);
+
+                    new_items.push(item.clone());
+                } else {
+                    item.with_lighting_source_override(&game_state.lighting_source)
+                        .draw(shader);
+                    new_items.push(item.clone());
+                }
             }
-        }
-    });
+        });
 
     // Atualiza estado do jogo
     game_state.draw_queue = new_items;
