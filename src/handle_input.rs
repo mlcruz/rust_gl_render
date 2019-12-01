@@ -36,7 +36,6 @@ pub fn handle_input(
                 ..
             } => match (virtual_code, state) {
                 // Trata input do usuario
-                // Atualiza camera
                 (glutin::VirtualKeyCode::Up, glutin::ElementState::Pressed) => {
                     look_at_camera.pos.z =
                         look_at_camera.pos.z + (*speed * game_state.camera_speed_mult);
@@ -80,12 +79,14 @@ pub fn handle_input(
                     }
                 }
                 (glutin::VirtualKeyCode::R, glutin::ElementState::Pressed) => {
+                    // Reseta camera para a posição inicial
                     view.lighting = Lighting::new(
                         &glm::vec3(1.0, 1.0, 1.0),
                         &glm::vec3(0.25, 0.25, 0.25),
                         &glm::vec4(1.0, 1.0, 0.0, 0.0),
                     );
 
+                    // Recarrega texturas
                     let rand_intp = gen_random_usize() % texture_pool.len();
                     *plane = plane.with_texture(&texture_pool.as_slice()[rand_intp], 2);
                     *main_obj = main_obj.with_texture(&texture_pool.as_slice()[rand_intp], 1);
@@ -276,7 +277,6 @@ pub fn handle_input(
                     }
                 }
                 (glutin::VirtualKeyCode::S, _) => {
-                    //camera.pos.z = camera.pos.z + 0.01;
                     if game_state.current_camera == 1 {
                         let mut new_vec = normalize_vector(free_camera.front) * *speed;
                         if game_state.can_fly == false {
@@ -300,8 +300,6 @@ pub fn handle_input(
                     }
                 }
                 (glutin::VirtualKeyCode::D, _) => {
-                    //camera.pos.x = camera.pos.x + 0.01;
-
                     if game_state.current_camera == 1 {
                         let new_vec = normalize_vector(cross_product(
                             free_camera.front,

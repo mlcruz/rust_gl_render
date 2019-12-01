@@ -20,6 +20,7 @@ pub struct View {
 
 #[allow(dead_code)]
 impl View {
+    // Inicializa campo de visão, com tamanhos de tela e camera recebidos
     pub fn new(nearplane: f32, farplane: f32, camera: &FreeCamera) -> Self {
         View {
             camera: camera.clone(),
@@ -32,6 +33,7 @@ impl View {
                 farplane,
             )
             .matrix,
+            // Iluminação inicial do cenario
             lighting: Lighting::new(
                 &glm::vec3(1.0, 1.0, 1.0),
                 &glm::vec3(0.25, 0.25, 0.25),
@@ -45,6 +47,7 @@ impl View {
         let camera_origin = glm::vec4(0.0, 0.0, 0.0, 1.0);
 
         unsafe {
+            // Atribui uniforms
             let view_uniform =
                 gl::GetUniformLocation(*program, CString::new("view").unwrap().as_ptr());
             let projection_uniform =

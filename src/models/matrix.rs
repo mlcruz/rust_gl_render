@@ -299,7 +299,7 @@ pub fn camera_view_matrix(
     ])
 }
 
-// Funcões de transformação de matrix da estrutura acima
+// Implementação ads funcões de transformação de matriz
 #[allow(dead_code)]
 impl GLMatrix {
     pub const fn new(points: [f32; 16]) -> Self {

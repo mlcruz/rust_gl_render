@@ -720,13 +720,14 @@ pub unsafe fn game_loop(
 }
 
 #[allow(dead_code, unused_assignments)]
+// Gerencia colisões, movimento e desenha frame
 pub fn draw_frame(
     main: &mut SceneObject,
     shader: &u32,
     game_state: &mut GameState,
     camera: &FreeCamera,
 ) {
-    // Gerencia colisões, movimento e desenha frame
+    // Verifica se obj principal está sobre o plano
     if main.check_is_intersecting_fence(5.0, 5.0) {
         let last_x = main.get_matrix().matrix.c3.x;
         let last_z = main.get_matrix().matrix.c3.z;
@@ -745,11 +746,13 @@ pub fn draw_frame(
         *main = main.translate(xoffset, 0.0, zoffset)
     }
     main.draw(shader);
+
     let mut new_items: Vec<SceneObject> = vec![];
     let mut should_add_obj = false;
     let mut score = 0;
     let intersecting_item_vec = Arc::new(Mutex::new(Vec::new()));
 
+    // Curva de bezier parametrizada pelo tempo
     let b03 = pow(1.0 - game_state.curr_x, 3.0) as f32;
     let b23 = 3.0 * pow(game_state.curr_x, 2.0) as f32 * (1.0 - game_state.curr_x) as f32;
     let b13 = 3.0 * game_state.curr_x as f32 * pow(1.10 - game_state.curr_x, 2.0) as f32;
@@ -761,7 +764,7 @@ pub fn draw_frame(
     let p4 = glm::vec4(4.5, 0.0, 1.25, 0.0);
     let curve = (p1 * b03 + p2 * b13 + p3 * b23 + p4 * b33) / 4.0;
 
-    // Detecta intersecções de maneira paralela
+    // Detecta intersecções de maneira paralela e guarda resultados
     game_state
         .draw_queue
         .as_slice()
@@ -783,7 +786,7 @@ pub fn draw_frame(
             }
         });
 
-    // Desenha cada objeto da fila de desenho e checa interseções
+    // Desenha cada objeto da fila de desenho de maneira sincrona
     game_state
         .draw_queue
         .as_slice()

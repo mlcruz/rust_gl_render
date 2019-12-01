@@ -5,7 +5,6 @@ extern crate image;
 extern crate rand;
 extern crate rayon;
 extern crate tobj;
-mod drawable;
 mod models;
 mod shader;
 mod world;
@@ -20,7 +19,7 @@ fn main() {
 
     // Iniciliza janela e contexto, com perfil core, versão 3.3, tamanho 1360x768
     let window = glutin::WindowBuilder::new()
-        .with_title("Rust Render")
+        .with_title("Upgrade")
         .with_dimensions(<LogicalSize>::new(1360f64, 768.0f64));
 
     let gl_window = glutin::ContextBuilder::new()
