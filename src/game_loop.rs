@@ -54,16 +54,16 @@ pub unsafe fn game_loop(
     .program;
 
     // Compila e linka shaders
-    let gourad_lambert_illumination = Shader::new(
-        "src/data/shader/vertex/goraud_shading_lambert.glsl",
-        "src/data/shader/fragment/gourad_fragment_lambert.glsl",
+    let gouraud_lambert_illumination = Shader::new(
+        "src/data/shader/vertex/gouraud_shading_lambert.glsl",
+        "src/data/shader/fragment/gouraud_fragment_lambert.glsl",
     )
     .program;
 
     // Compila e linka shaders
-    let gourad_phong_illumination = Shader::new(
-        "src/data/shader/vertex/goraud_shading_phong.glsl",
-        "src/data/shader/fragment/gourad_fragment_phong.glsl",
+    let gouraud_phong_illumination = Shader::new(
+        "src/data/shader/vertex/gouraud_shading_phong.glsl",
+        "src/data/shader/fragment/gouraud_fragment_phong.glsl",
     )
     .program;
 
@@ -432,9 +432,9 @@ pub unsafe fn game_loop(
                 println!("Proj. Perpesctiva e camera movel!");
             }
 
-            // Ilum de lambert, shading gourad
+            // Ilum de lambert, shading gouraud
             if game_state.score >= 8 * game_state.progression_multiplier {
-                current_shader = &gourad_lambert_illumination;
+                current_shader = &gouraud_lambert_illumination;
                 let rand_int = gen_random_usize() % texture_pool.len();
 
                 // Adiciona esfera no topo do obj
@@ -446,7 +446,7 @@ pub unsafe fn game_loop(
                 );
             }
             if game_state.score == 8 * game_state.progression_multiplier {
-                println!("Iluminação de lambert, shading gourad!")
+                println!("Iluminação de lambert, shading gouraud!")
             }
 
             // Texturas
@@ -539,12 +539,12 @@ pub unsafe fn game_loop(
                 println!("Primeira Pessoa!")
             }
 
-            // Iluminação de phong, gourad shading
+            // Iluminação de phong, gouraud shading
             if game_state.score >= 20 * game_state.progression_multiplier {
-                current_shader = &gourad_phong_illumination;
+                current_shader = &gouraud_phong_illumination;
             }
             if game_state.score == 20 * game_state.progression_multiplier {
-                println!("Iluminação de phong, gourad shading!")
+                println!("Iluminação de phong, gouraud shading!")
             }
 
             // Ilum de phong, phong shading
