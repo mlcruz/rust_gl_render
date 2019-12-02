@@ -114,43 +114,43 @@ pub unsafe fn game_loop(
     ////////////////////// Carrega texturas do jogo /////////////////////////
 
     let (sad_texture, _) = load_texture("src/data/textures/sad.jpg");
-    //  let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
+    let (pearl_texture, _) = load_texture("src/data/textures/pearl.jpg");
 
-    //   let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
-    //  let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
-    // let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
-    //  let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
+    let (copper_texture, _) = load_texture("src/data/textures/copper.jpg");
+    let (gold_texture, _) = load_texture("src/data/textures/gold.jpg");
+    let (ice_texture, _) = load_texture("src/data/textures/ice.jpg");
+    let (light_wood, _) = load_texture("src/data/textures/light_wood.jpg");
 
-    //   let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
+    let (old_wood_texture, _) = load_texture("src/data/textures/old_wood.jpg");
     let (sea_water_texture, _) = load_texture("src/data/textures/sea_water.jpg");
     let (steel_texture, _) = load_texture("src/data/textures/steel.jpg");
     let (earth_texture, _) = load_texture("src/data/textures/earth.jpg");
     let (lava_texture, _) = load_texture("src/data/textures/lava.jpg");
-    //   let (fire_texture, _) = load_texture("src/data/textures/fire.jpg");
+    let (fire_texture, _) = load_texture("src/data/textures/fire.jpg");
 
     let (glass_texture, _) = load_texture("src/data/textures/glass.jpg");
     let (corn, _) = load_texture("src/data/textures/corn.jpg");
 
     let (pattern1, _) = load_texture("src/data/textures/pattern1.jpg");
-    //  let (pattern2, _) = load_texture("src/data/textures/pattern2.jpg");
+    let (pattern2, _) = load_texture("src/data/textures/pattern2.jpg");
 
     let texture_pool = vec![
-        // &pearl_texture,
-        //&gold_texture,
+        &pearl_texture,
+        &gold_texture,
         &sea_water_texture,
-        // &copper_texture,
+        &copper_texture,
         &steel_texture,
-        //   &ice_texture,
-        // &light_wood,
-        // &old_wood_texture,
+        &ice_texture,
+        &light_wood,
+        &old_wood_texture,
         &earth_texture,
-        //  &fire_texture,
+        &fire_texture,
         &lava_texture,
         &glass_texture,
         &corn,
         &sad_texture,
         &pattern1,
-        // &pattern2,
+        &pattern2,
     ];
     let plane_pool = vec![&glass_texture, &pattern1];
 
@@ -298,6 +298,7 @@ pub unsafe fn game_loop(
         speed = delta_time * game_state.speed_mult;
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         gl::ClearColor(0.3, 0.3, 0.3, 1.0);
+
         // Trata eventos
         events_loop.poll_events(|event| {
             handle_input(
@@ -431,7 +432,7 @@ pub unsafe fn game_loop(
                 println!("Proj. Perpesctiva e camera movel!");
             }
 
-            // Ilum de lambert, shading gourdad
+            // Ilum de lambert, shading gourad
             if game_state.score >= 8 * game_state.progression_multiplier {
                 current_shader = &gourad_lambert_illumination;
                 let rand_int = gen_random_usize() % texture_pool.len();
@@ -673,7 +674,7 @@ pub unsafe fn game_loop(
         if game_state.is_view_orto {
             view.ortographic().render(&current_shader);
         } else {
-            view.perpective().render(&current_shader);
+            view.perspective().render(&current_shader);
         }
 
         // Desenha plano

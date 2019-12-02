@@ -201,7 +201,7 @@ pub fn ortographic_matrix(l: f32, r: f32, b: f32, t: f32, n: f32, f: f32) -> GLM
 }
 
 #[allow(dead_code)]
-pub fn perpective_matrix(field_of_view: f32, aspect: f32, n: f32, f: f32) -> GLMatrix {
+pub fn perspective_matrix(field_of_view: f32, aspect: f32, n: f32, f: f32) -> GLMatrix {
     let t = abs(n) * tan(field_of_view / 2.0);
     let b = -t;
     let r = t * aspect;

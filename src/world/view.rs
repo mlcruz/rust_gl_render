@@ -1,6 +1,6 @@
 use glm::Matrix4;
 use models::matrix::ortographic_matrix;
-use models::matrix::perpective_matrix;
+use models::matrix::perspective_matrix;
 use std::mem;
 use world::free_camera::FreeCamera;
 use world::lighting::Lighting;
@@ -26,7 +26,7 @@ impl View {
             camera: camera.clone(),
             farplane: farplane,
             nearplane: nearplane,
-            projection_matrix: perpective_matrix(
+            projection_matrix: perspective_matrix(
                 FIELD_OF_VIEW,
                 G_SCREEN_RATIO,
                 nearplane,
@@ -136,9 +136,9 @@ impl View {
         self
     }
 
-    pub fn perpective(&mut self) -> &Self {
+    pub fn perspective(&mut self) -> &Self {
         self.projection_matrix =
-            perpective_matrix(FIELD_OF_VIEW, G_SCREEN_RATIO, self.nearplane, self.farplane).matrix;
+            perspective_matrix(FIELD_OF_VIEW, G_SCREEN_RATIO, self.nearplane, self.farplane).matrix;
 
         self
     }
@@ -186,7 +186,7 @@ impl View {
     pub fn with_near_plane(&self, nearplane: &f32) -> Self {
         Self {
             nearplane: *nearplane,
-            projection_matrix: perpective_matrix(
+            projection_matrix: perspective_matrix(
                 FIELD_OF_VIEW,
                 G_SCREEN_RATIO,
                 *nearplane,
@@ -200,7 +200,7 @@ impl View {
     pub fn with_far_plane(&self, farplane: &f32) -> Self {
         Self {
             farplane: *farplane,
-            projection_matrix: perpective_matrix(
+            projection_matrix: perspective_matrix(
                 FIELD_OF_VIEW,
                 G_SCREEN_RATIO,
                 self.nearplane,
