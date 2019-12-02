@@ -1,5 +1,5 @@
 [package]
-name = "upgrade" 
+name = "upgrade_low_tex" 
 version = "0.1.0"   
 authors = ["Matheus Cruz <mlcruz@inf.ufrgs.br>"]
 
