@@ -155,10 +155,6 @@ pub unsafe fn game_loop(
     let plane_pool = vec![&glass_texture, &pattern1];
 
     /////////////////////// Carrega objs do jogo /////////////////////////////
-    let mut plane = SceneObject::new("src/data/objs/plane.obj")
-        .scale(5.0, 5.0, 5.0)
-        .translate(0.0, game_state.obj_plane_height, 0.0)
-        .with_color(&glm::vec3(0.6, 0.6, 0.6));
 
     let mut sad_plane = SceneObject::new("src/data/objs/plane.obj")
         .scale(1.0, 1.0, 1.0)
